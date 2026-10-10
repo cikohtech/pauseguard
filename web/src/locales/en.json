@@ -1,0 +1,26 @@
+{
+  "common": {
+    "language": "Language",
+    "switchTo": "中文"
+  },
+  "landing": {
+    "tagline": "Pause before you pay.",
+    "pitch": "Fraud models check the transaction. {{product}} checks the conversation that caused it.",
+    "status": "Prototype scaffold: the customer app and analyst console are being built.",
+    "tryApp": "Try the customer app",
+    "openConsole": "Open the analyst console",
+    "footer": "Prototype for the Google Cloud AI Builder Cup 2026 · Built on Gemini, ADK, Cloud Run, BigQuery, Firestore · All data synthetic"
+  },
+  "app": {
+    "title": "{{bank}} app with {{product}}",
+    "placeholder": "The customer banking demo arrives in phase 06."
+  },
+  "console": {
+    "title": "{{product}} analyst console",
+    "placeholder": "The analyst console arrives in phase 07."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "home": "Back to the home page"
+  }
+}

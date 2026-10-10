@@ -1,0 +1,50 @@
+# Secrets: never commit. Local values live in .env, cloud values in Secret Manager.
+.env
+.env.*
+!.env.example
+web/.env.local
+web/.env.*.local
+*.pem
+*.key
+*-sa.json
+*service-account*.json
+*credentials*.json
+
+# Not for judges (research notes, pitch Q&A prep)
+private/
+
+# Local data and outputs
+*.db
+*.db-journal
+data/seed/*.db
+.local_uploads/
+eval/results/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node / web
+node_modules/
+web/dist/
+*.tsbuildinfo
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+*-debug.log
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.claude/settings.local.json

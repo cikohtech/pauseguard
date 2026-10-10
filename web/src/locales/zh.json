@@ -1,0 +1,26 @@
+{
+  "common": {
+    "language": "语言",
+    "switchTo": "English"
+  },
+  "landing": {
+    "tagline": "付款之前，先停一停。",
+    "pitch": "反欺诈模型检查交易，{{product}} 检查促成这笔交易的对话。",
+    "status": "原型搭建中：客户应用和分析员控制台正在开发。",
+    "tryApp": "试用客户应用",
+    "openConsole": "打开分析员控制台",
+    "footer": "Google Cloud AI Builder Cup 2026 参赛原型 · 基于 Gemini、ADK、Cloud Run、BigQuery、Firestore · 所有数据均为模拟数据"
+  },
+  "app": {
+    "title": "{{bank}} 应用（含 {{product}}）",
+    "placeholder": "客户银行演示将在第 06 阶段上线。"
+  },
+  "console": {
+    "title": "{{product}} 分析员控制台",
+    "placeholder": "分析员控制台将在第 07 阶段上线。"
+  },
+  "notFound": {
+    "title": "找不到页面",
+    "home": "返回首页"
+  }
+}
