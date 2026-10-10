@@ -1,0 +1,78 @@
+{
+  "_comment": "Evidence for the three demo personas (DATA_SPEC §2, DEMO_SCRIPT). Rendered by `render_chats.py --demo` into data/demo/. Not part of the eval set. Mrs Tan's phone and account are on the seed watchlist on purpose (WATCHLIST_MATCH in the demo); her domain is not, so Scam-Intel searches it. Raj's number is not on the watchlist, so his case is decided by the conversation.",
+  "files": [
+    {
+      "output": "data/demo/tan_mas_chat.png",
+      "transfer": {"customer_id": "cust_001", "payee_name": "Lee Wei Investigation Acct", "account_number": "123-45678-9", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 8000, "currency": "SGD", "note": "case 2231"},
+      "evidence": {
+        "format": "chat",
+        "header": {"name": "李伟 · 金管局调查组", "subtitle": "+65 8000 0147"},
+        "messages": [
+          {"who": "day", "text": "今天"},
+          {"who": "them", "time": "14:02", "text": "陈女士您好，我是新加坡金融管理局（MAS）调查组的李伟。刚才电话里说过，您的银行户口涉及一宗洗钱案件，案件编号 2231。"},
+          {"who": "them", "time": "14:03", "text": "请先核对您的案件资料：mas-gov-verify.example/case/2231"},
+          {"who": "me", "time": "14:10", "text": "我一辈子都没有做过犯法的事，怎么会这样？"},
+          {"who": "them", "time": "14:11", "text": "我们相信您是无辜的。为了保护您的存款，您必须马上把钱转到金管局的安全账户，调查结束后全数退还。"},
+          {"who": "them", "time": "14:12", "text": "安全账户：Harbour Bank 123-45678-9\n户名：Lee Wei Investigation Acct\n金额：S$8,000\n备注：case 2231"},
+          {"who": "them", "time": "14:13", "text": "这是机密调查，不要告诉您的孩子或银行职员，否则会影响调查，您也可能被起诉。"},
+          {"who": "them", "time": "14:13", "text": "今天下午 5 点前一定要完成，不然您所有的户口都会被冻结。"},
+          {"who": "me", "time": "14:20", "text": "好的，我现在就去转。"}
+        ]
+      }
+    },
+    {
+      "output": "data/demo/raj_job_chat.png",
+      "text_output": "data/demo/raj_job_chat.txt",
+      "transfer": {"customer_id": "cust_002", "payee_name": "Ahmad Danial", "account_number": "556-208417-390", "bank_name": "Orchid Trust Bank", "dest_type": "LOCAL_BANK", "amount": 450, "currency": "SGD", "note": "task wallet top-up"},
+      "evidence": {
+        "format": "chat",
+        "header": {"name": "Kelly · TaskStar HR", "subtitle": "+65 8000 0188"},
+        "messages": [
+          {"who": "day", "text": "Today"},
+          {"who": "them", "time": "11:02", "text": "Hi Raj! Kelly from TaskStar here 😊 Great job finishing your first 3 tasks, your S$36 commission is already in your account."},
+          {"who": "me", "time": "11:05", "text": "Thanks! Got it."},
+          {"who": "them", "time": "11:06", "text": "You're now eligible for the Gold task set: 20 tasks at 15% commission each!"},
+          {"who": "them", "time": "11:07", "text": "To unlock it, top up S$450 to your task wallet. It's refundable, you get it back with your commission after the set."},
+          {"who": "me", "time": "11:12", "text": "Where do I top up?"},
+          {"who": "them", "time": "11:13", "text": "Transfer to our finance colleague: Orchid Trust Bank 556-208417-390, name Ahmad Danial. Please send me the receipt 🙏"},
+          {"who": "them", "time": "11:14", "text": "Gold slots are limited today, many members are waiting."}
+        ]
+      }
+    },
+    {
+      "output": "data/demo/aisyah_tenancy.pdf",
+      "transfer": {"customer_id": "cust_003", "payee_name": "Wong Kah Wai", "account_number": "436-905127-318", "bank_name": "Kampong Federal Bank", "dest_type": "LOCAL_BANK", "amount": 3200, "currency": "SGD", "note": "Bishan deposit"},
+      "evidence": {
+        "format": "pdf",
+        "document": {
+          "kind": "tenancy",
+          "issuer": "Bayfront Homes Realty Pte Ltd",
+          "issuer_lines": ["Estate agent licence L3011234K", "Agent: Nurul Ain binti Hassan, CEA R062345E", "+65 8000 0290"],
+          "title": "Tenancy Agreement",
+          "ref": "BHR-TA-2610-073",
+          "date": "8 October 2026",
+          "to_lines": ["Landlord: Wong Kah Wai", "Tenant: Nur Aisyah", "Premises: Blk 214 Bishan Street 23, #09-221 (3-room HDB flat, fully furnished)"],
+          "body": [
+            "1. Term. Two (2) years from 1 November 2026 to 31 October 2028.",
+            "2. Rent. S$3,200 per month, payable in advance on the 1st day of each month by bank transfer to the Landlord's account below.",
+            "3. Security deposit. One (1) month's rent, S$3,200, payable within seven (7) days of signing. It is refundable without interest within fourteen (14) days after the end of the tenancy, less any sums owed under this agreement.",
+            "4. Utilities and conservancy. The Tenant pays for electricity, water, gas and internet. The Landlord pays the Town Council service and conservancy charges.",
+            "5. Minor repairs. The Tenant bears the cost of minor repairs up to S$150 per item. Major repairs and the replacement of appliances are borne by the Landlord.",
+            "6. Diplomatic clause. Either party may end the tenancy after the first twelve (12) months by giving two (2) months' written notice.",
+            "7. Inventory. The inventory list, signed by both parties at the handover viewing on 6 October 2026, forms part of this agreement.",
+            "Signed by both parties at the offices of Bayfront Homes Realty on 8 October 2026."
+          ],
+          "items": [
+            {"description": "Security deposit (1 month), payable by 15 October 2026", "amount": 3200},
+            {"description": "First month's rent (November 2026), payable by 1 November 2026", "amount": 3200}
+          ],
+          "payment": {"Bank": "Kampong Federal Bank", "Account name": "Wong Kah Wai", "Account no.": "436-905127-318", "Reference": "Bishan deposit"},
+          "footer": [
+            "Prepared by Bayfront Homes Realty Pte Ltd on behalf of the Landlord. The Landlord's bank account is as stated above and will not change during the tenancy without a signed addendum."
+          ],
+          "signature": "Landlord: Wong Kah Wai    ·    Tenant: Nur Aisyah"
+        }
+      }
+    }
+  ]
+}

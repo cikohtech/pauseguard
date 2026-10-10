@@ -1,0 +1,727 @@
+{
+  "ev_0001": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "text",
+      "text": "Hi Mdm Ho, thanks for viewing the flat at Blk 312 Tampines St 33 with your husband on Saturday. As agreed, the rent is S$2,600 a month for 2 years. Please pay the good-faith deposit of one month (S$2,600) to my account, Harbour Bank 547-30918-2 (Lim Siew Lan), and I'll send the Letter of Intent for both of us to sign. Our agent Kelvin (CEA R061234B) will prepare the tenancy agreement. Thank you! Siew Lan"
+    },
+    "customer_answer": "Good-faith deposit to the landlord for the flat we viewed on Saturday.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Lim Siew Lan", "account_number": "547-30918-2", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 2600, "note": "Blk 312 deposit"},
+    "reviewer_note": "Legit: after an in-person viewing, one month's rent as agreed, paid to the landlord named in the message; an agent with a registration number."
+  },
+  "ev_0002": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Kelvin Ng (PropNest Realty)", "subtitle": "+65 8000 0202"},
+      "messages": [
+        {"who": "them", "time": "18:05", "text": "Hi Mr Wong, thanks for viewing the 3-room at Blk 128 Bedok North this afternoon. The landlord accepts your offer of S$3,100/month, 2-year lease 👍"},
+        {"who": "them", "time": "18:06", "text": "Just to be upfront, another couple viewed after you and is also keen, so the landlord prefers to lock it in today if possible."},
+        {"who": "me", "time": "18:20", "text": "Ok. What do I need to pay?"},
+        {"who": "them", "time": "18:22", "text": "Good-faith deposit of 1 month (S$3,100) to the landlord directly. Her name is on the LOI I emailed you: Mdm Rahmah Bte Yusof, Kampong Federal Bank 214-508736-019."},
+        {"who": "them", "time": "18:23", "text": "Once paid she'll countersign the LOI, and I'll prepare the TA for signing on Saturday. My CEA reg no. is R058812C if you want to check."},
+        {"who": "me", "time": "18:40", "text": "Ok, will pay now."}
+      ]
+    },
+    "customer_answer": "Good-faith deposit to the landlord after our viewing today. The agent sent the letter of intent.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Rahmah Bte Yusof", "account_number": "214-508736-019", "bank_name": "Kampong Federal Bank", "dest_type": "LOCAL_BANK", "amount": 3100, "note": "LOI Blk 128 deposit"},
+    "reviewer_note": "Legit (subtle): 'pay today, another couple is keen' sounds pushy, but it follows a viewing, the amount is one month's rent, and the payee is the landlord named on the LOI."
+  },
+  "ev_0014": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "房东 陈太太", "subtitle": "+65 8000 0205"},
+      "messages": [
+        {"who": "them", "time": "20:10", "text": "王先生，今天看房谢谢你们。房租就照我们讲好的，每月 S$2,400，租两年。"},
+        {"who": "them", "time": "20:11", "text": "押金是两个月 S$4,800，签约那天再付第一个月租金。合约我已经用电邮寄给你了，你先看一下。"},
+        {"who": "me", "time": "20:30", "text": "收到了，合约没问题。押金可以签约那天才付吗？"},
+        {"who": "them", "time": "20:32", "text": "可以啊。不过明天还有一对夫妇要来看，如果你们确定要，今天先付押金比较稳，我就不让他们看了。"},
+        {"who": "them", "time": "20:33", "text": "我的户口：Harbour Bank 609-21457-3，户名 Tan Mei Hwa，跟合约上的名字一样。"},
+        {"who": "me", "time": "20:45", "text": "好的，我现在转。"}
+      ]
+    },
+    "customer_answer": "今天看完房子，房东要我们先付押金，名字跟合约上的一样。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Tan Mei Hwa", "account_number": "609-21457-3", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 4800, "note": "租房押金"},
+    "reviewer_note": "Legit (subtle): mild time pressure, but it follows a viewing, the customer may pay later if they wish, and the payee matches the landlord on the contract."
+  },
+  "ev_0050": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "text",
+      "text": "Hi Zhi Hao, it was nice meeting you at the viewing yesterday! Happy to confirm the common room at Clementi Ave 4 from 1 Nov at S$900/month. The deposit is one month (S$900), refundable at the end of the lease minus any damage, as written in clause 4 of the room rental agreement I passed you. If you're ok with it, please pay the deposit by tonight because two other students asked about the room. Account: Riverside Savings Bank 318-602947-155 (Goh Siew Ping). Thanks! Mrs Goh"
+    },
+    "customer_answer": "Deposit for the room I viewed yesterday. I'm paying the landlady.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Goh Siew Ping", "account_number": "318-602947-155", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 900, "note": "room deposit"},
+    "reviewer_note": "Legit (subtle): a 'by tonight' deadline, but after an in-person viewing, with a written agreement, a normal one-month deposit, and the payee is the landlady herself."
+  },
+  "ev_0068": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "中介 Jason Lee（Harbourfront Realty）", "subtitle": "+65 8000 0228"},
+      "messages": [
+        {"who": "them", "time": "15:00", "text": "陈先生，今天签约顺利，恭喜！租约副本已经电邮给您。"},
+        {"who": "them", "time": "15:01", "text": "按照合约第 2 条，押金是两个月 S$5,600，请在 10 月 15 日前转给房东。"},
+        {"who": "me", "time": "15:10", "text": "好的，房东户口是合约上写的那个吗？"},
+        {"who": "them", "time": "15:12", "text": "对，就是合约第 2 条写的：Orchid Trust Bank 702-348165-930，户名 Ng Boon Huat。转好后把截图发给我和房东就可以了。"},
+        {"who": "me", "time": "15:20", "text": "明白，谢谢。"}
+      ]
+    },
+    "customer_answer": "今天签了租约，按合约把押金转给房东。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Ng Boon Huat", "account_number": "702-348165-930", "bank_name": "Orchid Trust Bank", "dest_type": "LOCAL_BANK", "amount": 5600, "note": "押金"},
+    "reviewer_note": "Legit: the lease was signed in person, the deposit is as written in the contract, there's a relaxed deadline, and the payee is the landlord."
+  },
+  "ev_0075": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Uncle Hamid (landlord)", "subtitle": "+65 8000 0230"},
+      "messages": [
+        {"who": "them", "time": "10:00", "text": "Morning Zainal, thanks for coming down yesterday. The room is yours from 1 Nov 👍"},
+        {"who": "them", "time": "10:01", "text": "As we discussed, S$950/month with 1 month deposit. I'll bring the signed agreement when you move in, you keep one copy."},
+        {"who": "me", "time": "10:15", "text": "Great, thank you Uncle. Can I pay the deposit now?"},
+        {"who": "them", "time": "10:16", "text": "Sure. Hamid bin Osman, Harbour Bank 382-61094-7. No rush, anytime this week is fine."},
+        {"who": "me", "time": "10:30", "text": "Ok paying now."}
+      ]
+    },
+    "customer_answer": "Paying the room deposit to my new landlord. I met him at the flat yesterday.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Hamid bin Osman", "account_number": "382-61094-7", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 950, "note": "Room deposit"},
+    "reviewer_note": "Legit: met in person, a normal deposit, no pressure ('anytime this week'), and the payee is the landlord."
+  },
+  "ev_0076": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "pdf",
+      "document": {
+        "kind": "tenancy",
+        "issuer": "Seri Mas Properties Pte Ltd",
+        "issuer_lines": ["UEN 201703322R", "21 Kaki Bukit Road 4, #05-10"],
+        "title": "Tenancy Agreement: Shop Unit #01-24 (Summary of Key Terms)",
+        "ref": "SMP/TA/2026/041",
+        "date": "5 October 2026",
+        "to_lines": ["Tenant: Farah Nadia Kassim", "Trading as Nadia's Kitchen"],
+        "body": [
+          "Term: 3 years from 1 November 2026, with an option to renew for 2 years.",
+          "Monthly rent: S$3,500 (excluding GST), payable on the 1st of each month.",
+          "Security deposit: three months' rent, S$10,500, payable within 7 days of signing and refundable without interest at the end of the term, less any amounts owed.",
+          "Signed by both parties at the landlord's office on 5 October 2026 in the presence of the managing agent."
+        ],
+        "items": [{"description": "Security deposit (3 months)", "amount": 10500}],
+        "total": 10500,
+        "payment": {"Bank": "Lantern Commerce Bank", "Account name": "Seri Mas Properties Pte Ltd", "Account no.": "471-305628-914", "Reference": "SMP/TA/2026/041"},
+        "footer": ["Managing agent: Linden Property Consultants, licence L3010567J. Enquiries +65 8000 0231."],
+        "signature": "For Seri Mas Properties Pte Ltd: Lee Boon Kiat, Director"
+      }
+    },
+    "customer_answer": "Security deposit for the shop unit I'm renting for my food business. We signed the tenancy agreement on Monday.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Seri Mas Properties Pte Ltd", "account_number": "471-305628-914", "bank_name": "Lantern Commerce Bank", "dest_type": "LOCAL_BANK", "amount": 10500, "note": "SMP/TA/2026/041"},
+    "reviewer_note": "Legit (subtle): a large first payment to a new payee, but it's a signed commercial lease, the deposit is 3 months' rent, and the payee is the landlord company."
+  },
+  "ev_0144": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "pdf",
+      "document": {
+        "kind": "tenancy",
+        "issuer": "宏图产业代理 Hongtu Realty",
+        "issuer_lines": ["代理执照 L3008421C", "经纪 林志明 CEA R047126D"],
+        "title": "住宅租赁合约（主要条款）",
+        "ref": "HT-TA-261008",
+        "date": "2026年10月8日",
+        "to_lines": ["承租人：洪玉英", "出租人：郑文辉"],
+        "body": [
+          "租赁物业：Blk 456 Hougang Ave 10 #08-123（四房式组屋）",
+          "租期两年，由 2026 年 11 月 1 日起。月租 S$3,200。",
+          "押金为两个月租金，共 S$6,400，于签约后七天内汇入出租人户口；租约期满且无欠款，全数退还。",
+          "双方已于 2026 年 10 月 8 日在代理办公室签署本合约。"
+        ],
+        "items": [{"description": "押金（两个月）", "amount": 6400}],
+        "total": 6400,
+        "payment": {"银行": "Riverside Savings Bank", "户名": "Tay Boon Hwee（郑文辉）", "账号": "183-520746-391"},
+        "footer": ["本摘要附于正式租约之后。"],
+        "signature": "出租人 郑文辉 ／ 承租人 洪玉英"
+      }
+    },
+    "customer_answer": "签了租房合约，按合约把押金转给房东。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Tay Boon Hwee", "account_number": "183-520746-391", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 6400, "note": "押金 HT-TA-261008"},
+    "reviewer_note": "Legit: signed at a licensed agency, two months' deposit as written, paid to the landlord named in the contract (Tay Boon Hwee = 郑文辉)."
+  },
+  "ev_0028": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "CoolBreeze Aircon Services", "subtitle": "+65 8000 0212"},
+      "messages": [
+        {"who": "them", "time": "16:30", "text": "Hi Mr Tan, thank you for having us today. Our technician serviced 3 units and topped up the gas for the bedroom unit."},
+        {"who": "them", "time": "16:31", "text": "Invoice CB-5521: chemical wash x1 S$90, general service x2 S$60, gas top-up S$90. Total S$240."},
+        {"who": "me", "time": "16:40", "text": "Thanks, all units are working well now."},
+        {"who": "them", "time": "16:41", "text": "Glad to hear! You can pay by bank transfer to CoolBreeze Aircon Services Pte Ltd, Riverside Savings Bank 407-219538-662, ref CB-5521. Next servicing is due in April 🙂"}
+      ]
+    },
+    "customer_answer": "Paying the aircon company for the servicing they did today.",
+    "quick_reply": "A seller",
+    "transfer": {"payee_name": "CoolBreeze Aircon Services Pte Ltd", "account_number": "407-219538-662", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 240, "note": "CB-5521"},
+    "reviewer_note": "Legit: work already done at home, itemised invoice, payment to the company's own account."
+  },
+  "ev_0040": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Wilson (Homecraft Renovation)", "subtitle": "+65 8000 0218"},
+      "messages": [
+        {"who": "them", "time": "11:00", "text": "Hi Mr Ng, thank you for signing the quotation yesterday. As discussed at your flat: kitchen cabinets, tiling and plumbing, total S$18,000."},
+        {"who": "them", "time": "11:01", "text": "Payment terms as in the quotation: 30% deposit (S$5,400) to confirm, 40% when the cabinets are installed, 30% on completion and handover."},
+        {"who": "me", "time": "11:20", "text": "Ok. My son will look at the quotation also."},
+        {"who": "them", "time": "11:22", "text": "No problem, take your time. To keep the 2 Nov start date, the deposit by Friday would be good, as our carpenter's schedule fills up."},
+        {"who": "them", "time": "11:23", "text": "Company account: Homecraft Renovation Pte Ltd, Kampong Federal Bank 158-603927-441. The same details are printed on the quotation, and the HDB renovation permit no. is on page 2."},
+        {"who": "me", "time": "11:40", "text": "Ok, will pay today."}
+      ]
+    },
+    "customer_answer": "Deposit for my kitchen renovation. I signed the contractor's quotation at home yesterday.",
+    "quick_reply": "A seller",
+    "transfer": {"payee_name": "Homecraft Renovation Pte Ltd", "account_number": "158-603927-441", "bank_name": "Kampong Federal Bank", "dest_type": "LOCAL_BANK", "amount": 5400, "note": "Quotation deposit"},
+    "reviewer_note": "Legit (subtle): an elderly customer, a large new payee and a soft deadline, but there was a home visit, a signed quotation, staged payments, a permit, and the company's own account."
+  },
+  "ev_0083": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "text",
+      "text": "李先生您好，这是搬家报价：三房式组屋搬到 Punggol，3 吨卡车加 4 名工人，包拆装床架，一共 S$680。搬家日期 10 月 25 日上午 9 点。确认后请先付订金 S$200，余款搬家当天付清：Lantern Commerce Bank 520-361847-209，户名 Smooth Move Pte Ltd。如有问题请联系 +65 8000 0235。Smooth Move 搬家公司"
+    },
+    "customer_answer": "付搬家公司的订金，他们上门看过才报价的。",
+    "quick_reply": "A seller",
+    "transfer": {"payee_name": "Smooth Move Pte Ltd", "account_number": "520-361847-209", "bank_name": "Lantern Commerce Bank", "dest_type": "LOCAL_BANK", "amount": 200, "note": "搬家订金"},
+    "reviewer_note": "Legit: an itemised quote after a site visit, a small deposit with the balance on the day, paid to the company's account."
+  },
+  "ev_0089": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "text",
+      "text": "张先生，今天换了厨房水龙头和浴室水管，材料 S$85，人工 S$120，一共 S$205。可以转账到公司户口：Orchid Trust Bank 336-904125-718（Ah Huat Plumbing Services）。谢谢！"
+    },
+    "customer_answer": "付水喉匠今天来修水管的钱。",
+    "quick_reply": "A seller",
+    "transfer": {"payee_name": "Ah Huat Plumbing Services", "account_number": "336-904125-718", "bank_name": "Orchid Trust Bank", "dest_type": "PAYNOW", "amount": 205, "note": null},
+    "reviewer_note": "Legit: payment for work finished today, itemised, to the business's own account."
+  },
+  "ev_0096": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "pdf",
+      "document": {
+        "kind": "quotation",
+        "issuer": "Brightwall Painting & Carpentry",
+        "issuer_lines": ["UEN 53318822W", "10 Ubi Crescent, #06-55", "+65 8000 0246"],
+        "title": "QUOTATION",
+        "ref": "BW-Q-2610-17",
+        "date": "2 October 2026",
+        "to_lines": ["Mdm Michelle De Souza", "Blk 22 Jalan Membina #09-41"],
+        "body": [
+          "Thank you for inviting us to assess your flat on 30 September. Please find below our quotation for the works discussed.",
+          "Payment terms: 50% deposit on acceptance; balance on completion. Works start 19 October 2026, estimated 5 working days."
+        ],
+        "items": [
+          {"description": "Repaint whole flat (walls and ceilings, 4-room)", "amount": 2600},
+          {"description": "Repair and repaint main door frame", "amount": 350},
+          {"description": "Built-in shoe cabinet, laminate finish", "amount": 1350},
+          {"description": "Protective covering and cleaning", "amount": 0}
+        ],
+        "total": 4300,
+        "payment": {"Bank": "Riverside Savings Bank", "Account name": "Brightwall Painting & Carpentry", "Account no.": "581-206473-390", "Deposit (50%)": "S$2,150.00"},
+        "footer": ["Accepted by the customer on 4 October 2026."],
+        "signature": "Accepted: Michelle De Souza · For Brightwall: Ganesh R."
+      }
+    },
+    "customer_answer": "50% deposit for painting and a shoe cabinet. They came to see the flat last week and I accepted the quotation.",
+    "quick_reply": "A seller",
+    "transfer": {"payee_name": "Brightwall Painting & Carpentry", "account_number": "581-206473-390", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 2150, "note": "BW-Q-2610-17 deposit"},
+    "reviewer_note": "Legit (subtle): a 50% upfront deposit to a new payee, but after a site visit, with an itemised and accepted quotation, and the business's own name on the account."
+  },
+  "ev_0105": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "pdf",
+      "document": {
+        "kind": "invoice",
+        "issuer": "Ah Seng Renovation Works",
+        "issuer_lines": ["UEN 48817265D", "Blk 3 Kaki Bukit Ave 1, #01-08"],
+        "title": "PROGRESS CLAIM 2",
+        "ref": "ASR-PC2-0931",
+        "date": "9 October 2026",
+        "to_lines": ["Ms Grace Low", "Project: bathroom and kitchen works"],
+        "body": [
+          "Progress claim for works completed as of 8 October 2026, under the signed contract dated 2 September 2026 (stage 2 of 3).",
+          "Our bank details are unchanged from the previous claim."
+        ],
+        "items": [
+          {"description": "Kitchen cabinets installed (top and bottom)", "amount": 4200},
+          {"description": "Bathroom wall tiling completed (2 bathrooms)", "amount": 2600}
+        ],
+        "total": 6800,
+        "payment": {"Bank": "Lantern Commerce Bank", "Account name": "Ah Seng Renovation Works", "Account no.": "195-286038-138", "Reference": "ASR-PC2-0931"},
+        "footer": ["Final claim (stage 3) on handover. Thank you for your business."],
+        "signature": "Tan Ah Seng, Proprietor"
+      }
+    },
+    "customer_answer": "Second progress payment to my renovation contractor, to the same account as the first payment.",
+    "quick_reply": "A seller",
+    "transfer": {"payee_name": "Ah Seng Renovation Works", "account_number": "195-286038-138", "bank_name": "Lantern Commerce Bank", "dest_type": "LOCAL_BANK", "amount": 6800, "note": "ASR-PC2-0931"},
+    "reviewer_note": "Legit (subtle): a large amount, but a known payee, the same account as before, and a staged claim for completed work."
+  },
+  "ev_0130": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "SparkleNest Home Cleaning", "subtitle": "+65 8000 0264"},
+      "messages": [
+        {"who": "them", "time": "09:00", "text": "Hi Ms Teo, here's the invoice for your first month of weekly cleaning (October, 4 sessions x 4 hours): S$320. Your cleaner is Aunty Lina."},
+        {"who": "me", "time": "09:30", "text": "Thanks! Aunty Lina did a great job on Tuesday."},
+        {"who": "them", "time": "09:32", "text": "Thank you, we'll let her know 😊 Payment to SparkleNest Services Pte Ltd, Orchid Trust Bank 627-480315-902, ref Teo-Oct. Any time this month is fine."}
+      ]
+    },
+    "customer_answer": "Paying the cleaning company for this month's weekly cleaning.",
+    "quick_reply": "A seller",
+    "transfer": {"payee_name": "SparkleNest Services Pte Ltd", "account_number": "627-480315-902", "bank_name": "Orchid Trust Bank", "dest_type": "LOCAL_BANK", "amount": 320, "note": "Teo-Oct"},
+    "reviewer_note": "Legit: a service already started, a normal amount, no pressure, the company's own account."
+  },
+  "ev_0154": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "安顺电工 阿明", "subtitle": "+65 8000 0276"},
+      "messages": [
+        {"who": "them", "time": "21:45", "text": "王伯，今晚跳电的问题已经处理好了。是厨房电热水壶的插座漏电，已经换了新插座和断路器。"},
+        {"who": "them", "time": "21:46", "text": "材料 S$65，夜间上门费 S$80，人工 S$70，一共 S$215。收据我放在你家桌上了。"},
+        {"who": "me", "time": "21:50", "text": "好的，谢谢你这么晚还过来。"},
+        {"who": "them", "time": "21:52", "text": "不客气。可以转账到公司户口：Kampong Federal Bank 248-731056-904，户名 An Shun Electrical Services。今天或明天转都可以。"},
+        {"who": "me", "time": "22:00", "text": "我现在转。"}
+      ]
+    },
+    "customer_answer": "电工今晚来我家修好了跳电，我付他修理费。",
+    "quick_reply": "A seller",
+    "transfer": {"payee_name": "An Shun Electrical Services", "account_number": "248-731056-904", "bank_name": "Kampong Federal Bank", "dest_type": "LOCAL_BANK", "amount": 215, "note": null},
+    "reviewer_note": "Legit (subtle): an elderly customer paying a new payee at night, but the repair was done in person, it's itemised with a receipt, there's no pressure, and it goes to the company's account."
+  },
+  "ev_0031": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Clara (daughter)", "subtitle": "+65 8000 0213"},
+      "messages": [
+        {"who": "them", "time": "10:15", "text": "Mum, how's your eye today? Remember to put the eye drops in 4 times a day ok."},
+        {"who": "me", "time": "10:30", "text": "Better already. Can see the TV clearly 😊"},
+        {"who": "them", "time": "10:32", "text": "So good! I paid the hospital bill for the cataract op on Tuesday with my card, S$2,380 after MediSave. The receipt is in the folder I left on your table."},
+        {"who": "them", "time": "10:33", "text": "No rush Mum, but when you're free you can transfer to my usual account. Or I'll help you do it on Sunday when I come over."},
+        {"who": "me", "time": "10:40", "text": "I'll do it now, don't want to forget."}
+      ]
+    },
+    "customer_answer": "Paying my daughter back for my cataract operation bill.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Clara De Souza", "account_number": "677-186617-178", "bank_name": "Orchid Trust Bank", "dest_type": "LOCAL_BANK", "amount": 2380, "note": "eye op"},
+    "reviewer_note": "Legit (subtle): an elderly customer and a hospital bill, but it's the daughter's usual account (known payee), a known event with a receipt, and no pressure."
+  },
+  "ev_0043": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "妈妈", "subtitle": "+65 8000 0219"},
+      "messages": [
+        {"who": "them", "time": "19:00", "text": "阿杰，奶奶 80 岁生日的寿宴订好了，11 月 2 号晚上在宏福酒楼，十桌。"},
+        {"who": "them", "time": "19:01", "text": "你和姐姐每人出 S$600，我跟爸爸出其他的。你方便的时候转给我就好。"},
+        {"who": "me", "time": "19:10", "text": "好的妈。是转到你的 Harbour 户口吗？"},
+        {"who": "them", "time": "19:12", "text": "对，Harbour Bank 431-70528-6，Tan Mei Juan。不急哦。"},
+        {"who": "me", "time": "19:13", "text": "好，我现在转。"}
+      ]
+    },
+    "customer_answer": "给妈妈的，分摊奶奶 80 岁寿宴的费用。",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Tan Mei Juan", "account_number": "431-70528-6", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 600, "note": "奶奶寿宴"},
+    "reviewer_note": "Legit: a family event with details, a fair share, the mother's own account, no pressure."
+  },
+  "ev_0064": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "text",
+      "text": "Hi dear, Ethan's school trip to Melaka is confirmed, S$480, and Chloe's piano exam fee is S$215. Can you transfer the total S$695 to my account when you can? I'll pay both tomorrow. Also don't forget dinner at your mum's on Sunday 🙂"
+    },
+    "customer_answer": "Sending my wife money for our kids' school trip and piano exam.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Chua Wen Jun", "account_number": "220-687044-221", "bank_name": "Lantern Commerce Bank", "dest_type": "LOCAL_BANK", "amount": 695, "note": "school trip + piano"},
+    "reviewer_note": "Legit: the wife's known account, specific household expenses that add up, no urgency."
+  },
+  "ev_0073": {
+    "difficulty": "obvious",
+    "evidence": {"format": "none"},
+    "customer_answer": "It's for my son-in-law Kok Wai. My granddaughter is starting university and I promised at Sunday dinner to help with her first term fees. I've sent him money before.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Yeo Kok Wai", "account_number": "806-262625-333", "bank_name": "Lantern Commerce Bank", "dest_type": "LOCAL_BANK", "amount": 3000, "note": "uni fees"},
+    "reviewer_note": "Legit: no screenshot, but a known family payee, the customer's own decision made in person, and an ordinary purpose."
+  },
+  "ev_0092": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "姐姐 佳慧", "subtitle": "+65 8000 0243"},
+      "messages": [
+        {"who": "them", "time": "20:00", "text": "弟，妈妈生日的按摩椅我订了，S$1,200，我们三个人一人 S$400。"},
+        {"who": "me", "time": "20:05", "text": "好啊，妈一定很开心。转到你的户口吗？"},
+        {"who": "them", "time": "20:07", "text": "我换工作后开了一个新户口领薪水，转到这个：Orchid Trust Bank 318-247590-662，户名 Chua Jia Hui。旧的那个快要关掉了。"},
+        {"who": "me", "time": "20:10", "text": "OK，名字是你的就好。"},
+        {"who": "them", "time": "20:11", "text": "哈哈当然是我。周六一起回家吃饭，记得带蛋糕！"}
+      ]
+    },
+    "customer_answer": "跟姐姐分摊妈妈的生日礼物，她开了一个新户口。",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Chua Jia Hui", "account_number": "318-247590-662", "bank_name": "Orchid Trust Bank", "dest_type": "LOCAL_BANK", "amount": 400, "note": "妈妈生日礼物"},
+    "reviewer_note": "Legit (subtle): a 'new account' message, but in an ongoing family chat, in the sister's own name, a small shared gift, and they'll meet on Saturday."
+  },
+  "ev_0115": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "女儿 晓琳", "subtitle": "+65 8000 0258"},
+      "messages": [
+        {"who": "them", "time": "22:10", "text": "妈，下个学期的宿舍费要在 15 号前交，学校的通知我放在家庭群组了。"},
+        {"who": "them", "time": "22:11", "text": "一共 RM5,800，大概 S$1,800。可以转到我在这边开的户口吗？就是上次视频的时候给你看过的那个。"},
+        {"who": "me", "time": "22:20", "text": "好，你把户口资料再发一次。"},
+        {"who": "them", "time": "22:21", "text": "Bunga Raya Mutual Bank MY55 1048 2297，户名 Teo Xiao Lin。谢谢妈，爱你 ❤️"},
+        {"who": "me", "time": "22:30", "text": "收到，我明天早上转。"}
+      ]
+    },
+    "customer_answer": "女儿在吉隆坡读书，要交宿舍费，转到她自己名字的户口。",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Teo Xiao Lin", "account_number": "MY55 1048 2297", "bank_name": "Bunga Raya Mutual Bank", "dest_type": "OVERSEAS", "amount": 1800, "note": "宿舍费"},
+    "reviewer_note": "Legit (subtle): overseas and a new payee, but it's the daughter's own name, the school notice is shared, there was a video call, and the deadline is a week away."
+  },
+  "ev_0131": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Adik Irfan", "subtitle": "+65 8000 0265"},
+      "messages": [
+        {"who": "them", "time": "17:00", "text": "Abang, Mak said you'll help pay for my school camp ya? It's S$150, the letter is in the family chat."},
+        {"who": "me", "time": "17:05", "text": "Ya Mak told me. Send me your account."},
+        {"who": "them", "time": "17:06", "text": "Harbour Bank 290-44817-3, Muhammad Irfan Kassim. Thanks abang!! 🙏"},
+        {"who": "me", "time": "17:10", "text": "Ok sending."}
+      ]
+    },
+    "customer_answer": "Paying for my younger brother's school camp. Our mum asked me to.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Muhammad Irfan Kassim", "account_number": "290-44817-3", "bank_name": "Harbour Bank", "dest_type": "PAYNOW", "amount": 150, "note": "school camp"},
+    "reviewer_note": "Legit: the mother arranged it, a small amount, the school letter is shared, and the brother's own account."
+  },
+  "ev_0132": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "text",
+      "text": "Hi love, the hospital in Manila confirmed Mum's knee surgery for the 20th. As we discussed on our call last night, could you send S$1,500 to my account here (the usual Sampaguita one) so I can pay the deposit on Monday? I'll forward you the estimate. Miss you and the kids, see you at Christmas. Marcus"
+    },
+    "customer_answer": "Sending money to my husband in Manila for his mum's knee surgery, as we discussed.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Marcus Ang", "account_number": "PH87 3119 7839", "bank_name": "Sampaguita Savings", "dest_type": "OVERSEAS", "amount": 1500, "note": "Mum surgery"},
+    "reviewer_note": "Legit (subtle): overseas plus a medical bill sounds like a romance scam, but it's the husband's usual account (known payee), discussed by phone, with no secrecy or pressure."
+  },
+  "ev_0011": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "sms",
+      "header": {"name": "HarbourBk", "subtitle": "Text message"},
+      "messages": [
+        {"who": "them", "time": "08:00", "text": "Harbour Bank：您的 12 个月定期存款（尾号 4410）已于今天到期，本金及利息 S$30,412.50 已转入您的储蓄户口（尾号 2287）。如需续存，请使用 Harbour Bank App。"},
+        {"who": "them", "time": "09:02", "text": "Harbour Bank：您于 10 月 10 日 09:02 新增了收款人 YEO KOK WAI（Orchid Trust Bank）。如非本人操作，请立即拨打您卡片背面的电话。Harbour Bank 不会要求您转账或提供 OTP。"}
+      ]
+    },
+    "customer_answer": "定期存款到期了，我把钱转到自己在 Orchid Trust 的户口，那边的利息比较高。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Yeo Kok Wai", "account_number": "417-382950-664", "bank_name": "Orchid Trust Bank", "dest_type": "LOCAL_BANK", "amount": 30000, "note": "own account"},
+    "reviewer_note": "Legit (subtle): a large amount to a new payee straight after bank SMSes, but the payee is the customer's own name, the SMSes are genuine (no link, no callback number), and the customer decided this alone."
+  },
+  "ev_0032": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "sms",
+      "header": {"name": "HarbourBk", "subtitle": "Text message"},
+      "messages": [
+        {"who": "them", "time": "07:30", "text": "Harbour Bank: Your GIRO deduction to EQUATOR TELECOM on 08/10 was unsuccessful. Please pay the bill directly in the Harbour Bank app to avoid late charges. We will never ask you to click a link."}
+      ]
+    },
+    "customer_answer": "My GIRO for the phone bill failed so I'm paying it myself.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Equator Telecom", "account_number": "164-882432-859", "bank_name": "Kampong Federal Bank", "dest_type": "MERCHANT", "amount": 78.9, "note": "Sep bill"},
+    "reviewer_note": "Legit: a genuine bank SMS with no link or callback number, paying a known biller."
+  },
+  "ev_0033": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Harbour Bank",
+        "from_addr": "alerts@harbourbank.example",
+        "to": "rizal.osman@mail.example",
+        "subject": "Bill reminder: City Power & Water",
+        "date": "Fri, 9 Oct 2026, 08:00",
+        "body": [
+          "Dear Mohd Rizal Osman,",
+          "This is a reminder that your City Power & Water bill of S$132.70 is due on 20 October 2026.",
+          "You can pay it in the Harbour Bank app under Pay Bills. If you have set up GIRO, no action is needed.",
+          "For your security, Harbour Bank will never ask you to click a link to log in, or to transfer money to another account to keep it safe."
+        ]
+      }
+    },
+    "customer_answer": "Paying my electricity bill after the bank's reminder.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "City Power & Water", "account_number": "781-64043-7", "bank_name": "Harbour Bank", "dest_type": "MERCHANT", "amount": 132.7, "note": null},
+    "reviewer_note": "Legit: a genuine bank reminder from the bank's own domain, no link, paying a known biller."
+  },
+  "ev_0038": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "sms",
+      "header": {"name": "HarbourBk", "subtitle": "Text message"},
+      "messages": [
+        {"who": "them", "time": "01:14", "text": "Harbour Bank：您的信用卡（尾号 7782）于 10 月 10 日 01:13 在海外网站有一笔 S$899.00 的交易被我们拦截。如果不是您本人，请在 Harbour Bank App 锁卡，或拨打您卡片背面的电话。我们绝不会要求您转账、提供密码或 OTP。"},
+        {"who": "them", "time": "07:45", "text": "Harbour Bank：您的信用卡（尾号 7782）已按您的要求锁定，新卡将在 5 个工作日内寄出。"}
+      ]
+    },
+    "customer_answer": "信用卡被盗刷后锁了，瑜伽课的月费这个月先用转账付。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Lotus Flow Yoga Studio", "account_number": "460-215873-391", "bank_name": "Riverside Savings Bank", "dest_type": "MERCHANT", "amount": 180, "note": "10月月费"},
+    "reviewer_note": "Legit (subtle): alarming fraud SMSes, but they are genuine (lock the card in the app, call the number on the card, no transfer asked). The payment is an ordinary studio fee."
+  },
+  "ev_0059": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "text",
+      "text": "Harbour Bank: We noticed a login to your account from a new device on 10/10 at 07:42. If this wasn't you, lock your account in the Harbour Bank app or call the number on the back of your card. Harbour Bank will never ask you to transfer money to protect it."
+    },
+    "customer_answer": "That login was me on my new phone. I'm just paying my electricity bill.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "City Power & Water", "account_number": "956-83227-5", "bank_name": "Harbour Bank", "dest_type": "MERCHANT", "amount": 168.35, "note": null},
+    "reviewer_note": "Legit (subtle): a scary-sounding login alert, but it is genuine and unrelated; the payment is a normal bill to a known biller."
+  },
+  "ev_0084": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "text",
+      "text": "Harbour Bank：您的 City Power & Water 账单 S$98.60 将于 10 月 18 日到期。您可以在 Harbour Bank App 的“缴付账单”中付款。如已设置 GIRO，无需任何操作。"
+    },
+    "customer_answer": "银行提醒我电费快到期了，我现在付。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "City Power & Water", "account_number": "813-47896-8", "bank_name": "Harbour Bank", "dest_type": "MERCHANT", "amount": 98.6, "note": null},
+    "reviewer_note": "Legit: a genuine bill reminder with no link, and a small payment to a known biller."
+  },
+  "ev_0090": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "sms",
+      "header": {"name": "HarbourBk", "subtitle": "Text message"},
+      "messages": [
+        {"who": "them", "time": "09:10", "text": "Harbour Bank: Your GIRO payment of S$312.40 to EVERGREEN LIFE ASSURANCE on 05/10 was unsuccessful due to insufficient funds. Please arrange payment with the insurer directly to keep your policy in force. For queries, call the number on the back of your card."}
+      ]
+    },
+    "customer_answer": "My insurance GIRO failed, so I'm paying the premium to the insurer by transfer. I got their account number from their website.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Evergreen Life Assurance", "account_number": "702-559184-236", "bank_name": "Orchid Trust Bank", "dest_type": "MERCHANT", "amount": 312.4, "note": "policy premium"},
+    "reviewer_note": "Legit (subtle): a 'payment failed' message is a common phishing hook, but this SMS has no link or callback number, and the customer paid the insurer using details they looked up themselves."
+  },
+  "ev_0143": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "sms",
+      "header": {"name": "HarbourBk", "subtitle": "Text message"},
+      "messages": [
+        {"who": "them", "time": "12:31", "text": "Harbour Bank: You added a new payee KUMAR TAILORING (Lantern Commerce Bank) on 10/10 at 12:30. If this wasn't you, call the number on the back of your card. We will never ask you to transfer money to another account."}
+      ]
+    },
+    "customer_answer": "Paying the tailor for my daughter's wedding outfit. I added them as a payee just now, this is the bank's confirmation.",
+    "quick_reply": "A seller",
+    "transfer": {"payee_name": "Kumar Tailoring", "account_number": "382-509716-245", "bank_name": "Lantern Commerce Bank", "dest_type": "LOCAL_BANK", "amount": 350, "note": "wedding outfit"},
+    "reviewer_note": "Legit: the customer's own new payee, confirmed by a genuine bank SMS, for an ordinary purchase."
+  },
+  "ev_0016": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Golden Grain Supplies – Accounts",
+        "from_addr": "accounts@goldengrain.example",
+        "to": "priya.pillai@mail.example",
+        "subject": "Invoice GG-260912 (September deliveries)",
+        "date": "Mon, 5 Oct 2026, 09:20",
+        "body": [
+          "Hi Priya,",
+          "Please find attached invoice GG-260912 for September deliveries (4 deliveries, DOs signed by your staff): S$4,315.00, payable within 30 days.",
+          "Payment to our account as usual, Harbour Bank 685-10329-2. Thank you for your continued support!",
+          "Regards,\nAngela Koh\nAccounts, Golden Grain Supplies"
+        ]
+      }
+    },
+    "customer_answer": "Paying our regular rice supplier's monthly invoice.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Golden Grain Supplies", "account_number": "685-10329-2", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 4315, "note": "GG-260912"},
+    "reviewer_note": "Legit: a known supplier, the same account as always, 30-day terms, matches signed delivery orders."
+  },
+  "ev_0027": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "pdf",
+      "document": {
+        "kind": "invoice",
+        "issuer": "Mutiara Packaging Supplies Pte Ltd",
+        "issuer_lines": ["UEN 201922187N", "8 Senoko Loop, #04-02", "sales@mutiara-packaging.example · +65 8000 0211"],
+        "title": "TAX INVOICE",
+        "ref": "MPS-INV-10427",
+        "date": "6 October 2026",
+        "to_lines": ["Rahimah Hamid", "Rahimah's Kueh Kitchen", "Your PO: RK-PO-0915 (quotation MPS-Q-0882 accepted 15 Sep)"],
+        "body": [
+          "Goods delivered on 2 October 2026 (DO-55120, signed by your staff). Payment terms: 30 days from invoice date."
+        ],
+        "items": [
+          {"description": "Paper food boxes, kraft, 8 inch x 5,000 pcs", "amount": 2950},
+          {"description": "Paper food boxes, kraft, 5 inch x 8,000 pcs", "amount": 3280},
+          {"description": "Printed sleeves with logo x 10,000 pcs", "amount": 1630}
+        ],
+        "total": 7860,
+        "payment": {"Bank": "Riverside Savings Bank", "Account name": "Mutiara Packaging Supplies Pte Ltd", "Account no.": "566-180427-913", "Reference": "MPS-INV-10427"},
+        "footer": ["Bank details are the same as on our quotation MPS-Q-0882."],
+        "signature": "Accounts, Mutiara Packaging Supplies"
+      }
+    },
+    "customer_answer": "First invoice from our new packaging supplier. We ordered from their quotation last month and the goods arrived last week.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Mutiara Packaging Supplies Pte Ltd", "account_number": "566-180427-913", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 7860, "note": "MPS-INV-10427"},
+    "reviewer_note": "Legit (subtle): a large first payment to a new supplier, but there's a full quotation → PO → delivery → invoice trail, consistent bank details, and 30-day terms."
+  },
+  "ev_0053": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "text",
+      "text": "Hi Encik Faizal, Eastline Logistics here. September statement: 9 deliveries, S$2,970.00 (invoice EL-0926-114, matches the DOs you signed). Payment to our usual Harbour Bank account. Thank you! – Mei Ling, Accounts"
+    },
+    "customer_answer": "Paying our logistics company's September statement.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Eastline Logistics", "account_number": "288-31669-1", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 2970, "note": "EL-0926-114"},
+    "reviewer_note": "Legit: a known supplier, the usual account, the amount matches signed delivery orders."
+  },
+  "ev_0054": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Kopi Craft Roasters",
+        "from_addr": "hello@kopicraft.example",
+        "to": "ryan.dcruz@mail.example",
+        "subject": "RE: Wholesale quotation – first order invoice",
+        "date": "Wed, 7 Oct 2026, 15:05",
+        "body": [
+          "Hi Ryan,",
+          "Thanks for confirming the quotation after the tasting session at our roastery last week. Your first order (20 kg house blend, 10 kg single origin) was delivered this morning, and the invoice KCR-2210 for S$1,940.00 is attached.",
+          "Payment terms are 14 days. Our bank details are on the invoice and on the quotation you signed: Kopi Craft Roasters Pte Ltd, Lantern Commerce Bank 349-702186-455.",
+          "If anything is unclear, feel free to call me.",
+          "Cheers,\nDesmond\nKopi Craft Roasters, +65 8000 0223"
+        ]
+      }
+    },
+    "customer_answer": "First invoice from a new coffee bean supplier for my café. I visited their roastery and signed the quotation.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Kopi Craft Roasters Pte Ltd", "account_number": "349-702186-455", "bank_name": "Lantern Commerce Bank", "dest_type": "LOCAL_BANK", "amount": 1940, "note": "KCR-2210"},
+    "reviewer_note": "Legit (subtle): an emailed invoice with bank details from a new supplier (the BEC pattern), but the customer started the relationship, visited in person, the details match the signed quotation, and the terms are 14 days."
+  },
+  "ev_0091": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "pdf",
+      "document": {
+        "kind": "invoice",
+        "issuer": "鸿发五金建材 Hong Fa Hardware Pte Ltd",
+        "issuer_lines": ["UEN 201211046C", "No. 15 Sungei Kadut Street 2", "+65 8000 0242"],
+        "title": "发票 TAX INVOICE",
+        "ref": "HF-26-3318",
+        "date": "2026年10月6日",
+        "to_lines": ["陈家成 先生", "Kah Seng Builders", "订单号 PO-KS-0921（报价单 HF-Q-0911）"],
+        "body": [
+          "货品已于 2026 年 10 月 3 日送达工地，送货单 DO-7742 已由贵方签收。付款期限：发票日起 30 天。"
+        ],
+        "items": [
+          {"description": "水泥 50kg x 120 包", "amount": 1680},
+          {"description": "钢筋 12mm x 200 支", "amount": 2840},
+          {"description": "运输费", "amount": 800}
+        ],
+        "total": 5320,
+        "payment": {"银行": "Kampong Federal Bank", "户名": "Hong Fa Hardware Pte Ltd", "账号": "209-563817-402", "备注": "HF-26-3318"},
+        "footer": ["银行资料与报价单相同。"],
+        "signature": "鸿发五金建材 会计部"
+      }
+    },
+    "customer_answer": "付新的建材供应商的发票，货已经送到工地了。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Hong Fa Hardware Pte Ltd", "account_number": "209-563817-402", "bank_name": "Kampong Federal Bank", "dest_type": "LOCAL_BANK", "amount": 5320, "note": "HF-26-3318"},
+    "reviewer_note": "Legit (subtle): a new supplier and a large amount, but there's a quotation → PO → signed delivery → invoice trail, and the company's own account matches the quotation."
+  },
+  "ev_0095": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Bayview Printing Services – Accounts",
+        "from_addr": "accounts@bayview-printing.example",
+        "to": "siti.salleh@mail.example",
+        "subject": "Invoice BP-11861 – gentle reminder",
+        "date": "Thu, 8 Oct 2026, 11:30",
+        "body": [
+          "Hi Siti,",
+          "A gentle reminder that invoice BP-11861 (S$3,150.00, brochures and banners delivered on 18 Sep) is due this Friday.",
+          "We'd appreciate payment by then as we're closing our quarter. Bank details are unchanged: Harbour Bank 527-85467-3.",
+          "Thanks so much,\nMichelle Tan\nAccounts, Bayview Printing Services"
+        ]
+      }
+    },
+    "customer_answer": "Paying our usual printing company's invoice before the due date.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Bayview Printing Services", "account_number": "527-85467-3", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 3150, "note": "BP-11861"},
+    "reviewer_note": "Legit (subtle): a 'please pay by Friday' email, but from the supplier's real domain, bank details explicitly unchanged, and a known payee."
+  },
+  "ev_0116": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Prima Kitchen Equipment",
+        "from_addr": "service@primakitchen.example",
+        "to": "clara.chua@mail.example",
+        "subject": "Service report and invoice PKE-S-0472",
+        "date": "Tue, 6 Oct 2026, 17:45",
+        "body": [
+          "Dear Ms Chua,",
+          "Thank you for having our technician on Monday. Attached is the service report for the combi oven and the two chillers, with invoice PKE-S-0472 for S$1,680.00 (parts S$920, labour S$760).",
+          "Payment within 30 days to our usual account. Your next preventive maintenance is scheduled for April 2027.",
+          "Best regards,\nPrima Kitchen Equipment Service Team"
+        ]
+      }
+    },
+    "customer_answer": "Paying our kitchen equipment company for Monday's servicing.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Prima Kitchen Equipment", "account_number": "708-29119-3", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 1680, "note": "PKE-S-0472"},
+    "reviewer_note": "Legit: a known supplier, work already done, usual account, 30-day terms."
+  },
+  "ev_0120": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "text",
+      "text": "蔡老板您好，九月份的货款一共 S$3,688（发票号 GG-0930-27，跟送货单一样）。跟平常一样转到我们的户口就可以了。谢谢！—— 金谷供应 Golden Grain，Mei"
+    },
+    "customer_answer": "付米商九月份的货款，跟平常一样。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Golden Grain Supplies", "account_number": "159-429968-226", "bank_name": "Lantern Commerce Bank", "dest_type": "LOCAL_BANK", "amount": 3688, "note": "GG-0930-27"},
+    "reviewer_note": "Legit: a known supplier, the usual account, the amount matches the delivery orders."
+  }
+}

@@ -15,6 +15,7 @@ BREW_JDK := /opt/homebrew/opt/openjdk@21/bin
 export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
 
 .PHONY: help setup dev dev-api dev-web emulators test lint format seed-local seed-cloud history \
+        playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
         eval deploy-api deploy-web smoke
 
 help: ## List the targets
@@ -71,6 +72,24 @@ seed-cloud: ## Regenerate synthetic data -> BigQuery (asia-southeast1) + Firesto
 
 history: ## Print a customer's 90-day history (CUSTOMER=cust_001 by default)
 	$(UV) run python -m app.data.seed history $(or $(CUSTOMER),cust_001)
+
+playwright: ## One-time: Playwright + headless Chromium for the evidence renderers (datagen group)
+	$(UV) run --group datagen playwright install --only-shell chromium
+
+eval-drafts: ## Eval set: slot plan + drafts -> data/eval/drafts.jsonl + REVIEW.md (needs seed-local)
+	$(UV) run python ../data/generate/make_eval_messages.py draft
+
+eval-render: ## Eval set: render chat/SMS/email PNGs and PDFs into data/eval/img|pdf
+	$(UV) run --group datagen python ../data/generate/render_chats.py
+
+eval-dataset: eval-render ## Eval set: render, then write data/eval/cases.jsonl + eval/TEST_SPLIT_HASH
+	$(UV) run python ../data/generate/make_eval_messages.py assemble
+
+eval-verify: ## Check that the frozen test split (cases + evidence files) is unchanged
+	$(UV) run python ../data/generate/make_eval_messages.py verify
+
+demo-evidence: ## Render the demo personas' evidence into data/demo/
+	$(UV) run --group datagen python ../data/generate/render_chats.py --demo
 
 eval: ## phase 09: run the benchmark and write eval/reports/benchmark.md
 	@echo "eval is implemented in phase 09 (prompts/phase-09-benchmark.md)"; exit 1

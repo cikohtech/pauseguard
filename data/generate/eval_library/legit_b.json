@@ -1,0 +1,668 @@
+{
+  "ev_0020": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Tidewater Securities",
+        "from_addr": "service@tidewater-securities.example",
+        "to": "siewhwa.chan@mail.example",
+        "subject": "您的证券账户已开通",
+        "date": "2026年10月8日 10:12",
+        "body": [
+          "陈秀华 您好，",
+          "感谢您在 Tidewater Securities 开户。您的现金交易账户（账号 TW-558213）已经开通。",
+          "如需入金，请从您本人名下的银行户口转账至：Tidewater Securities 客户信托户口，Harbour Bank 300-41875-2，备注请填写您的账号 TW-558213。",
+          "投资涉及风险，股价可升可跌。Tidewater 的员工绝不会要求您把钱转到个人户口，或保证任何回报。",
+          "Tidewater Securities 客户服务部"
+        ]
+      }
+    },
+    "customer_answer": "我在证券公司开了户，第一次入金买 ETF。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Tidewater Securities", "account_number": "300-41875-2", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 2000, "note": "TW-558213"},
+    "reviewer_note": "Legit: a licensed broker's onboarding email from its own domain, a trust account in the broker's name, a risk warning, no promised returns."
+  },
+  "ev_0045": {
+    "difficulty": "obvious",
+    "evidence": {"format": "none"},
+    "customer_answer": "Topping up my brokerage account to buy more index ETFs. I do this every few months.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Keystone Invest Brokerage", "account_number": "795-71187-1", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 5000, "note": null},
+    "reviewer_note": "Legit: a regular top-up to a known broker, the customer's own decision."
+  },
+  "ev_0081": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Keystone Invest Brokerage – Margin Desk",
+        "from_addr": "margin@keystone-invest.example",
+        "to": "kahseng.low@mail.example",
+        "subject": "Margin call notice: account KIB-204417",
+        "date": "Fri, 9 Oct 2026, 18:05",
+        "body": [
+          "Dear Low Kah Seng,",
+          "Following today's market movement, the equity in your margin account KIB-204417 is below the maintenance requirement. The shortfall is S$2,846.20.",
+          "Please deposit at least this amount, or reduce your positions, by 5pm on 14 October 2026. Otherwise we may sell some of your positions to restore the margin.",
+          "You can view the details in the Keystone app. Deposits go to your Keystone client trust account as usual; never transfer to any other account.",
+          "Keystone Invest Brokerage, Margin Desk"
+        ]
+      }
+    },
+    "customer_answer": "Margin call from my broker, I'm topping up so they don't sell my shares.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Keystone Invest Brokerage", "account_number": "955-12134-2", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 3000, "note": "KIB-204417"},
+    "reviewer_note": "Legit (subtle): 'deposit or we sell your positions' looks like a scam top-up, but it's a known broker, its own domain, the usual trust account, an option to reduce positions instead, and a precise shortfall."
+  },
+  "ev_0085": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "text",
+      "text": "Tidewater Securities: Contract note TS-CN-7730185. You BOUGHT 3,000 units of a REIT ETF at S$1.402 on 09/10/2026. Settlement amount S$4,212.60 is due on 13/10/2026 (T+2). Please pay to your Tidewater trust account to avoid forced selling and late charges. Details in the Tidewater app."
+    },
+    "customer_answer": "Paying for the ETF shares I bought on Friday. It's the settlement for my broker.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Tidewater Securities", "account_number": "692-392553-113", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 4212.6, "note": "TS-CN-7730185"},
+    "reviewer_note": "Legit (subtle): 'pay or forced selling' wording, but it's a standard settlement note for a trade the customer made, to a known broker's trust account."
+  },
+  "ev_0118": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "text",
+      "text": "Keystone Invest Brokerage：您的每月定期投资计划将于 10 月 15 日扣款 S$1,000。请确保您的 Keystone 账户在扣款日前有足够资金。如需更改计划，请登录 Keystone App。"
+    },
+    "customer_answer": "每个月的定期投资，我把钱转进证券账户。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Keystone Invest Brokerage", "account_number": "732-406999-607", "bank_name": "Kampong Federal Bank", "dest_type": "LOCAL_BANK", "amount": 1000, "note": "RSP Oct"},
+    "reviewer_note": "Legit: a routine monthly investment plan with a known broker."
+  },
+  "ev_0146": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Tidewater 交易代表 Vincent Ho", "subtitle": "+65 8000 0273"},
+      "messages": [
+        {"who": "them", "time": "09:40", "text": "张先生早。您昨天让我帮您留意的那两支蓝筹股，今天开盘价跟您设定的价位差不多。"},
+        {"who": "me", "time": "09:45", "text": "好，那就照我们说的，各买一手。"},
+        {"who": "them", "time": "09:52", "text": "已经帮您下单成交，合约单会寄到您的电邮。总额 S$8,431.50，T+2 结算。"},
+        {"who": "them", "time": "09:53", "text": "提醒您，股票有涨有跌，我没办法保证收益。款项请照常转到您的 Tidewater 信托户口，不要转给任何个人。我的代表编号 TR-30418 可以在 Tidewater 网站查询。"},
+        {"who": "me", "time": "10:05", "text": "明白，我现在转 8500 进去。"}
+      ]
+    },
+    "customer_answer": "我让证券公司的交易代表帮我买了两支股票，现在付款到我的证券账户。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Tidewater Securities", "account_number": "278-63892-0", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 8500, "note": "settlement"},
+    "reviewer_note": "Legit (subtle): an investment chat with a 'representative' looks like an investment-group scam, but it's the customer's instruction, a risk warning, a verifiable rep number, and the usual trust account at a known broker."
+  },
+  "ev_0149": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Keystone Invest Brokerage",
+        "from_addr": "advisory@keystone-invest.example",
+        "to": "syafiq.osman@mail.example",
+        "subject": "Your bond fund subscription: confirmation of instructions",
+        "date": "Thu, 8 Oct 2026, 14:20",
+        "body": [
+          "Dear Mr Syafiq Osman,",
+          "Thank you for meeting your representative, Ms Tan Hui Ling, at our Raffles Place office on 7 October. As instructed, we will subscribe S$20,000 into the Keystone Short-Duration Bond Fund for your account KIB-118092.",
+          "Please transfer the subscription amount to your Keystone client trust account. The fund's indicative yield is around 3.4% a year. This is not guaranteed, and the value of units can go down as well as up. The product highlights sheet is attached.",
+          "If you did not give these instructions, please call the number on our website.",
+          "Keystone Invest Brokerage"
+        ]
+      }
+    },
+    "customer_answer": "I'm putting money into a bond fund I discussed with my broker at their office.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Keystone Invest Brokerage", "account_number": "139-246841-705", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 20000, "note": "KIB-118092"},
+    "reviewer_note": "Legit (subtle): an elderly customer and a large investment email, but it's an in-person meeting, a known broker and trust account, a modest non-guaranteed yield, and risk disclosure."
+  },
+  "ev_0159": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Nimbus Crypto Exchange",
+        "from_addr": "support@nimbus-exchange.example",
+        "to": "haziq.abdullah@mail.example",
+        "subject": "Your account is verified – how to deposit SGD",
+        "date": "Wed, 7 Oct 2026, 12:00",
+        "body": [
+          "Hi Haziq,",
+          "Your identity verification is complete and your Nimbus account is ready.",
+          "To deposit SGD, transfer from a bank account in your own name to: Nimbus Crypto Exchange, account 967-205418-337, with your unique reference NX-88120 in the transfer note.",
+          "Digital assets are highly volatile and you may lose all of your money. Nimbus staff will never message you first about investments or ask you to send funds to a third party.",
+          "Nimbus Crypto Exchange"
+        ]
+      }
+    },
+    "customer_answer": "I opened an account on a crypto exchange myself and I'm depositing a small amount to try it.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Nimbus Crypto Exchange", "account_number": "967-205418-337", "bank_name": "Nimbus Crypto Exchange", "dest_type": "CRYPTO_EXCHANGE", "amount": 1500, "note": "NX-88120"},
+    "reviewer_note": "Legit: a crypto destination and a new payee (scary transaction features), but the customer opened the account themselves on an established exchange, it's their own reference, there's a risk warning and no third party."
+  },
+  "ev_0035": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Sunbeam Children's Home",
+        "from_addr": "giving@sunbeamhome.example",
+        "to": "huimin.ng@mail.example",
+        "subject": "Year-end appeal: help our children start 2027 well",
+        "date": "Mon, 5 Oct 2026, 10:00",
+        "body": [
+          "Dear Mdm Ng,",
+          "Thank you for visiting our open house in August. This year-end, we hope to raise funds for school supplies and tuition for 60 children in our care.",
+          "If you would like to give, you may donate through our website or by bank transfer to Sunbeam Children's Home, Orchid Trust Bank 612-308745-190, with your name in the reference. Donations are tax-deductible; please include your NRIC in the form on our website if you want a tax receipt.",
+          "Any amount helps, and there is no deadline. Thank you for caring.",
+          "Sunbeam Children's Home (Registered Charity, UEN T08CC4521K)"
+        ]
+      }
+    },
+    "customer_answer": "A donation to a children's home I visited in August.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Sunbeam Children's Home", "account_number": "612-308745-190", "bank_name": "Orchid Trust Bank", "dest_type": "LOCAL_BANK", "amount": 200, "note": "Ng Hui Min"},
+    "reviewer_note": "Legit: a registered charity the customer visited, paid to the charity's own name, no deadline or pressure."
+  },
+  "ev_0088": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Asia Relief Network (Singapore)",
+        "from_addr": "appeals@asiarelief.example",
+        "to": "suresh.nair@mail.example",
+        "subject": "Emergency appeal: earthquake relief",
+        "date": "Thu, 8 Oct 2026, 07:30",
+        "body": [
+          "Dear Mr Nair,",
+          "As a past supporter, we're writing about this week's earthquake in the region. Our partner teams are already on the ground providing shelter, food and clean water, and the need is urgent.",
+          "You can give through our website or by bank transfer to Asia Relief Network (Singapore), Lantern Commerce Bank 455-701392-836. Every dollar goes to the relief effort, and we will publish a full report of how funds were used.",
+          "Asia Relief Network (Singapore), Registered Charity No. 02145, UEN S06SS0213L"
+        ]
+      }
+    },
+    "customer_answer": "Donating to an earthquake relief appeal from a charity I've given to before.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Asia Relief Network (Singapore)", "account_number": "455-701392-836", "bank_name": "Lantern Commerce Bank", "dest_type": "LOCAL_BANK", "amount": 500, "note": "earthquake relief"},
+    "reviewer_note": "Legit (subtle): disaster 'urgent' appeals are a scam pattern, but this is a registered charity the customer has given to before, paid to the charity's own name, with no personal account or deadline."
+  },
+  "ev_0106": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "text",
+      "text": "Forwarded from the Leong Hua Temple committee: Dear devotees, the temple roof restoration fund has reached 78% of its target. Thank you for your generosity! If you wish to contribute, please transfer to Leong Hua Temple, Kampong Federal Bank 371-640258-913, and write your name and phone number in the reference so we can issue an official receipt (UEN T12SS0088B). You may also give at the temple office. Amituofo 🙏"
+    },
+    "customer_answer": "Donation for the roof repair at the temple I go to every week.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Leong Hua Temple", "account_number": "371-640258-913", "bank_name": "Kampong Federal Bank", "dest_type": "LOCAL_BANK", "amount": 1000, "note": "Marcus Sim roof fund"},
+    "reviewer_note": "Legit (subtle): an elderly customer and a forwarded appeal for a large donation, but it's their own temple, the temple's own account, an official receipt, and the option to give in person."
+  },
+  "ev_0113": {
+    "difficulty": "obvious",
+    "evidence": {"format": "none"},
+    "customer_answer": "每个月固定捐款给仁心慈善 Kindred Hearts，这个月多捐一点。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Kindred Hearts Charity", "account_number": "297-524130-897", "bank_name": "Lantern Commerce Bank", "dest_type": "LOCAL_BANK", "amount": 300, "note": null},
+    "reviewer_note": "Legit: a regular donation to a charity the customer already pays."
+  },
+  "ev_0136": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "text",
+      "text": "仁心慈善 Kindred Hearts：感谢您去年的支持！今年的“温暖冬衣”募捐活动只剩最后三天，我们希望为 300 位独居老人准备冬衣和日用品。如果您愿意支持，可以照常转账到本会户口，或在活动网站捐款。捐款可扣税，收据将电邮给您。（注册慈善团体，UEN S99CC0451E）"
+    },
+    "customer_answer": "仁心慈善的募捐活动快结束了，我跟去年一样捐一点。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Kindred Hearts Charity", "account_number": "854-350778-161", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 100, "note": "温暖冬衣"},
+    "reviewer_note": "Legit (subtle): 'last 3 days' urgency, but a known charity, the usual account, a tax receipt, and a small amount."
+  },
+  "ev_0138": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Grandson Ethan", "subtitle": "+65 8000 0268"},
+      "messages": [
+        {"who": "them", "time": "19:00", "text": "Ah Gong! I'm running the 21K next month to raise money for Serenity Hospice, where Ah Ma was cared for last year."},
+        {"who": "them", "time": "19:01", "text": "If you want to support, please donate to the hospice directly, not to me ok. Serenity Hospice, Orchid Trust Bank 238-570914-662, put 'Ethan run' in the reference."},
+        {"who": "me", "time": "19:20", "text": "Good boy. Ah Gong will donate. You train properly, don't get injured."},
+        {"who": "them", "time": "19:22", "text": "Haha ok! Mum will bring you to watch at the finish line 😄"}
+      ]
+    },
+    "customer_answer": "My grandson is running for the hospice that looked after my late wife. I'm donating to the hospice.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Serenity Hospice", "account_number": "238-570914-662", "bank_name": "Orchid Trust Bank", "dest_type": "LOCAL_BANK", "amount": 200, "note": "Ethan run"},
+    "reviewer_note": "Legit (subtle): an elderly customer and a family member asking for money, but the money goes to the hospice itself (not the grandson), with shared family context and no urgency."
+  },
+  "ev_0139": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "pdf",
+      "document": {
+        "kind": "letter",
+        "issuer": "慈光福利协会 Ci Guang Welfare Society",
+        "issuer_lines": ["注册慈善团体 No. 01522 · UEN S87SS0157K", "Blk 210 Toa Payoh Lor 8, #01-15"],
+        "title": "2026 年度乐龄关怀募捐",
+        "ref": "CG-2026-AP",
+        "date": "2026年9月28日",
+        "to_lines": ["王文俊 先生"],
+        "body": [
+          "感谢您多年来关心本会的乐龄关怀服务。本年度我们将为 450 位乐龄人士提供送餐及陪诊服务。",
+          "如您愿意支持，可通过银行转账、支票或到本会办公室捐款。所有捐款可扣税，本会将寄上正式收据。",
+          "捐款多少随心，没有截止日期。"
+        ],
+        "payment": {"银行": "Riverside Savings Bank", "户名": "Ci Guang Welfare Society", "账号": "506-284190-337", "备注": "请填写姓名及电话"},
+        "footer": ["本会不会以电话或短信要求捐款人转账至个人户口。"],
+        "signature": "慈光福利协会 会长 林德明"
+      }
+    },
+    "customer_answer": "捐款给慈光福利协会的乐龄关怀服务。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Ci Guang Welfare Society", "account_number": "506-284190-337", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 300, "note": "王文俊"},
+    "reviewer_note": "Legit: a registered charity's appeal letter, no deadline, paid to the charity's own name, with several ways to give."
+  },
+  "ev_0140": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Farhan (colleague)", "subtitle": "+65 8000 0270"},
+      "messages": [
+        {"who": "them", "time": "12:30", "text": "Hi Kok Wai! I'm doing the 10K charity run for the Kidney Care Foundation on 1 Nov. If you'd like to sponsor, any amount is fine 🙂"},
+        {"who": "them", "time": "12:31", "text": "You can donate straight to the foundation: Kidney Care Foundation, Harbour Bank 518-30927-4, reference 'Farhan 10K'. They'll email you a tax receipt."},
+        {"who": "me", "time": "12:40", "text": "Sure, good luck for the run! See you at the pantry later."}
+      ]
+    },
+    "customer_answer": "Sponsoring my colleague's charity run, paying the foundation directly.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Kidney Care Foundation", "account_number": "518-30927-4", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 50, "note": "Farhan 10K"},
+    "reviewer_note": "Legit: a colleague's sponsorship request, paid to the foundation itself, a small amount, no pressure."
+  },
+  "ev_0009": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Xin Yi 🍲", "subtitle": "+65 8000 0203"},
+      "messages": [
+        {"who": "them", "time": "22:05", "text": "今晚的火锅好好吃！账单一共 S$152，四个人每人 S$38。"},
+        {"who": "them", "time": "22:06", "text": "我先刷卡了，你们方便的时候转给我就好，不急～"},
+        {"who": "me", "time": "22:10", "text": "谢谢 Xin Yi！你的户口是哪个？"},
+        {"who": "them", "time": "22:11", "text": "Harbour Bank 274-83915-0，Lim Xin Yi。下次轮到你请喝奶茶哈哈"}
+      ]
+    },
+    "customer_answer": "跟朋友吃火锅，把我那份钱转给先付账的朋友。",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Lim Xin Yi", "account_number": "274-83915-0", "bank_name": "Harbour Bank", "dest_type": "PAYNOW", "amount": 38, "note": "火锅"},
+    "reviewer_note": "Legit: a shared dinner the customer was at, the amount adds up, the friend's own name, no rush."
+  },
+  "ev_0015": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "text",
+      "text": "Yu Xuan! Chalet total was S$510 for 6 of us, so S$85 each. Pay me back whenever, same account as last time ok. Thanks for helping with the BBQ!! – Ganesh"
+    },
+    "customer_answer": "Paying my friend back for my share of the chalet we booked together.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Ganesh Nair", "account_number": "761-484400-268", "bank_name": "Orchid Trust Bank", "dest_type": "PAYNOW", "amount": 85, "note": "chalet"},
+    "reviewer_note": "Legit: a known friend's usual account, a shared event, the amount adds up, no urgency."
+  },
+  "ev_0065": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "text",
+      "text": "[Japan Trip 2026 group] Jonathan: Guys, the Osaka apartment came to S$1,680 for 4 of us = S$420 each. Pay me back today pls 🙏 my card bill is due tomorrow haha. Jonathan Tay, Riverside Savings Bank 504-917238-610. Kok Wai, Sam, Bernard 👆"
+    },
+    "customer_answer": "Paying my friend Jonathan for my share of our Japan trip apartment. He booked it for the four of us.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Jonathan Tay", "account_number": "504-917238-610", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 420, "note": "Osaka apartment"},
+    "reviewer_note": "Legit (subtle): 'pay me back today pls' urgency to a new payee, but it's a known friend in a group chat, a shared trip, the amounts add up, and it's his own name."
+  },
+  "ev_0097": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Arun 🏝️", "subtitle": "+65 8000 0247"},
+      "messages": [
+        {"who": "them", "time": "21:00", "text": "Bro, the Bali villa needs the full deposit by tomorrow noon or they release it. S$1,800 for 5 of us, so S$360 each."},
+        {"who": "them", "time": "21:01", "text": "I'll pay the villa tonight with my card. Can you send me your share by tonight? Same PayNow as usual."},
+        {"who": "me", "time": "21:10", "text": "Ok no prob. Send me the booking confirmation also."},
+        {"who": "them", "time": "21:12", "text": "Done, just posted it in our trip group 👍"}
+      ]
+    },
+    "customer_answer": "Paying my friend Arun for my share of the Bali villa for our trip.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Arun Pillai", "account_number": "612-76431-5", "bank_name": "Harbour Bank", "dest_type": "PAYNOW", "amount": 360, "note": "Bali villa"},
+    "reviewer_note": "Legit (subtle): a 'by tonight' deadline, but it's a known friend's usual account, the booking is shared in the group, and the amount adds up."
+  },
+  "ev_0099": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "同事 雅琪", "subtitle": "+65 8000 0249"},
+      "messages": [
+        {"who": "them", "time": "15:30", "text": "淑芬姐，美华生了个男宝宝！我们部门一起送一个礼篮和红包，每人 S$30。"},
+        {"who": "them", "time": "15:31", "text": "可以今天下班前转给我吗？我明天早上去买礼篮，下午我们一起去探望她。"},
+        {"who": "me", "time": "15:40", "text": "好消息！转到你哪个户口？"},
+        {"who": "them", "time": "15:41", "text": "Orchid Trust Bank 433-260817-905，Lee Ya Qi。谢谢姐～"}
+      ]
+    },
+    "customer_answer": "部门同事一起凑钱送礼给刚生孩子的同事，转给负责收钱的同事。",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Lee Ya Qi", "account_number": "433-260817-905", "bank_name": "Orchid Trust Bank", "dest_type": "LOCAL_BANK", "amount": 30, "note": "宝宝礼物"},
+    "reviewer_note": "Legit (subtle): a 'today' deadline to a new payee, but it's a colleague the customer works with, a small shared gift, and the colleague's own name."
+  },
+  "ev_0119": {
+    "difficulty": "subtle",
+    "evidence": {"format": "none"},
+    "customer_answer": "Paying back my friend Hidayah for the concert tickets she bought for both of us. She asked me to pay today because her card bill is due.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Nur Hidayah Ismail", "account_number": "773-317810-166", "bank_name": "Lantern Commerce Bank", "dest_type": "PAYNOW", "amount": 296, "note": "concert tickets"},
+    "reviewer_note": "Legit (subtle): 'pay today', but it's a known friend's usual account and an ordinary shared purchase."
+  },
+  "ev_0156": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Farah (birthday planner 🎂)", "subtitle": "+65 8000 0277"},
+      "messages": [
+        {"who": "them", "time": "23:10", "text": "Thanks for coming to Aisha's birthday dinner! Total was S$520 for 8 of us (Aisha's portion shared), so S$65 each."},
+        {"who": "me", "time": "23:15", "text": "Thanks for organising! Sending now."},
+        {"who": "them", "time": "23:16", "text": "Farah Aziz, Kampong Federal Bank 615-302948-771. No rush ya 😊"}
+      ]
+    },
+    "customer_answer": "My share of a friend's birthday dinner, paying the friend who organised it.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Farah Aziz", "account_number": "615-302948-771", "bank_name": "Kampong Federal Bank", "dest_type": "PAYNOW", "amount": 65, "note": "Aisha bday"},
+    "reviewer_note": "Legit: a shared dinner, the amount adds up, the organiser's own name, no rush."
+  },
+  "ev_0158": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Desaru 自驾游 🚗", "subtitle": "4 位成员"},
+      "messages": [
+        {"who": "them", "time": "20:00", "text": "俊杰：租车 S$180 + 油钱 S$68 + 过关费 S$40，一共 S$288，四个人每人 S$72。"},
+        {"who": "them", "time": "20:01", "text": "俊杰：转给我就好：Lantern Commerce Bank 352-718406-219，Ng Jun Jie。"},
+        {"who": "them", "time": "20:05", "text": "Wei Lin：转了！谢谢俊杰开车 🙏"},
+        {"who": "me", "time": "20:10", "text": "我也马上转～下次去哪里？"}
+      ]
+    },
+    "customer_answer": "跟朋友去 Desaru 自驾游，把我的那份车费转给开车的朋友。",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Ng Jun Jie", "account_number": "352-718406-219", "bank_name": "Lantern Commerce Bank", "dest_type": "PAYNOW", "amount": 72, "note": "Desaru"},
+    "reviewer_note": "Legit: a group trip split, itemised, the amounts add up, the friend's own account, others have already paid."
+  },
+  "ev_0078": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Ms Rachel (Maths tutor)", "subtitle": "+65 8000 0232"},
+      "messages": [
+        {"who": "them", "time": "18:30", "text": "Hi Mr Bala, Arjun did well on today's algebra practice, he's much more confident with simultaneous equations now 👍"},
+        {"who": "them", "time": "18:31", "text": "October's fee for 4 lessons is S$360 (S$90 per lesson). You can transfer to Rachel Ong, Harbour Bank 619-25384-0 whenever convenient."},
+        {"who": "me", "time": "18:45", "text": "Thank you teacher! Will transfer now."}
+      ]
+    },
+    "customer_answer": "Paying my son's maths tutor for this month's lessons.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Rachel Ong", "account_number": "619-25384-0", "bank_name": "Harbour Bank", "dest_type": "PAYNOW", "amount": 360, "note": "Oct tuition"},
+    "reviewer_note": "Legit: lessons already given, the fee adds up, the tutor's own name, no pressure."
+  },
+  "ev_0087": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Bright Minds Tuition Centre",
+        "from_addr": "admin@brightminds.example",
+        "to": "syafiq.kassim@mail.example",
+        "subject": "Term 4 fees: please pay by Friday to keep your slot",
+        "date": "Mon, 5 Oct 2026, 16:00",
+        "body": [
+          "Dear Syafiq,",
+          "Term 4 (12 Oct to 18 Dec) fees for A-level Chemistry and Maths are S$640. As classes are full and we have a waiting list, please pay by Friday 9 Oct to keep your slot.",
+          "Payment details are unchanged: transfer to our usual account, or pay at the front desk.",
+          "Bright Minds Tuition Centre"
+        ]
+      }
+    },
+    "customer_answer": "Paying my term fees at my tuition centre before Friday.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Bright Minds Tuition Centre", "account_number": "119-94652-9", "bank_name": "Harbour Bank", "dest_type": "PAYNOW", "amount": 640, "note": "Term 4"},
+    "reviewer_note": "Legit (subtle): a 'pay by Friday or lose your slot' deadline, but it's the centre the customer already pays, details unchanged, and an option to pay in person."
+  },
+  "ev_0094": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "email",
+      "email": {
+        "from_name": "Crescendo Music School",
+        "from_addr": "accounts@crescendo-music.example",
+        "to": "deepa.krishnan@mail.example",
+        "subject": "Invoice CMS-T4-1182: Violin Grade 5 (Term 4)",
+        "date": "Tue, 6 Oct 2026, 09:15",
+        "body": [
+          "Dear Mrs Krishnan,",
+          "Please find the Term 4 invoice for Kavya's violin lessons (10 lessons x 45 min with Mr Lee): S$540.00.",
+          "Payment by 31 October to Crescendo Music School Pte Ltd, Riverside Savings Bank 340-581926-472, reference CMS-T4-1182, or at our front desk.",
+          "Crescendo Music School"
+        ]
+      }
+    },
+    "customer_answer": "Term fees for my daughter's violin lessons at the music school.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Crescendo Music School Pte Ltd", "account_number": "340-581926-472", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 540, "note": "CMS-T4-1182"},
+    "reviewer_note": "Legit: an itemised term invoice, a relaxed deadline, the school's own account, and an in-person option."
+  },
+  "ev_0098": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Mrs Lim (piano teacher)", "subtitle": "+65 8000 0248"},
+      "messages": [
+        {"who": "them", "time": "17:00", "text": "Hi Soo Lin, Megan practised her exam pieces very well today 🎹"},
+        {"who": "them", "time": "17:01", "text": "Reminder for October's fees: 4 lessons, S$240. Same as usual, to Lim Bee Hoon, Orchid Trust Bank 251-604738-912."},
+        {"who": "me", "time": "17:15", "text": "Thank you Mrs Lim, will pay tonight."}
+      ]
+    },
+    "customer_answer": "Monthly piano lesson fee for my daughter.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Lim Bee Hoon", "account_number": "251-604738-912", "bank_name": "Orchid Trust Bank", "dest_type": "PAYNOW", "amount": 240, "note": "Oct piano"},
+    "reviewer_note": "Legit: a regular teacher, lessons already given, a normal fee, the teacher's own name."
+  },
+  "ev_0102": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "text",
+      "text": "杜先生您好，这是十月份的华文补习费：每星期两堂，共八堂，一堂 S$35，总共 S$280。可以转账到我的户口：Kampong Federal Bank 207-481593-660，户名 Goh Li Na。谢谢！小明这个月的作文进步很多。—— 吴老师"
+    },
+    "customer_answer": "付孩子十月份的华文补习费给吴老师。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Goh Li Na", "account_number": "207-481593-660", "bank_name": "Kampong Federal Bank", "dest_type": "PAYNOW", "amount": 280, "note": "十月补习费"},
+    "reviewer_note": "Legit: lessons already given, itemised, the tutor's own name (吴 = Goh), no pressure."
+  },
+  "ev_0109": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "text",
+      "text": "沈女士您好，谢谢您带佳佳来参加星期六的机器人编程体验课！老师说她很有兴趣。第四季的课程（10 堂）学费 S$880，因为名额只剩 2 个，如果确定报名，请今晚之前付款保留名额。付款户口：Lantern Commerce Bank 528-306914-773，户名 RoboKids Academy Pte Ltd（UEN 201804455G）。也可以周末来中心刷卡付款。RoboKids Academy"
+    },
+    "customer_answer": "女儿上了机器人编程体验课，我帮她报名这个学期的课。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "RoboKids Academy Pte Ltd", "account_number": "528-306914-773", "bank_name": "Lantern Commerce Bank", "dest_type": "LOCAL_BANK", "amount": 880, "note": "Term 4"},
+    "reviewer_note": "Legit (subtle): 'only 2 places left, pay tonight', but after an in-person trial class, a company account with a UEN, and a card option at the centre."
+  },
+  "ev_0153": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "pdf",
+      "document": {
+        "kind": "invoice",
+        "issuer": "智德教育中心 Zhi De Learning Centre",
+        "issuer_lines": ["UEN 53390411J", "Blk 503 Jurong West Ave 1, #02-11", "+65 8000 0275"],
+        "title": "学费单 FEE INVOICE",
+        "ref": "ZD-T4-0619",
+        "date": "2026年10月2日",
+        "to_lines": ["家长：黄志豪 先生", "学生：黄嘉欣（中三）"],
+        "body": ["第四学期：2026 年 10 月 5 日至 12 月 19 日。请于 10 月 12 日前付款。"],
+        "items": [
+          {"description": "数学（每周一次，共 10 堂）", "amount": 640},
+          {"description": "科学（每周一次，共 10 堂）", "amount": 640}
+        ],
+        "total": 1280,
+        "payment": {"银行": "Orchid Trust Bank", "户名": "Zhi De Learning Centre", "账号": "394-702518-226", "备注": "ZD-T4-0619"},
+        "footer": ["也可以到中心柜台付款。"],
+        "signature": "智德教育中心 行政部"
+      }
+    },
+    "customer_answer": "付女儿补习中心第四学期的学费。",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Zhi De Learning Centre", "account_number": "394-702518-226", "bank_name": "Orchid Trust Bank", "dest_type": "LOCAL_BANK", "amount": 1280, "note": "ZD-T4-0619"},
+    "reviewer_note": "Legit (subtle): a four-figure amount to a new payee, but an itemised term invoice naming the student, the centre's own account, and a counter option."
+  },
+  "ev_0157": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Bright Minds (new admin no.)", "subtitle": "+65 8000 0278"},
+      "messages": [
+        {"who": "them", "time": "10:00", "text": "Hi Mr Chong, this is Joanne from Bright Minds Tuition Centre. This is our centre's new admin number; the old one will stop working at month end. It's also on the notice board at the centre 🙂"},
+        {"who": "them", "time": "10:01", "text": "Ryan's Term 4 Primary 5 Maths and English fees are S$520. Payment to our usual account, nothing has changed."},
+        {"who": "me", "time": "10:20", "text": "Ok, I saw the notice when I picked Ryan up on Saturday. Will pay today."}
+      ]
+    },
+    "customer_answer": "Term fees for my son's tuition centre, to their usual account.",
+    "quick_reply": "No one, it's my own payment",
+    "transfer": {"payee_name": "Bright Minds Tuition Centre", "account_number": "190-585104-123", "bank_name": "Lantern Commerce Bank", "dest_type": "PAYNOW", "amount": 520, "note": "Term 4"},
+    "reviewer_note": "Legit (subtle): 'new number' from the centre, but the account is unchanged (known payee), the customer saw the notice in person, and it's an ordinary term fee."
+  },
+  "ev_0018": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "text",
+      "text": "阿慧，我是秀珠，旧手机掉了，这是新号码。刚才跟你通过电话了，你知道是我哈哈。上星期六在 Bedok 喝咖啡说好的，美玉孙子满月的红包大家一起凑，每人 S$50，我负责包好。方便的话转到我的户口：Riverside Savings Bank 426-801735-592，Ong Siew Choo。星期天满月酒见！"
+    },
+    "customer_answer": "老朋友秀珠换了新号码，我打电话确认过了。大家一起凑钱包满月红包。",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Ong Siew Choo", "account_number": "426-801735-592", "bank_name": "Riverside Savings Bank", "dest_type": "LOCAL_BANK", "amount": 50, "note": "满月红包"},
+    "reviewer_note": "Legit (subtle): a 'new number' plus a money request, but the customer verified by phone, the plan was made in person, it's a small amount, and the friend's own name."
+  },
+  "ev_0023": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "+65 8000 0210", "subtitle": "online"},
+      "messages": [
+        {"who": "them", "time": "14:00", "text": "Sarah! It's Syafiq, I switched telco so this is my new number, pls save 😄"},
+        {"who": "me", "time": "14:05", "text": "Haha ok saved. Just called you to make sure, sorry 😅"},
+        {"who": "them", "time": "14:06", "text": "Good la, should check! Btw the tickets for the 24th came through, 2 x S$64. Pay me back whenever, same account as before."},
+        {"who": "me", "time": "14:10", "text": "Yay! Transferring now."}
+      ]
+    },
+    "customer_answer": "Paying back my friend Syafiq for the concert tickets. He has a new number but I called him to check.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Syafiq Hassan", "account_number": "281-117069-808", "bank_name": "Orchid Trust Bank", "dest_type": "PAYNOW", "amount": 128, "note": "concert tix"},
+    "reviewer_note": "Legit: a new number, but verified by a call, a known friend's usual account, an ordinary repayment."
+  },
+  "ev_0067": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "+65 8000 0227", "subtitle": "online"},
+      "messages": [
+        {"who": "them", "time": "09:30", "text": "Hi Clara, it's Mabel from the old Tanglin office! New number, my company phone was returned when I retired 😊"},
+        {"who": "me", "time": "09:45", "text": "Mabel! So nice to see you at the lunch last week."},
+        {"who": "them", "time": "09:46", "text": "Same! As we said at lunch, the gang is chipping in S$80 each for Mr Rahman's retirement gift. I'm collecting by Friday so I can order it."},
+        {"who": "me", "time": "09:50", "text": "Sure. Let me just call you to say hi first haha."},
+        {"who": "them", "time": "09:58", "text": "Haha nice talking! Mabel Fernandez, Harbour Bank 452-37190-6 👍"}
+      ]
+    },
+    "customer_answer": "My ex-colleague is collecting money for our old boss's retirement gift. We discussed it at lunch last week and I called her.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Mabel Fernandez", "account_number": "452-37190-6", "bank_name": "Harbour Bank", "dest_type": "LOCAL_BANK", "amount": 80, "note": "Mr Rahman gift"},
+    "reviewer_note": "Legit (subtle): a new number and a money collection, but planned in person, verified by a call, a small amount, and the friend's own name."
+  },
+  "ev_0082": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Adrian (new no.)", "subtitle": "+65 8000 0234"},
+      "messages": [
+        {"who": "them", "time": "19:00", "text": "Ryan, it's Adrian, new number cos I changed to a cheaper plan haha"},
+        {"who": "me", "time": "19:02", "text": "Lol ok. Saw you at futsal just now anyway."},
+        {"who": "them", "time": "19:03", "text": "Yup. Court booking for next 4 Thursdays is S$240, 6 of us, so S$40 each. Same PayNow as always."},
+        {"who": "me", "time": "19:05", "text": "Ok sending."}
+      ]
+    },
+    "customer_answer": "My futsal share for the court booking, paying my friend Adrian like every month.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Adrian Chan", "account_number": "258-62925-0", "bank_name": "Harbour Bank", "dest_type": "PAYNOW", "amount": 40, "note": "futsal"},
+    "reviewer_note": "Legit: a new number, but they met the same day, it's the friend's usual account (known payee), and a small shared cost."
+  },
+  "ev_0101": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "+65 8000 0250", "subtitle": "online"},
+      "messages": [
+        {"who": "them", "time": "21:00", "text": "俊豪，我是 Grace，手机坏了换了新号码，你存一下哦。"},
+        {"who": "me", "time": "21:05", "text": "真的是你吗？我打给你看看。"},
+        {"who": "them", "time": "21:08", "text": "哈哈刚才讲完电话了吧，放心了？"},
+        {"who": "them", "time": "21:09", "text": "下个月 Wei Ming 的婚礼，我们几个老同学合送一个红包，每人 S$200。照旧转到我的户口就可以，我统一包好。"},
+        {"who": "me", "time": "21:15", "text": "好，现在转。"}
+      ]
+    },
+    "customer_answer": "老同学 Grace 换了新号码，我打电话确认过了。我们一起送婚礼红包。",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Grace Teo", "account_number": "999-543788-179", "bank_name": "Kampong Federal Bank", "dest_type": "PAYNOW", "amount": 200, "note": "婚礼红包"},
+    "reviewer_note": "Legit (subtle): a new number and a money request, but verified by phone, the friend's usual account (known payee), and an ordinary shared gift."
+  },
+  "ev_0108": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "Rosli (new number)", "subtitle": "+65 8000 0254"},
+      "messages": [
+        {"who": "them", "time": "13:00", "text": "Haziq, Rosli here. New number, my old line was under my company and I left last month."},
+        {"who": "me", "time": "13:10", "text": "Ok bro, saved. Thanks again for arranging the catering for Mak's kenduri on Sunday."},
+        {"who": "them", "time": "13:12", "text": "No problem! The caterer's bill was S$1,140 and we agreed to split it 3 ways with Faizal, so S$380 each. Receipt is in the family group."},
+        {"who": "them", "time": "13:13", "text": "Rosli bin Ahmad, Orchid Trust Bank 627-150384-209. No rush."}
+      ]
+    },
+    "customer_answer": "Paying my cousin Rosli my share of the catering for my mother's kenduri. We split it three ways.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Rosli bin Ahmad", "account_number": "627-150384-209", "bank_name": "Orchid Trust Bank", "dest_type": "LOCAL_BANK", "amount": 380, "note": "kenduri catering"},
+    "reviewer_note": "Legit: a new number with a reason, an event that happened, a receipt shared, the amounts add up, the cousin's own name, no rush."
+  },
+  "ev_0114": {
+    "difficulty": "obvious",
+    "evidence": {
+      "format": "text",
+      "text": "Hey Grace it's Jolene! New number, my old one got cut when I changed plans. Thanks for coming to my birthday yesterday 🥳 The cake was S$96, split 4 ways is S$24 each, pay me whenever ok? Jolene Ng, Harbour Bank 315-80274-6. See you at class tmr!"
+    },
+    "customer_answer": "My share of the birthday cake for my friend Jolene. I was at her party yesterday.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Jolene Ng", "account_number": "315-80274-6", "bank_name": "Harbour Bank", "dest_type": "PAYNOW", "amount": 24, "note": "cake"},
+    "reviewer_note": "Legit: a new number, but a shared event yesterday, a tiny amount, the friend's own name, no urgency."
+  },
+  "ev_0127": {
+    "difficulty": "subtle",
+    "evidence": {
+      "format": "chat",
+      "header": {"name": "+65 8000 0263", "subtitle": "online"},
+      "messages": [
+        {"who": "them", "time": "11:30", "text": "Hi Meena, Priya from yoga here! I lost my phone on the MRT so this is my new number."},
+        {"who": "me", "time": "11:40", "text": "Oh no! Saw you at class this morning, you didn't mention haha."},
+        {"who": "them", "time": "11:41", "text": "Happened on the way home 😩 Anyway, the two gala dinner tickets for the animal shelter fundraiser came through, S$90 each. Could you pay me back today? I'm topping up my new SIM and want to clear things."},
+        {"who": "me", "time": "11:45", "text": "Sure, will see you Thursday anyway. Same name?"},
+        {"who": "them", "time": "11:46", "text": "Yup, Priya Raman, Kampong Federal Bank 381-560927-418. Thanks babe!"}
+      ]
+    },
+    "customer_answer": "Paying my yoga friend Priya back for the gala dinner tickets she bought for us.",
+    "quick_reply": "A friend or family member",
+    "transfer": {"payee_name": "Priya Raman", "account_number": "381-560927-418", "bank_name": "Kampong Federal Bank", "dest_type": "PAYNOW", "amount": 180, "note": "gala tickets"},
+    "reviewer_note": "Legit (subtle): a new number and 'pay me back today', but they met that morning, the tickets were agreed before, and it's the friend's own name. (The hardest negative in this group.)"
+  }
+}

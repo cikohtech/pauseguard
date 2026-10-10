@@ -1,0 +1,4 @@
+f1c1155d128fe345d8f40ade5193a00a5ddb500a164d8ff88e35c5feb81532d8
+# SHA-256 of the test split of data/eval/cases.jsonl (100 cases) and its evidence
+# files (see split_hash() in data/generate/make_eval_messages.py). The test split is
+# never used for tuning (EVAL_PLAN §6). Check it with `make eval-verify`.

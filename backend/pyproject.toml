@@ -46,6 +46,9 @@ check_untyped_defs = true
 warn_unused_ignores = true
 
 [dependency-groups]
+datagen = [
+    "playwright>=1.63.0",
+]
 dev = [
     "httpx>=0.28.1",
     "mypy>=2.4.0",
