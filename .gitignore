@@ -17,6 +17,9 @@ private/
 *.db
 *.db-journal
 data/seed/*.db
+data/seed/*.db.tmp
+data/seed/*.csv
+data/seed/personas.json
 .local_uploads/
 eval/results/
 

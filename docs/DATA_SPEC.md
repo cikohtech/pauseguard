@@ -2,9 +2,11 @@
 
 All data is **synthetic**. Use the fictional bank "Harbour Bank". Don't use any real person, phone number, account number or real bank brand. Phone numbers use the reserved-looking pattern `+65 8000 0xxx`, and URLs use `.example` or obviously fake domains (for example `mas-gov-verify.example`).
 
+Phone allocation in `+65 8000 0xxx` (phase 01): `0001–0199` scam side (watchlist seed, eval scammers), `0200–0299` legit businesses (eval set), `0300–0309` persona trusted contacts, `0310–0999` generated trusted contacts.
+
 ## 1. Relational data (SQLite locally, BigQuery dataset `pauseguard` in cloud)
 
-Keep the column names identical in both backends. DDL lives in `infra/bq/*.json` and `backend/app/data/sqlite_schema.sql`.
+Keep the column names identical in both backends. DDL lives in `infra/bq/*.json` and `backend/app/data/sqlite_schema.sql`. Timestamps are UTC; CSVs and SQLite store them as `YYYY-MM-DD HH:MM:SS+00:00` text, so text order is time order. The window rules both repositories share (half-open windows, "known payee", the 90-day median, "transfers to new payees") are written down in `backend/app/data/base.py`.
 
 **customers**
 | column | type | notes |
@@ -55,6 +57,8 @@ Keep the column names identical in both backends. DDL lives in `infra/bq/*.json`
 | cust_003 | Nur Aisyah | 34 | en | Teacher. Demo (legit): S$3,200 deposit to new landlord, with tenancy agreement PDF |
 | cust_004 | Daniel Lim | — | en | Analyst login for the console (Firebase Auth user, not a bank customer) |
 
+`cust_004` is reserved, so it is not in `customers`. The other 497 customers are `cust_005`–`cust_501`. Run `make history` to print Mrs Tan's 90-day history.
+
 ## 3. Firestore collections
 
 ```
@@ -83,7 +87,12 @@ watchlist/{normalised_value}
   reported_count, first_seen, last_seen, typologies[]
 
 feedback/{auto_id}   check_id, helpful: bool, comment, ts
+
+personas/{customer_id}   (the 3 demo customers; read by the persona picker and the API)
+  customer_id, full_name, age, preferred_language, segment,
+  trusted_contact_name, trusted_contact_phone, story
 ```
+The watchlist document ID is the normalised value (`backend/app/data/normalise.py`): phones become E.164 (`+6580000147`), accounts keep only alphanumerics (`123456789`), and domains and URLs are lower-cased with the scheme, `www.`, query and trailing `/` removed. In a URL path, `/` is percent-encoded (`%2F`), because Firestore IDs can't contain `/`. A URL with no path shares its domain's document. Composite indexes are in `infra/firestore.indexes.json`.
 Seed the watchlist with about 30 fake entries (`data/seed/watchlist.json`). Include the demo scammer's phone number for cust_001's scenario, so the WATCHLIST_MATCH flag fires in the demo.
 
 ## 4. Evaluation dataset (`data/eval/`)

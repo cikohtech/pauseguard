@@ -16,6 +16,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = BACKEND_DIR.parent
+EMULATOR_PROJECT = "demo-pauseguard"  # offline project ID used by the local Firebase emulators
 
 
 class Settings(BaseSettings):
@@ -41,6 +42,7 @@ class Settings(BaseSettings):
     data_backend: Literal["sqlite", "bigquery"] = "sqlite"
     sqlite_path: Path = Path("./data/seed/pauseguard.db")
     bq_dataset: str = "pauseguard"
+    state_backend: Literal["firestore", "memory"] = "firestore"  # memory: tests, no emulator
     firestore_emulator_host: str | None = None
     evidence_bucket: str = "your-project-pauseguard-evidence"
 
@@ -76,6 +78,15 @@ class Settings(BaseSettings):
         return self.k_service is not None
 
     @property
+    def uses_firestore_emulator(self) -> bool:
+        return bool(self.firestore_emulator_host) and not self.is_cloud
+
+    @property
+    def firestore_project(self) -> str:
+        """The emulators run as the offline `demo-pauseguard` project, whatever .env says."""
+        return EMULATOR_PROJECT if self.uses_firestore_emulator else self.google_cloud_project
+
+    @property
     def allowed_origins_list(self) -> list[str]:
         return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
 
@@ -86,7 +97,7 @@ class Settings(BaseSettings):
         os.environ.setdefault(
             "GOOGLE_GENAI_USE_VERTEXAI", "TRUE" if self.google_genai_use_vertexai else "FALSE"
         )
-        if self.firestore_emulator_host and not self.is_cloud:
+        if self.uses_firestore_emulator and self.firestore_emulator_host:
             os.environ.setdefault("FIRESTORE_EMULATOR_HOST", self.firestore_emulator_host)
 
 

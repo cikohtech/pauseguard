@@ -1,0 +1,47 @@
+[
+  {
+    "name": "customer_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "cust_001..."
+  },
+  {
+    "name": "full_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "synthetic"
+  },
+  {
+    "name": "age",
+    "type": "INT64",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "preferred_language",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "en / zh / ms / ta"
+  },
+  {
+    "name": "segment",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "RETIREE, STUDENT, WORKER, SME_OWNER"
+  },
+  {
+    "name": "trusted_contact_name",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "trusted_contact_phone",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "synthetic, +65 8000 0xxx"
+  },
+  {
+    "name": "created_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED"
+  }
+]

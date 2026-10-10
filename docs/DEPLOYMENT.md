@@ -48,7 +48,7 @@ The API does its own auth (Firebase tokens), so the service is public. For judgi
 
 `web/.env.production` has `VITE_API_BASE_URL=https://pauseguard-api-xxxxx.a.run.app` and the Firebase config. Then:
 ```bash
-cd web && npm run build && firebase deploy --only hosting,firestore:rules
+cd web && npm run build && firebase deploy --only hosting,firestore:rules,firestore:indexes
 ```
 The `firebase.json` rewrites send all paths to `/index.html` (SPA). Optionally, rewrite `/api/**` to the Cloud Run service so everything is on one domain (this avoids CORS).
 

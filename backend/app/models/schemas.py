@@ -88,6 +88,66 @@ ACTION_FOR_VERDICT: dict[Verdict, Action] = {
 
 
 # ---------------------------------------------------------------------------
+# Bank data (DATA_SPEC §1), returned by TransactionRepo. Ground-truth labels
+# (is_scam_label, scam_typology_label) are deliberately absent: the risk tool
+# can never read them; only analytics SQL and the benchmark do.
+# ---------------------------------------------------------------------------
+
+Segment = Literal["RETIREE", "STUDENT", "WORKER", "SME_OWNER"]
+Direction = Literal["DEBIT", "CREDIT"]
+TxnCategory = Literal[
+    "SALARY", "BILLS", "GROCERIES", "RENT", "FAMILY", "TRANSFER", "SHOPPING", "INVESTMENT"
+]
+
+
+class Customer(BaseModel):
+    customer_id: str
+    full_name: str
+    age: int
+    preferred_language: Language
+    segment: Segment
+    trusted_contact_name: str | None = None
+    trusted_contact_phone: str | None = None
+    created_at: datetime
+
+
+class Payee(BaseModel):
+    payee_id: str
+    customer_id: str
+    payee_name: str
+    account_number: str
+    bank_name: str
+    country: str
+    dest_type: DestType
+    first_paid_at: datetime | None = None  # None: added but never paid
+    created_at: datetime
+
+
+class BankTransaction(BaseModel):
+    txn_id: str
+    customer_id: str
+    account_id: str
+    payee_id: str | None = None  # None for card/merchant spend and incoming credits
+    amount: float
+    currency: str = "SGD"
+    direction: Direction
+    category: TxnCategory
+    ts: datetime
+
+
+class RiskSnapshot(BaseModel):
+    """Everything compute_txn_risk needs, fetched in ONE repo query (one BigQuery round trip)."""
+
+    customer_id: str
+    customer_age: int | None = None
+    balance: float | None = None
+    payee_known: bool  # an existing payee that has been paid before `as_of`
+    median_debit_90d: float | None = None  # None when there are no debits in 90 days
+    debit_count_90d: int = 0
+    transfers_to_new_payees_24h: int = 0
+
+
+# ---------------------------------------------------------------------------
 # Transfer + transaction risk (AGENTS_SPEC §1)
 # ---------------------------------------------------------------------------
 
@@ -490,6 +550,19 @@ class FeedbackRecord(BaseModel):
     helpful: bool
     comment: str | None = None
     ts: datetime
+
+
+class Persona(BaseModel):
+    """`personas/{customer_id}`: the 3 demo customers, read by the persona picker and the API."""
+
+    customer_id: str
+    full_name: str
+    age: int
+    preferred_language: Language
+    segment: Segment
+    trusted_contact_name: str | None = None
+    trusted_contact_phone: str | None = None
+    story: str
 
 
 class LatencyPercentiles(BaseModel):

@@ -7,7 +7,7 @@ Claude Code updates this file at the end of every phase: tick the boxes, then ad
 | # | Day (target) | Phase | Prompt | Status | Notes |
 |---|---|---|---|---|---|
 | 1 | Day 1 · 10–11 Oct | 00 Setup | prompts/phase-00-setup.md | ☑ done (10 Oct) | Monorepo scaffold. `make setup/test/lint/dev` pass; `/healthz` ok; landing placeholder at :5173; Docker image builds. Model switched to `gemini-3.8-flash` (2.5 Flash retires 16 Oct); ADK 2.11.0 notes in DECISIONS.md |
-| 2 | Day 1 · 11 Oct | 01 Data | prompts/phase-01-data.md | ☐ todo | |
+| 2 | Day 1 · 11 Oct | 01 Data | prompts/phase-01-data.md | ☑ done (10 Oct) | 500 customers / ~71k txns / 15 scam episodes, deterministic; `make seed-local` 1.6 s from scratch (SQLite + emulator watchlist/personas); `make history` prints Mrs Tan's 90 days. TransactionRepo (SQLite, BigQuery) + one-query `risk_snapshot`; StateRepo (Firestore, memory) with a shared contract suite. BigQuery parity test written, runs at row 7 |
 | 3 | Day 2 · 12 Oct | 02 Eval dataset | prompts/phase-02-eval-dataset.md | ☐ todo | human: review REVIEW.md the same day |
 | 4 | Day 2–3 · 12–13 Oct | 03 Risk + evidence agent | prompts/phase-03-risk-and-evidence.md | ☐ todo | |
 | 5 | Day 3 · 13 Oct | 04 Full agent pipeline | prompts/phase-04-orchestration.md | ☐ todo | |
@@ -26,7 +26,9 @@ Status values: ☐ todo · ◐ in progress · ☑ done
 
 ## Known issues
 
-- **Local tools still missing (needed by phase 01 / phase 10):** `firebase-tools` (`npm i -g firebase-tools`), a Java 11+ runtime for the Firestore emulator (`brew install openjdk@21`), and `gcloud` (`brew install --cask google-cloud-sdk`). `make dev` skips the emulator until firebase-tools and Java are installed.
+- **Local tools:** Java 21 is installed (`brew install openjdk@21`; it's keg-only, and the Makefile adds it to PATH). firebase-tools runs through a pinned `npx` (the global npm prefix is root-owned), so `make dev` / `make emulators` now start the Firestore + Auth emulators. **Still missing for phase 10:** `gcloud` (`brew install --cask google-cloud-sdk`).
+- The Firestore emulator keeps data in memory. After (re)starting `make dev` or `make emulators`, run `make seed-local` again (about 2 s) so the watchlist and personas are back.
+- **Not yet run:** the BigQuery parity test (`uv --directory backend run pytest -m live -k bigquery`) and `make seed-cloud`. Both need the GCP project from row 7. `make seed-cloud` regenerates the data with today's date, so run it again on 17 Oct (row 12) so the 90-day window is fresh for judging.
 - `npm audit` reports 7 "high" issues, all in the `shadcn` CLI's build-time tree (micromatch via fast-glob/ts-morph). None of it ships to the browser. Don't run `npm audit fix --force` (it downgrades shadcn); re-check when shadcn publishes a fix.
 - Starlette warns that `httpx` in `TestClient` is deprecated in favour of `httpx2`. It's harmless for now.
 - `/healthz` doesn't check its dependencies yet (Firestore, BigQuery, model); that's planned for phase 10 (DEPLOYMENT §7).

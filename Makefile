@@ -8,8 +8,14 @@ BACKEND := backend
 WEB     := web
 UV      := uv --directory $(BACKEND)
 
-.PHONY: help setup dev dev-api dev-web emulators test lint format seed-local seed-cloud eval \
-        deploy-api deploy-web smoke
+# Firebase CLI: a global install if there is one, else a pinned copy through npx (no sudo).
+FIREBASE ?= $(shell command -v firebase 2>/dev/null || echo npx --yes firebase-tools@15.31.0)
+# Homebrew's openjdk@21 is keg-only (not on PATH); the emulators need it, so add it if present.
+BREW_JDK := /opt/homebrew/opt/openjdk@21/bin
+export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
+
+.PHONY: help setup dev dev-api dev-web emulators test lint format seed-local seed-cloud history \
+        eval deploy-api deploy-web smoke
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
@@ -23,11 +29,11 @@ setup: ## Install backend + web deps, create .env, install git hooks
 
 dev: ## API on :8000 + web on :5173 (+ Firestore/Auth emulators if installed). Ctrl-C stops all.
 	@trap 'kill 0' INT TERM; \
-	if command -v firebase >/dev/null 2>&1 && command -v java >/dev/null 2>&1 && java -version >/dev/null 2>&1; then \
+	if command -v npx >/dev/null 2>&1 && java -version >/dev/null 2>&1; then \
 		echo "▶ Firestore + Auth emulators (UI on :4000)"; \
-		firebase emulators:start --only firestore,auth --project demo-pauseguard & \
+		$(FIREBASE) emulators:start --only firestore,auth --project demo-pauseguard & \
 	else \
-		echo "ℹ Firestore emulator skipped (needs firebase-tools + Java 11+)."; \
+		echo "ℹ Firestore emulator skipped (needs Node + Java 11+: brew install openjdk@21)."; \
 	fi; \
 	echo "▶ API  http://localhost:8000/healthz   ▶ Web  http://localhost:5173"; \
 	$(UV) run uvicorn app.main:app --reload --port 8000 & \
@@ -41,7 +47,7 @@ dev-web: ## Web only
 	cd $(WEB) && npm run dev
 
 emulators: ## Firestore + Auth emulators only
-	firebase emulators:start --only firestore,auth --project demo-pauseguard
+	$(FIREBASE) emulators:start --only firestore,auth --project demo-pauseguard
 
 test: ## Backend pytest (live tests excluded) + web Vitest
 	$(UV) run pytest
@@ -57,11 +63,14 @@ format: ## Auto-fix formatting
 	$(UV) run ruff check --fix .
 	$(UV) run ruff format .
 
-seed-local: ## phase 01: CSV -> SQLite + Firestore emulator
-	@echo "seed-local is implemented in phase 01 (prompts/phase-01-data.md)"; exit 1
+seed-local: ## Regenerate synthetic data -> SQLite (+ watchlist/personas into the emulator if it runs)
+	$(UV) run python -m app.data.seed local
 
-seed-cloud: ## phase 01: CSV -> BigQuery (asia-southeast1) + Firestore
-	@echo "seed-cloud is implemented in phase 01 (prompts/phase-01-data.md)"; exit 1
+seed-cloud: ## Regenerate synthetic data -> BigQuery (asia-southeast1) + Firestore (needs GCP auth)
+	$(UV) run python -m app.data.seed cloud
+
+history: ## Print a customer's 90-day history (CUSTOMER=cust_001 by default)
+	$(UV) run python -m app.data.seed history $(or $(CUSTOMER),cust_001)
 
 eval: ## phase 09: run the benchmark and write eval/reports/benchmark.md
 	@echo "eval is implemented in phase 09 (prompts/phase-09-benchmark.md)"; exit 1

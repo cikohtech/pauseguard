@@ -99,6 +99,7 @@ DATA_REGION=asia-southeast1
 DATA_BACKEND=sqlite                     # sqlite | bigquery
 SQLITE_PATH=./data/seed/pauseguard.db
 BQ_DATASET=pauseguard
+STATE_BACKEND=firestore                 # firestore | memory (tests; dev without the emulator)
 FIRESTORE_EMULATOR_HOST=localhost:8080  # local only
 EVIDENCE_BUCKET=your-project-pauseguard-evidence
 ALLOWED_ORIGINS=http://localhost:5173
