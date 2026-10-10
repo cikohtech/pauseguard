@@ -1,0 +1,103 @@
+{
+  "eval_set_id": "evidence_golden",
+  "name": "evidence agent: golden cases",
+  "description": "Built by tests/agent_evals/build_evalsets.py; expectations per metrics.py.",
+  "eval_cases": [
+    {
+      "eval_id": "gov_safe_account_zh",
+      "conversation": [
+        {
+          "invocation_id": "evidence-gov_safe_account_zh",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<transfer>\nPayee: Lee Wei Investigation Acct\nAccount: 123-45678-9 (Harbour Bank)\nAmount: SGD 8,000.00\nDestination type: LOCAL_BANK\nNote: case 2231\n</transfer>\n<customer_answer>\nQuick reply: 政府官员\nAnswer: 他说他是金管局的官员，要我把钱转到安全账户。\n</customer_answer>"
+              },
+              {
+                "text": "<evidence index=\"0\" type=\"text\">\n您好，我是新加坡金融管理局（MAS）调查组的李伟。您的银行户口涉及一宗洗钱案件。为了保护您的存款，请在今天下午5点前把钱转到金管局的安全账户：Harbour Bank 123-45678-9，收款人 Lee Wei Investigation Acct。核实链接：https://mas-gov-verify.example/case/2231 。这是机密调查，不要告诉您的孩子或银行职员，否则您也可能被起诉。\n</evidence>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"typology_guess\": \"GOV_OFFICIAL_IMPERSONATION\", \"typology_confidence\": 0.75, \"red_flags\": [{\"code\": \"SAFE_ACCOUNT\", \"severity\": \"HIGH\"}, {\"code\": \"AUTHORITY_CLAIM\"}], \"injection_attempt_detected\": false, \"$contains\": {\"entities\": [\"mas-gov-verify.example\"]}}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "job_pay_to_earn_en",
+      "conversation": [
+        {
+          "invocation_id": "evidence-job_pay_to_earn_en",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<transfer>\nPayee: Ahmad Danial\nAccount: 556-208417-390 (Orchid Trust Bank)\nAmount: SGD 450.00\nDestination type: LOCAL_BANK\n</transfer>\n<customer_answer>\nQuick reply: A job recruiter\nAnswer: The recruiter says I must top up to get my commission.\n</customer_answer>"
+              },
+              {
+                "text": "<evidence index=\"0\" type=\"text\">\nHi Raj! Kelly from TaskStar here. Great job finishing your first 3 tasks, your S$36 commission is already in your account. You're now eligible for the Gold task set: 20 tasks at 15% commission each! To unlock it, top up S$450 to your task wallet. It's refundable. Transfer to our finance colleague: Orchid Trust Bank 556-208417-390, name Ahmad Danial. Gold slots are limited today.\n</evidence>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"typology_guess\": \"JOB_TASK\", \"typology_confidence\": 0.75, \"red_flags\": [{\"code\": \"PAY_TO_EARN\", \"severity\": \"HIGH\"}], \"injection_attempt_detected\": false}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "rent_deposit_legit_en",
+      "conversation": [
+        {
+          "invocation_id": "evidence-rent_deposit_legit_en",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<transfer>\nPayee: Wong Kah Wai\nAccount: 436-905127-318 (Kampong Federal Bank)\nAmount: SGD 3,200.00\nDestination type: LOCAL_BANK\nNote: Bishan deposit\n</transfer>\n<customer_answer>\nQuick reply: No one, it's my own payment\nAnswer: Deposit for our new flat in Bishan.\n</customer_answer>"
+              },
+              {
+                "text": "<evidence index=\"0\" type=\"text\">\nHi Aisyah, thanks for signing the tenancy agreement for Blk 210 Bishan St 23 #08-112 today. As agreed, please pay the deposit of S$3,200 to my account, Kampong Federal Bank 436-905127-318 (Wong Kah Wai). Keys are ready on 1 Nov. Regards, Wong Kah Wai\n</evidence>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"typology_guess\": \"NONE\", \"injection_attempt_detected\": false, \"$not_contains\": {\"red_flags\": [\"\\\"severity\\\": \\\"HIGH\\\"\"]}}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    }
+  ]
+}

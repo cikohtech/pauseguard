@@ -4,12 +4,9 @@ validation, the one retry, the safe fallback, box handling and the injection mer
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncGenerator
 from typing import Any
 
 import pytest
-from google.adk.models import BaseLlm, LlmRequest, LlmResponse
-from google.adk.models._capabilities import LlmCapabilities
 from google.genai import types
 
 from app.agents import evidence_agent as ea
@@ -22,36 +19,10 @@ from app.agents.evidence_agent import (
 )
 from app.config import Settings
 from app.models.schemas import EvidenceAnalysis, Transfer
+from tests.fakes import FakeLlm
 
 TAN_PNG = "data/demo/tan_mas_chat.png"
 AISYAH_PDF = "data/demo/aisyah_tenancy.pdf"
-
-
-class FakeLlm(BaseLlm):
-    """Replays canned responses; an Exception in the list is raised instead."""
-
-    model: str = "fake-gemini"
-    responses: list[Any] = []
-    requests: list[LlmRequest] = []
-
-    @property
-    def capabilities(self) -> LlmCapabilities:
-        return LlmCapabilities(output_schema_and_tools=False)
-
-    async def generate_content_async(
-        self, llm_request: LlmRequest, stream: bool = False
-    ) -> AsyncGenerator[LlmResponse, None]:
-        self.requests.append(llm_request)
-        r = self.responses.pop(0)
-        if isinstance(r, Exception):
-            raise r
-        text = r if isinstance(r, str) else json.dumps(r, ensure_ascii=False)
-        yield LlmResponse(
-            content=types.Content(role="model", parts=[types.Part.from_text(text=text)]),
-            usage_metadata=types.GenerateContentResponseUsageMetadata(
-                prompt_token_count=1000, candidates_token_count=200, thoughts_token_count=50
-            ),
-        )
 
 
 def good(**kw: Any) -> dict[str, Any]:

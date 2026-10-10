@@ -1,0 +1,94 @@
+{
+  "eval_set_id": "explainer_golden",
+  "name": "explainer agent: golden cases",
+  "description": "Built by tests/agent_evals/build_evalsets.py; expectations per metrics.py.",
+  "eval_cases": [
+    {
+      "eval_id": "red_gov_zh_senior",
+      "conversation": [
+        {
+          "invocation_id": "explainer-red_gov_zh_senior",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<verdict>\nVerdict: RED\nLanguage: zh (write only in Simplified Chinese)\nAge band: 60+\nTrusted contact: Tan Jun Hao (son)\n</verdict>\nLikely scam type: GOV_OFFICIAL_IMPERSONATION (government official impersonation)\nBank's reasons:\n- Account 123456789 is on the scam watchlist (reported 4x)\n- Asked to move money to a 'safe account'\n<flags>\n1. SAFE_ACCOUNT: \"把钱转到金管局的安全账户\"\n2. AUTHORITY_CLAIM: \"我是新加坡金融管理局（MAS）调查组的李伟\"\n3. SECRECY_REQUEST: \"不要告诉您的孩子或银行职员\"\n</flags>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"$language\": \"zh\", \"$max_len\": {\"headline\": 16, \"body\": 120}, \"$contains\": {\"*\": [\"暂停\"]}, \"$not_contains\": {\"*\": [\"http\", \"www.\", \".example\"]}}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "amber_job_en",
+      "conversation": [
+        {
+          "invocation_id": "explainer-amber_job_en",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<verdict>\nVerdict: AMBER\nLanguage: en (English)\nAge band: 18-29\nTrusted contact: Priya Kumar (sister)\n</verdict>\nLikely scam type: JOB_TASK (job or task scam)\nBank's reasons:\n- Asked to pay money in order to earn (a job-scam pattern)\n- Scam pattern on a payment under S$1,000: pause and explain instead of holding\n<flags>\n1. PAY_TO_EARN: \"To unlock it, top up S$450\"\n2. URGENCY: \"Gold slots are limited today\"\n</flags>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"$language\": \"en\", \"$max_len\": {\"headline\": 8, \"body\": 60}, \"$not_contains\": {\"*\": [\"you are being scammed\", \"you're being scammed\", \"this is a scam\", \"this is fraud\", \"http\", \"www.\", \".example\"]}}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "amber_fake_friend_en_senior",
+      "conversation": [
+        {
+          "invocation_id": "explainer-amber_fake_friend_en_senior",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<verdict>\nVerdict: AMBER\nLanguage: en (English)\nAge band: 60+\nTrusted contact: someone you trust\n</verdict>\nLikely scam type: FAKE_FRIEND (fake friend scam)\nBank's reasons:\n- Looks like a FAKE_FRIEND scam (confidence 0.80)\n- 1 high-severity red flag(s) in the conversation\n<flags>\n1. NEW_NUMBER_FRIEND: \"Hi Uncle, it's me Wei Ming, this is my new number\"\n2. URGENCY: \"I need S$1,500 today, please, very urgent\"\n</flags>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"$language\": \"en\", \"$max_len\": {\"headline\": 8, \"body\": 60}, \"$not_contains\": {\"*\": [\"you are being scammed\", \"you're being scammed\", \"this is a scam\", \"this is fraud\", \"http\", \"www.\", \".example\"]}}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "eval_set_id": "casefile_golden",
+  "name": "casefile agent: golden cases",
+  "description": "Built by tests/agent_evals/build_evalsets.py; expectations per metrics.py.",
+  "eval_cases": [
+    {
+      "eval_id": "red_gov_watchlist",
+      "conversation": [
+        {
+          "invocation_id": "casefile-red_gov_watchlist",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<transfer>\nPayee: Lee Wei Investigation Acct, account 123-45678-9 (Harbour Bank)\nAmount: SGD 8,000.00, destination LOCAL_BANK\nTransaction risk score: 100\n- First transfer to this account (+20)\n- Amount is 40x the usual 90-day payment (+30)\n- Payee account is on the scam watchlist (+40)\n</transfer>\n<customer_answer>\nQuick reply: 政府官员\nAnswer: 他说他是金管局的官员，要我把钱转到安全账户。\n</customer_answer>\n<evidence>\nEvidence shared: yes\nTypology guess: GOV_OFFICIAL_IMPERSONATION (0.99)\nSummary: A man claiming to be an MAS investigator tells the customer to move S$8,000 to a 'safe account' and keep it secret.\nEntities: {\"phones\":[],\"urls\":[],\"accounts\":[],\"orgs\":[],\"apps\":[]}\n- SAFE_ACCOUNT (HIGH), evidence 0: \"把钱转到金管局的安全账户\"\n- AUTHORITY_CLAIM (HIGH), evidence 0: \"我是新加坡金融管理局（MAS）调查组的李伟\"\n- SECRECY_REQUEST (MEDIUM), evidence 0: \"不要告诉您的孩子或银行职员\"\n</evidence>\n<intel>\n- Account 123456789 on the watchlist, reported 4 time(s) (seed)\n- Phone +6580000147 on the watchlist, reported 6 time(s) (seed)\n- Web (HIGH): mas-gov-verify.example (claims to be MAS): No trace of this domain; MAS's official website is mas.gov.sg.\n</intel>\n<verdict>\nRED (HOLD_FOR_REVIEW)\n- Account 123456789 is on the scam watchlist (reported 4x)\n- Asked to move money to a 'safe account'\n</verdict>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"$one_of\": {\"recommended_action\": [\"HOLD\", \"REPORT_SCAM\", \"ESCALATE\"]}, \"confidence\": 0.8, \"evidence_points\": [{\"flag\": \"SAFE_ACCOUNT\"}], \"$max_len\": {\"title\": 10}, \"$contains\": {\"summary\": [\"MAS\"]}}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "amber_job_task",
+      "conversation": [
+        {
+          "invocation_id": "casefile-amber_job_task",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<transfer>\nPayee: Ahmad Danial, account 556-208417-390 (Orchid Trust Bank)\nAmount: SGD 450.00, destination LOCAL_BANK\nTransaction risk score: 55\n- First transfer to this account (+20)\n- Amount is 12x the usual 90-day payment (+30)\n</transfer>\n<customer_answer>\nQuick reply: A job recruiter\nAnswer: The recruiter says I must top up to get my commission.\n</customer_answer>\n<evidence>\nEvidence shared: yes\nTypology guess: JOB_TASK (0.95)\nSummary: A 'TaskStar' recruiter on Telegram asks for a S$450 top-up to unlock commissions, paid to a personal account.\nEntities: {\"phones\":[],\"urls\":[],\"accounts\":[],\"orgs\":[],\"apps\":[]}\n- PAY_TO_EARN (HIGH), evidence 0: \"To unlock it, top up S$450\"\n- URGENCY (MEDIUM), evidence 0: \"Gold slots are limited today\"\n</evidence>\n<intel>\n(none)\n</intel>\n<verdict>\nAMBER (COOL_OFF)\n- Asked to pay money in order to earn (a job-scam pattern)\n- Scam pattern on a payment under S$1,000: pause and explain instead of holding\n</verdict>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"$one_of\": {\"recommended_action\": [\"HOLD\", \"ESCALATE\", \"REPORT_SCAM\"]}, \"evidence_points\": [{\"flag\": \"PAY_TO_EARN\"}], \"$max_len\": {\"title\": 10}}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "amber_analysis_failed",
+      "conversation": [
+        {
+          "invocation_id": "casefile-amber_analysis_failed",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<transfer>\nPayee: Goh Siew Ling, account 771-204593-118\nAmount: SGD 2,400.00, destination LOCAL_BANK\nTransaction risk score: 75\n- First transfer to this account (+20)\n- Amount is 15x the usual 90-day payment (+30)\n</transfer>\n<customer_answer>\nQuick reply: A friend or family member\nAnswer: For my friend.\n</customer_answer>\n<evidence>\n(no evidence analysis)\n</evidence>\n<intel>\n(none)\n</intel>\n<verdict>\nAMBER (COOL_OFF) - needs human review\n- Automatic analysis did not finish; a person needs to review\n</verdict>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"$one_of\": {\"recommended_action\": [\"ESCALATE\", \"HOLD\"]}, \"$max_len\": {\"title\": 10}, \"$max_items\": {\"evidence_points\": 0}}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    }
+  ]
+}

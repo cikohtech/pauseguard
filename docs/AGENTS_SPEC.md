@@ -85,6 +85,7 @@ Features (one SQL query against the repo):
 - **search_agent:** an `LlmAgent` with only the `google_search` tool. Prompt: "Find out whether this organisation, website or investment platform is legitimate or reported as a scam in Singapore/Asia. Return 2–3 sentences and the source URLs."
 - Only search for **unknown** URLs, domains and organisation names (max 2 searches per check, to keep latency and cost down). Never search for phone numbers or personal names.
 - **Output `IntelResult`:** `{watchlist_matches:[{type,value,source,reported_count}], web_findings:[{query, finding, sources:[url], risk:"LOW|MEDIUM|HIGH"}]}`
+- *As built (phase 04):* the watchlist lookups the verdict depends on are done **in code** by the orchestrator (payee account, regex entities from the customer's text, then the evidence agent's entities), so a RED never depends on an LLM choosing to call a tool. The LLM returns only `IntelFindings{web_findings}`; the code builds `IntelResult`. The 2-search budget and the "no phone or account numbers" rule are enforced in a `before_tool_callback`. A finding is kept only if it belongs to a search that really ran, and its `sources` are that search's grounding URLs (plus the Search suggestions chip, `search_entry_point_html`), never URLs the model typed. The LLM is skipped when nothing is unknown.
 
 ## 4. Fusion policy (deterministic, `policy/fusion.py`)
 
@@ -95,11 +96,13 @@ high_flags = count(flags with severity HIGH)
 scam_typology = evidence.typology_guess not in {NONE, UNKNOWN}
 conf = evidence.typology_confidence
 
-RED if any of:
+RED if any of (hard-stop signals, at any amount):
   - watchlist match on payee account, phone or URL
-  - scam_typology and conf >= 0.75 and (high_flags >= 2 or txn.score >= 50)
-  - flag SAFE_ACCOUNT or REMOTE_ACCESS_APP or PAY_TO_EARN present (HIGH)
+  - flag SAFE_ACCOUNT or REMOTE_ACCESS_APP present (HIGH)
   - injection_attempt_detected
+RED if amount >= red_min_amount (S$1,000), otherwise AMBER, for a scam pattern:
+  - flag PAY_TO_EARN present (HIGH)
+  - scam_typology and conf >= 0.75 and (high_flags >= 2 or txn.score >= 50)
 AMBER if any of:
   - scam_typology and conf >= 0.5
   - high_flags >= 1
@@ -109,7 +112,9 @@ else GREEN
 
 action = {GREEN: PROCEED, AMBER: COOL_OFF, RED: HOLD_FOR_REVIEW}
 ```
-Return `FusionResult{verdict, action, reasons:[str], top_flags:[RedFlag] (max 4), needs_review}`.
+Return `FusionResult{verdict, action, reasons:[str], top_flags:[RedFlag] (max 4), needs_review}`. `top_flags` are the evidence flags, most severe first (so the numbered boxes land on the screenshot), then watchlist matches in any free slots.
+
+The `red_min_amount` proportionality rule was added in phase 04 (see DECISIONS 2026-10-11): a confident scam pattern on a small payment gets a pause, an explanation and the trusted-contact call, and the customer stays in control; hard-stop signals hold at any amount. `FUSION_RED_MIN_AMOUNT=0` restores the rule set without it.
 Unit-test every branch, and log the thresholds in config so the eval can tune them. Changing thresholds after looking at the test split is not allowed (see `EVAL_PLAN.md`).
 
 ## 5. Customer Explainer agent (LLM)
@@ -119,6 +124,7 @@ Unit-test every branch, and log the thresholds in config so the eval can tune th
 - **Prompt rules:** warm, calm, respectful, no blame ("This is not your fault. Scammers are very convincing."); never say "you are being scammed" as certain fact on AMBER, use "this looks like a known scam"; reading age about 12; give the concrete reason ("Real government officers never ask you to move money"); name the official anti-scam helpline as **1799** (Singapore's ScamShield helpline) only in the customer message; no links.
 - Languages: `en`, `zh` (Simplified Chinese) in the MVP; `ms` and `ta` are stretch goals.
 - GREEN uses a static template (no LLM call) to save latency.
+- *As built (phase 04):* the LLM writes the **headline and body** (`CustomerMessageDraft`). The flag explanation next to each numbered box and the next steps (pause / wait for our call, call the trusted contact, call 1799) come from reviewed en/zh templates, which roughly halves the call and puts no model-written text beside the boxes. Word limits, link removal and "no certainty on AMBER" are enforced in post-processing. An AMBER that only exists because the analysis failed uses a static "we'll review it" message.
 
 ## 6. Case-File agent (LLM, AMBER/RED only)
 
@@ -142,6 +148,18 @@ on POST /checks/{id}/messages:
   persist check, emit events, return
 ```
 Use an ADK `ParallelAgent` for evidence + intel if that's clean; otherwise run two `Runner` calls with `asyncio.gather`. Wrap everything in `asyncio.wait_for(AGENT_TIMEOUT_SECONDS)`.
+
+**As built (phase 04, `agents/orchestrator.py`):**
+```
+start():   txn risk ∥ payee-account watchlist lookup ∥ customer lookup  → GREEN fast path or check-in
+analyse(): customer-facing, inside AGENT_TIMEOUT_SECONDS (12 s):
+             evidence agent ∥ watchlist(payee account + regex entities of the customer's text)
+             → watchlist(entities the evidence agent found) → fusion → partial event (verdict + flags)
+             → explainer (own cap EXPLAINER_BUDGET_SECONDS) or GREEN template → persist → `done`
+           analyst-facing, AMBER/RED only, inside CASEFILE_TIMEOUT_SECONDS (25 s):
+             case-file agent ∥ Scam-Intel agent (web search) → update case / check
+```
+Fusion does not read web findings, so Google Search runs after the customer has a verdict (never for GREEN). A timeout or failure in the customer-facing part gives AMBER + `needs_review`; a verdict that is already RED is never downgraded by a slow explainer (the static RED message is used). The evidence call is *hedged*: with no answer after `EVIDENCE_HEDGE_AFTER_SECONDS` (6 s) an identical request is sent and the first answer wins. `asyncio.gather`/tasks are used rather than `ParallelAgent`, because the branches have different inputs and their own validation and retry.
 
 ## 8. Agent evaluation
 

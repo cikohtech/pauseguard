@@ -1,6 +1,7 @@
 """Transaction risk (AGENTS_SPEC §1): a points table over a few behavioural features. No LLM.
 
     compute_txn_risk(customer_id, transfer, repo=...)   one repo call (risk_snapshot), then pure
+    risk_from_snapshot(snapshot, transfer, now=...)     the pure part, snapshot fetched elsewhere
     build_features(snapshot, transfer, now=..., ...)    pure: snapshot + transfer -> TxnFeatures
     score_features(features)                            pure: the points table -> TxnRisk
     rules_only_verdict(score)                           benchmark baseline B0 (EVAL_PLAN)
@@ -137,6 +138,14 @@ def compute_txn_risk(
     """Score a transfer before it is sent. One repo call; `as_of` pins "now" for the benchmark."""
     now = as_utc(as_of)
     snapshot = repo.risk_snapshot(customer_id, transfer.account_number, as_of=now)
+    return risk_from_snapshot(snapshot, transfer, now=now, watchlist_hit=watchlist_hit)
+
+
+def risk_from_snapshot(
+    snapshot: RiskSnapshot, transfer: Transfer, *, now: datetime, watchlist_hit: bool = False
+) -> TxnRisk:
+    """The pure half of compute_txn_risk, for callers that fetch the snapshot themselves
+    (the orchestrator runs it concurrently with the payee watchlist lookup)."""
     features = build_features(snapshot, transfer, now=now, watchlist_hit=watchlist_hit)
     return score_features(features, balance=snapshot.balance)
 

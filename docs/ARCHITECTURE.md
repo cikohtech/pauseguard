@@ -53,9 +53,9 @@ Keep a rendered PNG of this at `docs/img/architecture.png` for the deck (phase 1
 3. If `txn_score < 30` and there's no watchlist hit on the payee → verdict GREEN immediately, no check-in.
 4. Otherwise → status `CHECKIN`, and the response includes the first check-in question (from a template, not generated, so it's instant).
 5. Customer replies `POST /api/v1/checks/{id}/messages` with text and optional `evidence_uris` (uploaded first via `POST /api/v1/uploads/sign`).
-6. Orchestrator runs **in parallel**: Evidence agent (image/PDF/text/audio), Scam-Intel agent (watchlist + search on the entities found). The transaction features are already computed.
+6. Orchestrator runs **in parallel**: Evidence agent (image/PDF/text/audio) and the watchlist lookups (payee account and the entities in the customer's text), then a watchlist pass on the entities the evidence agent found. The transaction features are already computed.
 7. **Fusion policy** (pure Python) → verdict, recommended action and reasons.
-8. **Explainer agent** writes the customer message in the customer's language. For AMBER/RED, the **Case-File agent** writes the analyst summary, and a `cases/{case_id}` document is created.
+8. **Explainer agent** writes the customer message in the customer's language and the customer gets their answer. For AMBER/RED, a `cases/{case_id}` document is created at once; then the **Case-File agent** writes the analyst summary while the **Scam-Intel agent** checks unknown websites and platforms with Google Search (web findings never change the verdict, so they stay off the customer's critical path).
 9. API returns the verdict. The progress events were streamed via SSE `GET /api/v1/checks/{id}/events` (the MVP can poll instead).
 10. The console's Firestore listener shows the new case instantly. The analyst decides → `POST /api/v1/cases/{id}/decision` → audit log + watchlist update.
 
@@ -79,7 +79,7 @@ Optionally, the check-in can ask one follow-up question if the evidence is missi
 
 - **D1: LLMs extract, rules decide.** The fusion policy is deterministic and unit-tested. This gives explainability for regulators and judges, and stops the LLM from approving a payment on its own.
 - **D2: Templated first question, generated explanation.** The first check-in question is instant and consistent; Gemini is used where it adds value.
-- **D3: Parallel analysis.** Evidence and Intel run concurrently (ADK `ParallelAgent` or `asyncio.gather` over agent runs) to keep p50 under 5 s.
+- **D3: Parallel analysis.** Evidence and the watchlist lookups run concurrently (`asyncio` tasks over agent runs); web search and the case file run after the verdict, in parallel. Target p50 under 5 s (PRD), ≤ 6 s for phase 04.
 - **D4: Search grounding in its own sub-agent.** ADK's built-in `google_search` tool may not combine with other tools in one agent, so it gets a dedicated `search_agent`, which the Scam-Intel agent calls through `AgentTool`. Check the current ADK docs.
 - **D5: One web app, two areas.** `/app` (mobile frame, customer) and `/console` (desktop, analyst). This makes one deploy and one design system.
 - **D6: Repository pattern.** `TransactionRepo` has SQLite and BigQuery implementations, chosen by `DATA_BACKEND`.

@@ -30,6 +30,7 @@ Allowed types: png, jpeg, webp, pdf; audio (m4a, mp3, wav) is stretch. Max 10 MB
 ```json
 {"text":"他说他是金管局的官员，我的账户涉及洗钱","quick_reply":"A government officer","evidence_uris":["gs://.../chat.png"]}
 ```
+Optional `pasted_text` (max 4,000 characters): a chat the customer pasted ("paste the message"). It is analysed as text evidence, not as their own answer, and counts towards the limit of 3 evidence items (uploads + pasted text).
 Response 200 (after analysis; also streamed as events):
 ```json
 {"check_id":"...","status":"DONE",
@@ -43,6 +44,7 @@ Possible extra turn: `status:"CHECKIN"` with a follow-up `question` (max one fol
 
 ### `GET /checks/{check_id}/events` (SSE)
 Event types: `status` (`SCORING|ANALYSING_EVIDENCE|CHECKING_INTEL|DECIDING|WRITING|DONE`), `partial` (e.g. a flag found), `done` (full result), `error`. The MVP UI may poll `GET /checks/{id}` every 700 ms instead.
+Order emitted by the orchestrator: `status ANALYSING_EVIDENCE`, `status CHECKING_INTEL`, `partial ANALYSING_EVIDENCE {flags, typology}`, `partial CHECKING_INTEL {watchlist_matches}`, `status DECIDING`, `partial DECIDING {verdict, action, top_flags}` (the UI can show the verdict and boxes now), `status WRITING`, `done DONE {…the response…}`. `latency_ms.verdict` is the time to the `partial DECIDING` event and `latency_ms.total` the time to `done`. The case file is written after `done` (the case document exists from `done`, and its `case_file` is filled in a few seconds later).
 
 ### `GET /checks/{check_id}`
 Returns the full check document (customer-safe fields only: no case file).

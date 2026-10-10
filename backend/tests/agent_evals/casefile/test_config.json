@@ -1,0 +1,12 @@
+{
+  "criteria": {
+    "pauseguard_expectations": 1.0
+  },
+  "custom_metrics": {
+    "pauseguard_expectations": {
+      "code_config": {
+        "name": "tests.agent_evals.metrics.expectations"
+      }
+    }
+  }
+}

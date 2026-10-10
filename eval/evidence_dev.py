@@ -179,7 +179,8 @@ def main() -> int:
     )
     body = summarise(results, settings.fusion_amber_confidence)
     header = (
-        f"Model `{settings.gemini_model}` (thinking {settings.gemini_thinking_level}), "
+        f"Model `{settings.gemini_model}` (thinking {settings.gemini_thinking_level}, "
+        f"media {settings.gemini_media_resolution}), "
         f"prompt {version}, {stamp}, wall {wall:.0f} s. "
         f"Raw runs: `eval/results/{raw.name}` (git-ignored)."
     )

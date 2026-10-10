@@ -20,11 +20,9 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import mimetypes
 import re
 import sys
-import time
 import uuid
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -33,11 +31,18 @@ from typing import Any, Literal
 
 from google.adk.agents import LlmAgent
 from google.adk.models import BaseLlm
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from pydantic import ValidationError
 
+from app.agents import _runtime
+from app.agents._runtime import (
+    AgentRunner,
+    count_tokens,
+    generate_config,
+    neutralise,
+    parse_json_object,
+    resolve_model,
+)
 from app.config import REPO_ROOT, Settings, get_settings
 from app.log import get_logger
 from app.models.schemas import (
@@ -53,11 +58,9 @@ from app.security.injection import InjectionHit, scan_all
 log = get_logger(__name__)
 
 AGENT_NAME = "evidence_agent"
-APP_NAME = "pauseguard"
-PROMPT_PATH = Path(__file__).with_name("prompts") / "evidence.md"
+APP_NAME = _runtime.APP_NAME
 MAX_EVIDENCE = 3
 MAX_FLAGS = 6
-MAX_ATTEMPTS = 2  # the first call plus one retry (CLAUDE.md rule 4)
 FALLBACK_SUMMARY = "Automatic evidence analysis failed; a person needs to review this payment."
 
 EvidenceKind = Literal["image", "pdf", "text"]
@@ -71,7 +74,6 @@ _MIME_BY_SUFFIX = {
     ".txt": "text/plain",
 }
 _SEVERITY_RANK: dict[Severity, int] = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
-_TAG_BREAKOUT = re.compile(r"<(/?\s*(?:evidence|transfer|customer_answer|system)\b)", re.I)
 
 
 # ---------------------------------------------------------------------------
@@ -153,11 +155,6 @@ def _safe_local_path(value: str) -> Path:
     raise FileNotFoundError(value)
 
 
-def _neutralise(text: str) -> str:
-    """Untrusted text cannot close our delimiters: '</evidence>' becomes '‹/evidence>'."""
-    return _TAG_BREAKOUT.sub(r"‹\1", text)
-
-
 def _transfer_block(t: Transfer) -> str:
     bank = f" ({t.bank_name})" if t.bank_name else ""
     lines = [
@@ -167,7 +164,7 @@ def _transfer_block(t: Transfer) -> str:
         f"Destination type: {t.dest_type}",
     ]
     if t.note:
-        lines.append(f"Note: {_neutralise(t.note)}")
+        lines.append(f"Note: {neutralise(t.note)}")
     return "<transfer>\n" + "\n".join(lines) + "\n</transfer>"
 
 
@@ -177,8 +174,8 @@ def build_parts(req: EvidenceRequest) -> list[types.Part]:
     if req.transfer:
         head.append(_transfer_block(req.transfer))
     answer = [
-        f"Quick reply: {_neutralise(req.quick_reply)}" if req.quick_reply else "",
-        f"Answer: {_neutralise(req.customer_text)}" if req.customer_text else "",
+        f"Quick reply: {neutralise(req.quick_reply)}" if req.quick_reply else "",
+        f"Answer: {neutralise(req.customer_text)}" if req.customer_text else "",
     ]
     head.append(
         "<customer_answer>\n"
@@ -192,7 +189,7 @@ def build_parts(req: EvidenceRequest) -> list[types.Part]:
     for i, item in enumerate(req.items):
         kind = item.kind
         if kind == "text":
-            body = _neutralise(item.text or "")
+            body = neutralise(item.text or "")
             parts.append(
                 types.Part.from_text(
                     text=f'<evidence index="{i}" type="text">\n{body}\n</evidence>'
@@ -217,9 +214,8 @@ def build_parts(req: EvidenceRequest) -> list[types.Part]:
 
 @lru_cache
 def load_prompt() -> str:
-    """The prompt file without its leading HTML comment (the changelog)."""
-    text = PROMPT_PATH.read_text(encoding="utf-8")
-    return re.sub(r"<!--.*?-->", "", text, flags=re.S).strip()
+    """prompts/evidence.md without its leading HTML comment (the changelog)."""
+    return _runtime.load_prompt("evidence")
 
 
 def build_agent(model: str | BaseLlm | None = None, settings: Settings | None = None) -> LlmAgent:
@@ -227,92 +223,50 @@ def build_agent(model: str | BaseLlm | None = None, settings: Settings | None = 
     return LlmAgent(
         name=AGENT_NAME,
         description="Extracts facts and scam red flags from the evidence behind a payment.",
-        model=model or settings.gemini_model,
+        model=resolve_model(model, settings),
         static_instruction=load_prompt(),
         output_schema=EvidenceAnalysis,
         include_contents="none",
         disallow_transfer_to_parent=True,
         disallow_transfer_to_peers=True,
-        generate_content_config=types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(
-                thinking_level=types.ThinkingLevel(settings.gemini_thinking_level)
-            ),
-        ),
+        generate_content_config=generate_config(settings, media=True),
+        after_model_callback=count_tokens,
     )
 
 
 class EvidenceAgent:
-    """One ADK Runner around the evidence LlmAgent; every call gets a fresh session."""
+    """The evidence LlmAgent behind an AgentRunner (fresh session per call, one retry)."""
 
     def __init__(self, model: str | BaseLlm | None = None, settings: Settings | None = None):
         self.settings = settings or get_settings()
         self.settings.export_sdk_env()
         self.agent = build_agent(model, self.settings)
-        self.sessions = InMemorySessionService()
-        self.runner = Runner(app_name=APP_NAME, agent=self.agent, session_service=self.sessions)
-
-    async def _call(self, parts: list[types.Part]) -> tuple[str, TokenUsage]:
-        """One model call: the final text and its token usage."""
-        user_id = "pauseguard"
-        session = await self.sessions.create_session(app_name=APP_NAME, user_id=user_id)
-        text, tokens = "", TokenUsage()
-        try:
-            async for event in self.runner.run_async(
-                user_id=user_id,
-                session_id=session.id,
-                new_message=types.Content(role="user", parts=parts),
-            ):
-                if event.error_code:
-                    raise RuntimeError(f"model error {event.error_code}: {event.error_message}")
-                if u := event.usage_metadata:
-                    tokens.in_ += u.prompt_token_count or 0
-                    tokens.out += (u.candidates_token_count or 0) + (u.thoughts_token_count or 0)
-                if event.author == AGENT_NAME and event.is_final_response() and event.content:
-                    text = "".join(
-                        p.text for p in event.content.parts or [] if p.text and not p.thought
-                    )
-        finally:
-            await self.sessions.delete_session(
-                app_name=APP_NAME, user_id=user_id, session_id=session.id
-            )
-        return text, tokens
+        self._runner = AgentRunner(
+            self.agent, hedge_after=self.settings.evidence_hedge_after_seconds
+        )
+        self.sessions = self._runner.sessions
 
     async def analyse(self, req: EvidenceRequest) -> EvidenceRun:
-        start = time.perf_counter()
-        tokens = TokenUsage()
-        analysis: EvidenceAnalysis | None = None
-        error: str | None = None
-        attempts = 0
+        agent_run: _runtime.AgentRun[EvidenceAnalysis]
         try:
             parts = build_parts(req)
         except (ValueError, OSError) as e:  # unreadable evidence: no model call, safe fallback
-            parts, error = [], f"evidence unreadable: {_short(e)}"
-        for attempt in range(1, MAX_ATTEMPTS + 1 if parts else 1):
-            attempts = attempt
-            try:
-                text, used = await self._call(parts)
-                tokens.in_ += used.in_
-                tokens.out += used.out
-                analysis = parse_analysis(text)
-                break
-            except (ValueError, ValidationError) as e:  # bad JSON or schema
-                error = f"invalid output: {_short(e)}"
-            except Exception as e:  # model or network error: retried, then the fallback
-                error = f"{type(e).__name__}: {_short(e)}"
-            log.warning(
-                "evidence_attempt_failed", check_id=req.check_id, attempt=attempt, error=error
-            )
+            error = f"evidence unreadable: {_runtime.short_error(e)}"
+            agent_run = _runtime.AgentRun(None, 0, 0, TokenUsage(), error)
+        else:
+            agent_run = await self._runner.run(parts, parse_analysis, check_id=req.check_id)
 
+        analysis, tokens = agent_run.output, agent_run.tokens
         failed = analysis is None
         hits = prescan(req, analysis)
         final = postprocess(analysis or fallback_analysis(req), req, hits)
         run = EvidenceRun(
             analysis=final,
             failed=failed,
-            attempts=attempts,
-            latency_ms=round((time.perf_counter() - start) * 1000),
+            attempts=agent_run.attempts,
+            latency_ms=agent_run.latency_ms,
             tokens=tokens,
-            error=error if failed else None,
+            error=agent_run.error,
             injection_hits=hits,
         )
         log.info(
@@ -322,7 +276,7 @@ class EvidenceAgent:
             latency_ms=run.latency_ms,
             tokens_in=tokens.in_,
             tokens_out=tokens.out,
-            attempts=attempts,
+            attempts=run.attempts,
             failed=failed,
             typology=final.typology_guess,
             confidence=final.typology_confidence,
@@ -344,10 +298,6 @@ async def analyse_evidence(
     return await (agent or default_agent()).analyse(req)
 
 
-def _short(e: Exception, limit: int = 300) -> str:
-    return str(e).replace("\n", " ")[:limit]
-
-
 # ---------------------------------------------------------------------------
 # Parsing, fallback and post-processing (deterministic)
 # ---------------------------------------------------------------------------
@@ -365,14 +315,7 @@ def _clean_box(box: Any) -> list[int] | None:
 def parse_analysis(text: str) -> EvidenceAnalysis:
     """Model text -> EvidenceAnalysis. A flag with an unknown code is dropped, not fatal;
     anything else that doesn't fit the schema raises (and is retried)."""
-    raw = text.strip()
-    if raw.startswith("```"):
-        raw = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw)
-    if not raw:
-        raise ValueError("empty model output")
-    data = json.loads(raw)
-    if not isinstance(data, dict):
-        raise ValueError("model output is not a JSON object")
+    data = parse_json_object(text)
     flags = []
     for f in data.get("red_flags") or []:
         if isinstance(f, dict):

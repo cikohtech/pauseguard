@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     google_genai_use_vertexai: bool = True
     gemini_model: str = "gemini-3.8-flash"  # never hard-code a model ID anywhere else
     gemini_thinking_level: Literal["LOW", "MEDIUM", "HIGH"] = "LOW"  # 3.8 Flash rejects MINIMAL
+    # Images and PDF pages sent to the evidence agent (fewer input tokens than the default).
+    gemini_media_resolution: Literal["LOW", "MEDIUM", "HIGH", "DEFAULT"] = "MEDIUM"
     data_region: str = "asia-southeast1"
 
     # Data
@@ -48,7 +50,12 @@ class Settings(BaseSettings):
 
     # API
     allowed_origins: str = "http://localhost:5173"  # comma-separated
-    agent_timeout_seconds: float = 12.0
+    agent_timeout_seconds: float = 12.0  # customer-facing budget: evidence + intel + explainer
+    explainer_budget_seconds: float = 4.0  # slower than this: the reviewed static message
+    casefile_timeout_seconds: float = 25.0  # analyst-facing: case file ∥ web search, after `done`
+    intel_max_searches: int = 2  # Google Search calls per check (AGENTS_SPEC §3)
+    # No evidence answer after this many seconds: send the request again, first answer wins.
+    evidence_hedge_after_seconds: float = 6.0  # 0 = off
     auth_disabled: bool = False
     admin_reset_token: str | None = None  # from Secret Manager in cloud
     rate_limit_checks: str = "30/hour"
@@ -60,6 +67,9 @@ class Settings(BaseSettings):
     fusion_red_txn_score: int = 50
     fusion_amber_confidence: float = 0.5
     fusion_amber_txn_score_no_evidence: int = 70
+    # Proportionality (DECISIONS 2026-10-11): a scam pattern with no hard-stop signal holds the
+    # payment only from this amount (SGD); below it the verdict is AMBER (cool-off). 0 = off.
+    fusion_red_min_amount: float = 1000.0
     txn_green_fast_path_below: int = 30
 
     # Set by Cloud Run itself; used to detect "running in cloud".

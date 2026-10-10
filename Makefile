@@ -16,7 +16,7 @@ export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
 
 .PHONY: help setup dev dev-api dev-web emulators test lint format seed-local seed-cloud history \
         playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
-        evidence-dev eval deploy-api deploy-web smoke
+        evidence-dev agent-evals scenario eval deploy-api deploy-web smoke
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
@@ -50,8 +50,8 @@ dev-web: ## Web only
 emulators: ## Firestore + Auth emulators only
 	$(FIREBASE) emulators:start --only firestore,auth --project demo-pauseguard
 
-test: ## Backend pytest (live tests excluded) + web Vitest
-	$(UV) run pytest
+test: ## Backend pytest (live tests excluded; fusion policy needs 100% branch coverage) + web Vitest
+	$(UV) run pytest --cov=app/policy --cov-branch --cov-report=term-missing:skip-covered --cov-fail-under=100
 	cd $(WEB) && npm test
 
 lint: ## ruff + mypy (backend), oxlint + tsc (web)
@@ -93,6 +93,12 @@ demo-evidence: ## Render the demo personas' evidence into data/demo/
 
 evidence-dev: ## Evidence agent on the DEV split (live Gemini): typology accuracy + misses
 	$(UV) run python ../eval/evidence_dev.py $(if $(IDS),--ids $(IDS))
+
+agent-evals: ## ADK eval sets: 3 golden cases per agent through AgentEvaluator (live Gemini)
+	$(UV) run --group agent-evals pytest -m live -k agent_evals
+
+scenario: ## The full pipeline on a demo scenario (live Gemini): SCENARIO=tan|raj|aisyah|all, RUNS=1
+	$(UV) run python -m app.agents.orchestrator --scenario $(or $(SCENARIO),all) --runs $(or $(RUNS),1)
 
 eval: ## phase 09: run the benchmark and write eval/reports/benchmark.md
 	@echo "eval is implemented in phase 09 (prompts/phase-09-benchmark.md)"; exit 1

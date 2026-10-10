@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # ---------------------------------------------------------------------------
 # Shared enums (AGENTS_SPEC §0)
@@ -261,11 +261,25 @@ class WatchlistMatch(BaseModel):
     reported_count: int = 1
 
 
-class WebFinding(BaseModel):
-    query: str
-    finding: str
+class WebFindingDraft(BaseModel):
+    query: str = Field(description="Exactly the request text sent to search_agent.")
+    finding: str = Field(description="1-2 factual sentences from the search answer.")
     sources: list[str] = Field(default_factory=list)
     risk: Severity = "LOW"
+
+
+class IntelFindings(BaseModel):
+    """What the Scam-Intel LLM returns. Watchlist matches are never LLM output: the code looks
+    them up and builds the IntelResult."""
+
+    web_findings: list[WebFindingDraft] = Field(default_factory=list)
+
+
+class WebFinding(WebFindingDraft):
+    """A web finding as stored: `sources` are the grounding URLs of the search that was really
+    made, and the Google Search suggestions chip, which must be shown next to grounded results."""
+
+    search_entry_point_html: str | None = None
 
 
 class IntelResult(BaseModel):
@@ -303,6 +317,14 @@ class CustomerMessage(BaseModel):
     body: str
     flag_explanations: list[FlagExplanation] = Field(default_factory=list)
     next_steps: list[str] = Field(default_factory=list)
+
+
+class CustomerMessageDraft(BaseModel):
+    """What the Explainer LLM writes. The flag explanations and next steps come from reviewed
+    templates (explainer_agent.FLAG_TEXT), so the model only writes the headline and body."""
+
+    headline: str = Field(description="At most 8 words (Chinese: at most 16 characters).")
+    body: str = Field(description="At most 60 words (Chinese: at most 120 characters).")
 
 
 # ---------------------------------------------------------------------------
@@ -370,6 +392,15 @@ class CheckMessageRequest(BaseModel):
     text: str | None = Field(default=None, max_length=4000)
     quick_reply: str | None = Field(default=None, max_length=120)
     evidence_uris: list[str] = Field(default_factory=list, max_length=3)
+    # A chat the customer pasted ("paste the message"); analysed as text evidence, not as their
+    # own answer. It counts towards the limit of 3 evidence items.
+    pasted_text: str | None = Field(default=None, max_length=4000)
+
+    @model_validator(mode="after")
+    def _max_three_evidence_items(self) -> CheckMessageRequest:
+        if len(self.evidence_uris) + bool(self.pasted_text) > 3:
+            raise ValueError("At most 3 evidence items (uploads plus pasted text) per check.")
+        return self
 
 
 class LatencyMs(BaseModel):
@@ -378,7 +409,8 @@ class LatencyMs(BaseModel):
     intel: int | None = None
     explainer: int | None = None
     casefile: int | None = None
-    total: int | None = None
+    verdict: int | None = None  # check-in answer -> verdict and top flags known (`partial` event)
+    total: int | None = None  # check-in answer -> full customer result (`done` event)
 
 
 class TokenUsage(BaseModel):
@@ -417,6 +449,7 @@ class ChatMessage(BaseModel):
     role: MessageRole
     text: str
     evidence_uris: list[str] = Field(default_factory=list)
+    pasted_text: str | None = None
     ts: datetime
 
 

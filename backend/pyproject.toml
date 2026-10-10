@@ -30,6 +30,11 @@ markers = [
     "live: calls real Google Cloud services or Gemini (deselected by default; run with -m live)",
 ]
 addopts = "-m 'not live'"
+filterwarnings = [
+    # Raised inside ADK's own AgentTool / tool-declaration code, not ours (google-adk 2.11).
+    "ignore:The `plugins` argument is deprecated:DeprecationWarning",
+    "ignore:.*JSON_SCHEMA_FOR_FUNC_DECL is enabled:UserWarning",
+]
 
 [tool.ruff]
 line-length = 100
@@ -46,6 +51,9 @@ check_untyped_defs = true
 warn_unused_ignores = true
 
 [dependency-groups]
+agent-evals = [
+    "google-adk[eval]>=2.11.0",
+]
 datagen = [
     "playwright>=1.63.0",
 ]
@@ -55,5 +63,6 @@ dev = [
     "pre-commit>=4.6.2",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
     "ruff>=0.17.0",
 ]

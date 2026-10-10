@@ -1,0 +1,94 @@
+{
+  "eval_set_id": "intel_golden",
+  "name": "intel agent: golden cases",
+  "description": "Built by tests/agent_evals/build_evalsets.py; expectations per metrics.py.",
+  "eval_cases": [
+    {
+      "eval_id": "unknown_lookalike_domain",
+      "conversation": [
+        {
+          "invocation_id": "intel-unknown_lookalike_domain",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<case>\nTypology guess: GOV_OFFICIAL_IMPERSONATION (confidence 0.99)\nClaimed sender: Lee Wei, MAS, WhatsApp\nSummary: A man claiming to be an MAS investigator tells the customer to move S$8,000 to a 'safe account'.\n</case>\n<entities>\nAlready checked against the watchlist (do not look these up again):\n- PHONE +65 8000 0147: ON WATCHLIST\n- URL https://mas-gov-verify.example/case/2231: not listed\n- ACCOUNT 123-45678-9: ON WATCHLIST\nOrganisations named: MAS\nApps named: WhatsApp\n</entities>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"$tools_called\": [\"search_agent\"], \"web_findings\": [{}], \"$contains\": {\"web_findings\": [\"mas-gov-verify.example\"]}, \"$max_items\": {\"web_findings\": 2}}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "nothing_unknown_to_search",
+      "conversation": [
+        {
+          "invocation_id": "intel-nothing_unknown_to_search",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<case>\nTypology guess: GOV_OFFICIAL_IMPERSONATION (confidence 0.90)\nClaimed sender: Inspector Tay, Singapore Police Force, WhatsApp call\nSummary: A caller claiming to be a police inspector demands a transfer to clear the customer's name.\n</case>\n<entities>\nAlready checked against the watchlist (do not look these up again):\n- PHONE +65 8000 0112: ON WATCHLIST\n- ACCOUNT 482-19374-2: not listed\nOrganisations named: Singapore Police Force\nApps named: WhatsApp\n</entities>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"$tools_not_called\": [\"search_agent\"], \"$max_items\": {\"web_findings\": 0}}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "unknown_job_platform",
+      "conversation": [
+        {
+          "invocation_id": "intel-unknown_job_platform",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "<case>\nTypology guess: JOB_TASK (confidence 0.95)\nClaimed sender: Kelly, TaskStar, Telegram\nSummary: A 'TaskStar' recruiter asks for a S$450 top-up to unlock commissions.\n</case>\n<entities>\nAlready checked against the watchlist (do not look these up again):\n- ACCOUNT 556-208417-390: not listed\nOrganisations named: TaskStar\nApps named: Telegram\n</entities>"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"$tools_called\": [\"search_agent\"], \"$contains\": {\"web_findings\": [\"TaskStar\"]}, \"$max_items\": {\"web_findings\": 2}}"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "pauseguard",
+        "user_id": "eval",
+        "state": {}
+      }
+    }
+  ]
+}
