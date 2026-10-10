@@ -16,7 +16,7 @@ export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
 
 .PHONY: help setup dev dev-api dev-web emulators test lint format seed-local seed-cloud history \
         playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
-        eval deploy-api deploy-web smoke
+        evidence-dev eval deploy-api deploy-web smoke
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
@@ -90,6 +90,9 @@ eval-verify: ## Check that the frozen test split (cases + evidence files) is unc
 
 demo-evidence: ## Render the demo personas' evidence into data/demo/
 	$(UV) run --group datagen python ../data/generate/render_chats.py --demo
+
+evidence-dev: ## Evidence agent on the DEV split (live Gemini): typology accuracy + misses
+	$(UV) run python ../eval/evidence_dev.py $(if $(IDS),--ids $(IDS))
 
 eval: ## phase 09: run the benchmark and write eval/reports/benchmark.md
 	@echo "eval is implemented in phase 09 (prompts/phase-09-benchmark.md)"; exit 1

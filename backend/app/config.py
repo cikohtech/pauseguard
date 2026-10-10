@@ -94,8 +94,11 @@ class Settings(BaseSettings):
         """google-genai and the Firestore client read these from os.environ, not from Settings."""
         os.environ.setdefault("GOOGLE_CLOUD_PROJECT", self.google_cloud_project)
         os.environ.setdefault("GOOGLE_CLOUD_LOCATION", self.google_cloud_location)
+        use_vertex = "TRUE" if self.google_genai_use_vertexai else "FALSE"
+        os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", use_vertex)
+        # google-genai 2.29 / ADK 2.11 renamed it; set both to the same value (no warning).
         os.environ.setdefault(
-            "GOOGLE_GENAI_USE_VERTEXAI", "TRUE" if self.google_genai_use_vertexai else "FALSE"
+            "GOOGLE_GENAI_USE_ENTERPRISE", os.environ["GOOGLE_GENAI_USE_VERTEXAI"]
         )
         if self.uses_firestore_emulator and self.firestore_emulator_host:
             os.environ.setdefault("FIRESTORE_EMULATOR_HOST", self.firestore_emulator_host)
