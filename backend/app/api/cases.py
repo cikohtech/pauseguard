@@ -2,6 +2,7 @@
 
     GET  /cases                 case summaries (the console mainly uses the Firestore listener)
     GET  /cases/{id}            the full case: case file, evidence read URLs, flags, risk, intel
+    GET  /cases/{id}/history    the customer's 90 days of outgoing payments (risk chart)
     POST /cases/{id}/decision   RELEASE | HOLD | ESCALATE | REPORT_SCAM (+ watchlist upsert)
 
 Every decision appends an `audit` entry. Only analyst actions change the watchlist; no agent has
@@ -11,6 +12,9 @@ a tool that writes to it (SECURITY_PRIVACY §1).
 from __future__ import annotations
 
 import asyncio
+import statistics
+from collections import defaultdict
+from datetime import datetime, time, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Query, Request
@@ -18,13 +22,16 @@ from fastapi import APIRouter, Query, Request
 from app.api.analysis import snapshot_later
 from app.api.deps import AnalystDep, Services, ServicesDep
 from app.api.errors import error_docs, not_found
-from app.data.base import utcnow
+from app.data.analytics import SGT
+from app.data.base import HISTORY_DAYS, as_utc, utcnow
 from app.data.normalise import normalise_domain, normalise_url, normalise_watchlist_value
 from app.log import get_logger
 from app.models.schemas import (
     AnalystAction,
     AuditEntry,
+    BankTransaction,
     CaseDetail,
+    CaseHistory,
     CaseRecord,
     CaseStatus,
     CaseSummary,
@@ -32,6 +39,7 @@ from app.models.schemas import (
     DecisionRequest,
     DecisionResponse,
     EvidenceLink,
+    HistoryDay,
     Typology,
     WatchlistType,
 )
@@ -137,6 +145,52 @@ async def get_case(
     )
 
 
+@router.get(
+    "/{case_id}/history",
+    response_model=CaseHistory,
+    responses=error_docs(401, 403, 404),
+    summary="The customer's 90-day outgoing payments, for the risk chart",
+)
+async def get_case_history(case_id: str, services: ServicesDep, _: AnalystDep) -> CaseHistory:
+    """Outgoing (debit) totals per Singapore day in the 90 days before the check, every day
+    included, plus the median single debit the risk score compares the amount with. A separate
+    route, because the BigQuery query takes about a second and only the risk tab needs it."""
+    case, check = await _load(services, case_id)
+    as_of = as_utc(check.created_at)
+    txns = await asyncio.to_thread(
+        services.txn_repo.customer_history, check.customer_id, as_of=as_of
+    )
+    return history_from(check.customer_id, as_of, txns, check.transfer.amount)
+
+
+def history_from(
+    customer_id: str, as_of: datetime, txns: list[BankTransaction], transfer_amount: float
+) -> CaseHistory:
+    totals: dict[datetime, list[float]] = defaultdict(list)
+    debits = [t for t in txns if t.direction == "DEBIT"]
+    for t in debits:
+        totals[_sg_day(t.ts)].append(t.amount)
+    first, last = _sg_day(as_of - timedelta(days=HISTORY_DAYS)), _sg_day(as_of)
+    days = []
+    day = first
+    while day <= last:
+        amounts = totals.get(day, [])
+        days.append(HistoryDay(day=day.date(), amount=round(sum(amounts), 2), count=len(amounts)))
+        day += timedelta(days=1)
+    median = statistics.median(t.amount for t in debits) if debits else None
+    return CaseHistory(
+        customer_id=customer_id,
+        as_of=as_of,
+        days=days,
+        median_debit_90d=None if median is None else round(median, 2),
+        transfer_amount=transfer_amount,
+    )
+
+
+def _sg_day(ts: datetime) -> datetime:
+    return datetime.combine(as_utc(ts).astimezone(SGT).date(), time(0), SGT)
+
+
 async def _evidence_links(
     services: Services, check: CheckRecord, base_url: str
 ) -> list[EvidenceLink]:
@@ -187,12 +241,13 @@ async def decide(
         AuditEntry(actor=principal.actor, action=req.action, case_id=case_id, ts=now, note=req.note)
     )
     if reported:
+        # 1 ms later, so the audit log (ordered by ts) always lists the decision first.
         await services.state.append_audit(
             AuditEntry(
                 actor=principal.actor,
                 action="WATCHLIST_ADD",
                 case_id=case_id,
-                ts=now,
+                ts=now + timedelta(milliseconds=1),
                 note=", ".join(f"{t} {v}" for t, v in reported),
             )
         )

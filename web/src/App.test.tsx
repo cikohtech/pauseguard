@@ -54,12 +54,21 @@ test('landing page shows the tagline and both entry points', () => {
   expect(screen.getByRole('link', { name: /analyst console/ })).toHaveAttribute('href', '/console')
 })
 
-test.each([
-  ['/console/dashboard', 'PauseGuard analyst console'],
-  ['/nope', 'Page not found'],
-])('route %s renders its area', (path, heading) => {
-  renderAt(path)
-  expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument()
+test('landing page cites the 81.8% statistic and switches to Chinese', async () => {
+  renderAt('/')
+  expect(screen.getByText('81.8%')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /Singapore Police Force, Feb 2026/ })).toHaveAttribute(
+    'href',
+    expect.stringContaining('police.gov.sg'),
+  )
+  expect(screen.getAllByRole('listitem')).toHaveLength(3) // Check, Explain, Protect
+  await userEvent.click(screen.getByRole('button', { name: 'Language' }))
+  expect(await screen.findByRole('heading', { name: '付款之前，先停一停。' })).toBeInTheDocument()
+})
+
+test('an unknown route says so', () => {
+  renderAt('/nope')
+  expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument()
 })
 
 test('a customer screen without a persona goes to the persona picker', () => {

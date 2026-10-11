@@ -10,12 +10,24 @@ import {
   type EvidenceSource,
   type NumberedFlag,
 } from '@/customer/evidence'
-import type { CustomerMessage, RedFlag, Verdict } from '@/lib/api'
+import type { CustomerMessage, RedFlag, RedFlagCode, Verdict } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 // The evidence card (UI_SPEC Area 1, screen 7): the customer's own screenshot with numbered boxes
 // on the warning signs (from Gemini's box_2d), the pasted chat with the quotes marked, and the
-// numbered explanations below. Box n, mark n and list item n are the same flag.
+// numbered explanations below. Box n, mark n and list item n are the same flag. The analyst
+// console reuses it with its own wording (`copy`) and the flags' severities.
+
+/** The card's wording; the customer app's (i18n) is the default. */
+export interface EvidenceCopy {
+  title: string
+  hint: string
+  pasted: string
+  pdf: string
+  imageAlt: (name: string, count: number) => string
+  boxLabel: (n: number, title: string) => string
+  flagTitle: (code: RedFlagCode) => string
+}
 
 const INK: Record<Verdict, string> = {
   GREEN: 'bg-verdict-green-ink',
@@ -53,11 +65,15 @@ export function EvidenceCard({
   message,
   sources,
   verdict,
+  copy: custom,
+  showSeverity = false,
 }: {
   flags: RedFlag[]
   message: CustomerMessage | null
   sources: EvidenceSource[]
   verdict: Verdict
+  copy?: EvidenceCopy
+  showSeverity?: boolean
 }) {
   const { t } = useTranslation()
   const id = useId()
@@ -65,15 +81,24 @@ export function EvidenceCard({
   const { numbered, perSource } = flagsBySource(flags, sources)
   if (numbered.length === 0) return null
 
-  const title = (f: NumberedFlag) => t(`customer.flags.${f.flag.code}`, { defaultValue: f.flag.code })
+  const copy: EvidenceCopy = custom ?? {
+    title: t('customer.verdict.evidenceTitle'),
+    hint: t('customer.verdict.evidenceHint'),
+    pasted: t('customer.verdict.pasted'),
+    pdf: t('customer.verdict.pdf'),
+    imageAlt: (name, count) => t('customer.verdict.imageAlt', { name, count }),
+    boxLabel: (n, title) => t('customer.verdict.boxLabel', { n, title }),
+    flagTitle: (code) => t(`customer.flags.${code}`, { defaultValue: code }),
+  }
+  const title = (f: NumberedFlag) => copy.flagTitle(f.flag.code)
   const itemId = (n: number) => `${id}-flag-${n}`
 
   return (
     <section aria-labelledby={`${id}-title`} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
       <h2 id={`${id}-title`} className="text-[17px] font-semibold">
-        {t('customer.verdict.evidenceTitle')}
+        {copy.title}
       </h2>
-      <p className="mt-0.5 text-sm text-muted-foreground">{t('customer.verdict.evidenceHint')}</p>
+      <p className="mt-0.5 text-sm text-muted-foreground">{copy.hint}</p>
 
       {perSource.map(({ source, index, flags: here }) => {
         if (source.kind === 'image') {
@@ -85,7 +110,7 @@ export function EvidenceCard({
               <div className="relative inline-block max-w-full">
                 <img
                   src={source.url}
-                  alt={t('customer.verdict.imageAlt', { name: source.name, count: boxed.length })}
+                  alt={copy.imageAlt(source.name, boxed.length)}
                   className="block max-h-[460px] w-auto max-w-full rounded-lg border border-border"
                 />
                 {boxed.map(({ f, box }) => (
@@ -93,7 +118,7 @@ export function EvidenceCard({
                     key={f.n}
                     type="button"
                     data-testid={`flag-box-${f.n}`}
-                    aria-label={t('customer.verdict.boxLabel', { n: f.n, title: title(f) })}
+                    aria-label={copy.boxLabel(f.n, title(f))}
                     aria-describedby={itemId(f.n)}
                     aria-pressed={active === f.n}
                     onClick={() => setActive(active === f.n ? null : f.n)}
@@ -120,7 +145,7 @@ export function EvidenceCard({
           return (
             <figure key={index} className="mt-4">
               <figcaption className="mb-1.5 text-sm font-medium text-muted-foreground">
-                {t('customer.verdict.pasted')}
+                {copy.pasted}
               </figcaption>
               <blockquote className="rounded-xl bg-muted px-3.5 py-3 text-[15px] leading-relaxed whitespace-pre-wrap">
                 {highlightQuotes(source.text, here).map((seg, i) =>
@@ -135,7 +160,7 @@ export function EvidenceCard({
                     >
                       <Marker n={seg.n} verdict={verdict} className="mr-1 size-5 align-[-3px] text-[11px]" />
                       <span className="sr-only">
-                        {t('customer.verdict.boxLabel', { n: seg.n, title: title({ n: seg.n, flag: numbered[seg.n - 1].flag }) })}:
+                        {copy.boxLabel(seg.n, title({ n: seg.n, flag: numbered[seg.n - 1].flag }))}:
                       </span>
                       {seg.text}
                     </mark>
@@ -152,7 +177,7 @@ export function EvidenceCard({
             <p key={index} className="mt-4 flex items-center gap-2 rounded-xl bg-muted px-3 py-2.5 text-sm">
               <FileText aria-hidden="true" className="size-5 text-muted-foreground" />
               <span className="truncate font-medium">{source.name}</span>
-              <span className="text-muted-foreground">· {t('customer.verdict.pdf')}</span>
+              <span className="text-muted-foreground">· {copy.pdf}</span>
             </p>
           )
         }
@@ -176,7 +201,14 @@ export function EvidenceCard({
               >
                 <Marker n={f.n} verdict={verdict} className="mt-0.5" />
                 <span className="flex min-w-0 flex-col gap-0.5">
-                  <span className="font-semibold">{title(f)}</span>
+                  <span className="flex flex-wrap items-center gap-x-2 font-semibold">
+                    {title(f)}
+                    {showSeverity && (
+                      <span className="text-xs font-semibold tracking-wide text-muted-foreground">
+                        {f.flag.severity}
+                      </span>
+                    )}
+                  </span>
                   {text && <span className="text-[15px] leading-snug">{text}</span>}
                   {f.flag.quote && (
                     <span className="text-sm break-words text-muted-foreground italic">“{f.flag.quote}”</span>

@@ -1,20 +1,10 @@
 // The customer app (/app) in Chromium: the three demo scenarios screen by screen, an axe scan
 // (WCAG 2.1 A + AA) on every screen, the evidence boxes' real layout, and a keyboard-only run.
 // Screenshots land in test-results/screens/ for review.
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 
+import { scan } from './axe'
 import { fakeApi } from './fixtures'
-
-async function scan(page: Page, screen: string) {
-  await page.waitForTimeout(350) // let enter animations settle (axe reads computed colours)
-  await page.screenshot({ path: `test-results/screens/${test.info().project.name}-${screen}.png` })
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    .analyze()
-  const report = violations.map((v) => `${v.impact} ${v.id}: ${v.help} (${v.nodes.map((n) => n.target.join(' ')).join(', ')})`)
-  expect(report, `axe on "${screen}"`).toEqual([])
-}
 
 async function startTransfer(page: Page, persona: RegExp, slug: string) {
   await page.goto('/app')

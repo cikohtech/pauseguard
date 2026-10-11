@@ -33,6 +33,7 @@ from tests.api_support import (
     make_settings,
     sse_events,
 )
+from tests.conftest import AS_OF
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\0" * 64
 
@@ -558,6 +559,46 @@ async def test_case_list_and_detail(client: httpx.AsyncClient, services: Service
     assert missing.status_code == 404 and error_code(missing) == "NOT_FOUND"
 
 
+async def test_case_history_is_the_90_days_before_the_check(
+    client: httpx.AsyncClient, services: Services
+) -> None:
+    tan = await run(client, "tan")
+    await services.state.update_check(tan["check_id"], created_at=AS_OF)  # the synthetic data's end
+
+    r = await client.get(f"/api/v1/cases/{tan['case_id']}/history", headers=ANALYST)
+    assert r.status_code == 200, r.text
+    h = r.json()
+    days = h["days"]
+    assert h["customer_id"] == "cust_001" and h["transfer_amount"] == 8000
+    assert len(days) == 91 and days[-1]["day"] == AS_OF.date().isoformat()  # no gaps, both ends
+    assert all(d["amount"] >= 0 for d in days) and sum(d["count"] for d in days) > 10
+    check = await services.state.get_check(tan["check_id"])
+    assert check and check.txn_risk and check.txn_risk.features
+    ratio = check.txn_risk.features.amount_vs_median_90d
+    assert ratio and abs(8000 / h["median_debit_90d"] - ratio) < 0.05  # the score's median
+
+    denied = await client.get(f"/api/v1/cases/{tan['case_id']}/history", headers=CUSTOMER)
+    assert denied.status_code == 403
+    assert (await client.get("/api/v1/cases/case_nope/history", headers=ANALYST)).status_code == 404
+
+
+async def test_watchlist_lists_seed_and_reported_entries_for_analysts(
+    client: httpx.AsyncClient,
+) -> None:
+    seeds = (await client.get("/api/v1/watchlist", headers=ANALYST)).json()
+    assert len(seeds) >= 20 and {e["source"] for e in seeds} == {"SEED"}
+    tan = await run(client, "tan")
+    await client.post(
+        f"/api/v1/cases/{tan['case_id']}/decision", json={"action": "REPORT_SCAM"}, headers=ANALYST
+    )
+    listed = (await client.get("/api/v1/watchlist", headers=ANALYST)).json()
+    reported = {e["value"] for e in listed if e["source"] == "ANALYST_REPORT"}
+    assert "mas-gov-verify.example" in reported
+    assert listed[0]["last_seen"] >= listed[-1]["last_seen"]  # most recently seen first
+    assert len((await client.get("/api/v1/watchlist?limit=2", headers=ANALYST)).json()) == 2
+    assert (await client.get("/api/v1/watchlist", headers=CUSTOMER)).status_code == 403
+
+
 async def test_report_scam_adds_the_scam_entities_to_the_watchlist(
     client: httpx.AsyncClient, services: Services
 ) -> None:
@@ -586,6 +627,7 @@ async def test_report_scam_adds_the_scam_entities_to_the_watchlist(
     assert case.decision_note == "Called customer, confirmed MAS impersonation"
     audit = await services.state.list_audit(tan["case_id"])
     assert [a.action for a in audit] == ["REPORT_SCAM", "WATCHLIST_ADD"]
+    assert audit[1].ts > audit[0].ts  # Firestore orders by ts: never a tie
     assert audit[1].note and "DOMAIN mas-gov-verify.example" in audit[1].note
 
     await services.drain()
@@ -651,6 +693,10 @@ async def test_metrics_from_the_analytics_rows(
         "JOB_TASK",
     }
     assert m["cost_per_check_usd"] is None  # no prices configured
+    over_time = m["verdicts_over_time"]
+    assert len(over_time) == 8  # every Singapore day the last 168 hours touch
+    assert {v: sum(b[v] for b in over_time) for v in ("GREEN", "AMBER", "RED")} == m["verdicts"]
+    assert sum(b["count"] for b in m["latency_histogram"]) == 3  # every check had a check-in
     today = await client.get("/api/v1/metrics", headers=ANALYST)
     assert today.status_code == 200
     bad = await client.get("/api/v1/metrics?range=1y", headers=ANALYST)
@@ -711,8 +757,10 @@ async def test_openapi_documents_every_route_with_the_error_envelope(
         ("POST", "/api/v1/uploads/sign"),
         ("GET", "/api/v1/cases"),
         ("GET", "/api/v1/cases/{case_id}"),
+        ("GET", "/api/v1/cases/{case_id}/history"),
         ("POST", "/api/v1/cases/{case_id}/decision"),
         ("GET", "/api/v1/metrics"),
+        ("GET", "/api/v1/watchlist"),
         ("POST", "/api/v1/admin/reset-demo"),
         ("GET", "/api/v1/personas"),
         ("GET", "/health"),

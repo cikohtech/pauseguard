@@ -6,17 +6,34 @@
   "landing": {
     "tagline": "Pause before you pay.",
     "pitch": "Fraud models check the transaction. {{product}} checks the conversation that caused it.",
-    "status": "The customer app is ready to try. The analyst console is still being built.",
+    "statValue": "81.8%",
+    "stat": "of Singapore’s scam cases in 2025 were transfers the victims made themselves.",
+    "statDetail": "S$913.1M lost across 41,974 cases. The device, password and OTP were all genuine, so the payments looked normal.",
+    "source": "Source: Singapore Police Force, Feb 2026",
+    "stepsTitle": "How it works",
+    "steps": {
+      "check": {
+        "title": "Check",
+        "body": "Before a risky transfer leaves, {{product}} asks one calm question and reads the chat, screenshot or PDF behind it."
+      },
+      "explain": {
+        "title": "Explain",
+        "body": "Gemini agents find the warning signs and point at them on the customer’s own screenshot, in their language."
+      },
+      "protect": {
+        "title": "Protect",
+        "body": "Clear scams are held for a bank analyst, who gets the full case in real time and blocks the scammer for every customer."
+      }
+    },
     "tryApp": "Try the customer app",
+    "tryAppHint": "Three demo customers, real Gemini analysis",
     "openConsole": "Open the analyst console",
+    "openConsoleHint": "Demo login prefilled",
+    "sideBySide": "Best demo: open both side by side, send Mrs Tan’s transfer, and watch the case arrive.",
     "footer": "Prototype for the Google Cloud AI Builder Cup 2026 · Built on Gemini, ADK, Cloud Run, BigQuery, Firestore · All data synthetic"
   },
   "app": {
     "title": "{{bank}} app with {{product}}"
-  },
-  "console": {
-    "title": "{{product}} analyst console",
-    "placeholder": "The analyst console arrives in phase 07."
   },
   "notFound": {
     "title": "Page not found",

@@ -160,8 +160,16 @@ export class ApiError extends Error {
 
 export const apiUrl = (path: string) => `${API_BASE_URL}/api/v1${path}`
 
-async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> {
-  const token = await getIdToken()
+/** The ID token to send: the customer app's by default; the console passes its analyst's. */
+export type TokenSource = () => Promise<string | null>
+
+export async function request<T>(
+  method: 'GET' | 'POST',
+  path: string,
+  body?: unknown,
+  getToken: TokenSource = getIdToken,
+): Promise<T> {
+  const token = await getToken()
   const headers: Record<string, string> = {}
   if (token) headers.Authorization = `Bearer ${token}`
   if (body !== undefined) headers['Content-Type'] = 'application/json'

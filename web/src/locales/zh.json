@@ -6,17 +6,34 @@
   "landing": {
     "tagline": "付款之前，先停一停。",
     "pitch": "反欺诈模型检查交易，{{product}} 检查促成这笔交易的对话。",
-    "status": "客户应用已可试用，分析员控制台仍在开发中。",
+    "statValue": "81.8%",
+    "stat": "2025 年新加坡的诈骗案中，由受害者亲自转账的比例。",
+    "statDetail": "全年损失 9.131 亿新元，共 41,974 宗案件。设备、密码和一次性密码都是真的，所以这些转账看起来很正常。",
+    "source": "资料来源：新加坡警察部队，2026 年 2 月",
+    "stepsTitle": "如何运作",
+    "steps": {
+      "check": {
+        "title": "检查",
+        "body": "可疑转账发出前，{{product}} 先温和地问一个问题，并读取背后的聊天记录、截图或 PDF。"
+      },
+      "explain": {
+        "title": "解释",
+        "body": "Gemini 智能体找出危险信号，直接标在客户自己的截图上，并用客户的语言说明。"
+      },
+      "protect": {
+        "title": "保护",
+        "body": "明显的诈骗会被暂停，交给银行分析员。分析员实时看到完整案卷，并把骗子拉入黑名单，保护所有客户。"
+      }
+    },
     "tryApp": "试用客户应用",
+    "tryAppHint": "三位演示客户，真实的 Gemini 分析",
     "openConsole": "打开分析员控制台",
+    "openConsoleHint": "已预填演示账号",
+    "sideBySide": "最佳演示：两个窗口并排打开，提交陈女士的转账，看案件实时出现。",
     "footer": "Google Cloud AI Builder Cup 2026 参赛原型 · 基于 Gemini、ADK、Cloud Run、BigQuery、Firestore · 所有数据均为模拟数据"
   },
   "app": {
     "title": "{{bank}} 应用（含 {{product}}）"
-  },
-  "console": {
-    "title": "{{product}} 分析员控制台",
-    "placeholder": "分析员控制台将在第 07 阶段上线。"
   },
   "notFound": {
     "title": "找不到页面",

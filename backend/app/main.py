@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import admin, cases, checks, metrics, personas, uploads
+from app.api import admin, cases, checks, metrics, personas, uploads, watchlist
 from app.api.deps import Services
 from app.api.errors import install_error_handlers
 from app.config import Settings, get_settings
@@ -68,7 +68,7 @@ def create_app(settings: Settings | None = None, *, services: Services | None = 
         allow_headers=["*"],
     )
     install_error_handlers(app)
-    for module in (checks, uploads, cases, metrics, admin, personas):
+    for module in (checks, uploads, cases, metrics, watchlist, admin, personas):
         app.include_router(module.router, prefix=API_PREFIX)
 
     # Cloud Run's front end reserves some paths ending in "z" (it answers /healthz itself with a

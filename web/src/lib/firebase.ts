@@ -4,7 +4,12 @@
 // The SDK is imported lazily, so a local build never loads it.
 import type { Auth } from 'firebase/auth'
 
-type FirebaseConfig = { apiKey: string; authDomain?: string; projectId?: string; appId?: string }
+export type FirebaseConfig = {
+  apiKey: string
+  authDomain?: string
+  projectId?: string
+  appId?: string
+}
 
 function readConfig(): FirebaseConfig | null {
   try {
@@ -19,6 +24,8 @@ function readConfig(): FirebaseConfig | null {
 }
 
 const config = readConfig()
+/** The web config, or null when Firebase is off (local dev with AUTH_DISABLED=true). */
+export const firebaseConfig = config
 let authPromise: Promise<Auth> | null = null
 
 export const firebaseEnabled = config !== null

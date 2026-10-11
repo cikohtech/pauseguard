@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Query
@@ -30,11 +31,15 @@ async def metrics(
     by an analyst + AMBER amounts the customer cancelled or paused. False-positive rate = RED
     checks released ÷ RED checks. Latency = check-in answer → full customer result (p50/p95,
     checks with a check-in only). `cost_per_check_usd` is null until the Gemini prices are set.
-    Benchmark traffic is excluded."""
+    Benchmark traffic is excluded. `verdicts_over_time` is hourly (today) or per Singapore day
+    (7d); `latency_histogram` bins the same latencies as the percentiles."""
     s = services.settings
-    rows = await asyncio.to_thread(services.analytics.latest_rows, range_start(range_))
+    now = datetime.now(UTC)
+    rows = await asyncio.to_thread(services.analytics.latest_rows, range_start(range_, now))
     return compute_metrics(
         rows,
         price_in_per_mtok=s.gemini_price_in_usd_per_mtok,
         price_out_per_mtok=s.gemini_price_out_usd_per_mtok,
+        range_=range_,
+        now=now,
     )

@@ -7,7 +7,7 @@ against one of the agent output models below.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -582,6 +582,23 @@ class CaseDetail(BaseModel):
     audit: list[AuditEntry] = Field(default_factory=list)
 
 
+class HistoryDay(BaseModel):
+    day: date  # Singapore calendar day
+    amount: float  # outgoing (debit) total that day
+    count: int  # debits that day
+
+
+class CaseHistory(BaseModel):
+    """GET /cases/{case_id}/history: the customer's outgoing payments in the 90 days before the
+    check, one entry per Singapore day (zeros included), for the console's risk chart."""
+
+    customer_id: str
+    as_of: datetime  # the check's creation time; the window is the 90 days before it
+    days: list[HistoryDay]
+    median_debit_90d: float | None = None  # median single debit (what the risk score compares)
+    transfer_amount: float  # this check's transfer, drawn highlighted next to the history
+
+
 class DecisionRequest(BaseModel):
     action: AnalystAction
     note: str | None = Field(default=None, max_length=1000)
@@ -663,6 +680,24 @@ class TypologyCount(BaseModel):
     count: int
 
 
+class VerdictBucket(BaseModel):
+    """Verdicts of the checks created in [start, start + 1 hour) for `today`, or that Singapore
+    day for `7d`."""
+
+    start: datetime
+    GREEN: int = 0
+    AMBER: int = 0
+    RED: int = 0
+
+
+class LatencyBin(BaseModel):
+    """Checks whose answer -> full result latency is in [from_ms, to_ms); `to_ms` null = no cap."""
+
+    from_ms: int
+    to_ms: int | None = None
+    count: int = 0
+
+
 class MetricsResponse(BaseModel):
     """GET /metrics?range=today|7d."""
 
@@ -673,6 +708,8 @@ class MetricsResponse(BaseModel):
     latency_ms: LatencyPercentiles
     top_typologies: list[TypologyCount] = Field(default_factory=list)
     cost_per_check_usd: float | None = None
+    verdicts_over_time: list[VerdictBucket] = Field(default_factory=list)
+    latency_histogram: list[LatencyBin] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------

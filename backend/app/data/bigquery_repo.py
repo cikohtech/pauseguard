@@ -37,6 +37,16 @@ def _num(v: Decimal | float | None) -> float | None:
     return None if v is None else round(float(v), 2)
 
 
+def param_type(value: Any) -> str:
+    """The BigQuery type of a query parameter. isinstance, not type(): a timestamp read back from
+    Firestore is a `datetime` subclass (DatetimeWithNanoseconds), and bool is checked before int
+    because bool is an int."""
+    for py, bq in ((bool, "BOOL"), (int, "INT64"), (str, "STRING"), (datetime, "TIMESTAMP")):
+        if isinstance(value, py):
+            return bq
+    raise TypeError(f"No BigQuery parameter type for {type(value).__name__}")
+
+
 class BigQueryTransactionRepo:
     backend = "bigquery"
 
@@ -60,10 +70,9 @@ class BigQueryTransactionRepo:
         return f"`{self.project}.{self.dataset}.{table}`"
 
     def _rows(self, sql: str, **params: Any) -> list[bigquery.Row]:
-        types = {str: "STRING", int: "INT64", bool: "BOOL", datetime: "TIMESTAMP"}
         config = bigquery.QueryJobConfig(
             query_parameters=[
-                bigquery.ScalarQueryParameter(k, types[type(v)], v) for k, v in params.items()
+                bigquery.ScalarQueryParameter(k, param_type(v), v) for k, v in params.items()
             ]
         )
         return list(self.client.query(sql, job_config=config, location=self.location).result())

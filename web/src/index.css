@@ -21,6 +21,7 @@
     --color-verdict-red-soft: var(--verdict-red-soft);
     --color-primary-soft: var(--primary-soft);
     --color-brand-deep: var(--brand-deep);
+    --color-chart-context: var(--chart-context);
     --color-surface: var(--surface);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -109,6 +110,15 @@
     --verdict-red-soft: #FBEBE9;
     --primary-soft: #E6F1F3;
     --brand-deep: #0A4552;
+    /* Console charts. Verdict series: GREEN, AMBER and RED *ink* (the palette validator passes
+       them as stack neighbours; raw AMBER vs RED is too close). Context marks: 3.3:1 on white. */
+    --chart-green: #1F8A5B;
+    --chart-amber: #B7791F;
+    --chart-red: #A93226;
+    --chart-primary: #0F5E6E;
+    --chart-context: #7393A0;
+    --chart-grid: #E1E7EB;
+    --chart-axis: #5B6B77;
 }
 
 .dark {
@@ -155,6 +165,13 @@
     --verdict-red-soft: #3A1A16;
     --primary-soft: #173843;
     --brand-deep: #0A4552;
+    --chart-green: #3DBA82;
+    --chart-amber: #E0A33B;
+    --chart-red: #E5675A;
+    --chart-primary: #5FB3C4;
+    --chart-context: #5E7783;
+    --chart-grid: #22343F;
+    --chart-axis: #9AAAB6;
 }
 
 @layer base {
@@ -172,6 +189,22 @@
 @keyframes grow {
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
+}
+
+/* Console queue: a case that arrives while the console is open slides in, then its highlight fades. */
+@keyframes queue-row-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes queue-row-glow {
+  0%, 55% { background-color: var(--primary-soft); border-color: color-mix(in oklch, var(--primary) 45%, transparent); }
+  100% { background-color: transparent; border-color: transparent; }
+}
+.queue-row-in { animation: queue-row-in 450ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.queue-row-fresh { animation: queue-row-glow 8s ease-out forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .queue-row-in { animation: none; }
+  .queue-row-fresh { animation: none; background-color: var(--primary-soft); }
 }
 
 /* The fake status bar in the desktop phone frame turns white over a screen's dark header. */

@@ -77,6 +77,9 @@ List of case summaries (the console mainly uses the Firestore realtime listener;
 ### `GET /cases/{case_id}`
 Full case (`CaseDetail`): `case` (with `case_file`, null for a few seconds after the case appears), `transfer`, `txn_risk`, `messages` (the check-in, raw text), `evidence`, `evidence_links` (signed read URLs, 5 min; `index` matches the flags' `evidence_index`), `intel`, `fusion`, `customer_choice`, `audit` (oldest first).
 
+### `GET /cases/{case_id}/history`
+The customer's outgoing payments in the 90 days before the check, for the console's risk chart: `{"customer_id","as_of","days":[{"day":"2026-10-10","amount":120.5,"count":2}, …],"median_debit_90d":43.5,"transfer_amount":8000}`. One entry per Singapore day, empty days included; `median_debit_90d` is the median single debit (what `amount_vs_median_90d` compares with). A separate route because the BigQuery query takes about a second and only the Risk tab needs it.
+
 ### `POST /cases/{case_id}/decision`
 `{"action":"RELEASE"|"HOLD"|"ESCALATE"|"REPORT_SCAM","note":"Called customer, confirmed MAS impersonation"}`
 - Writes an `audit` entry and updates the case status.
@@ -90,7 +93,11 @@ Full case (`CaseDetail`): `case` (with `case_file`, null for a few seconds after
  "false_positive_rate":0.048,"latency_ms":{"p50":3900,"p95":8100},
  "top_typologies":[{"typology":"JOB_TASK","count":19}, ...],"cost_per_check_usd":0.0041}
 ```
+Also `verdicts_over_time` (`[{"start":"2026-10-11T09:00:00+08:00","GREEN":3,"AMBER":1,"RED":1}, …]`: hourly since 00:00 Singapore time for `today`, per Singapore day for `7d`, empty buckets included) and `latency_histogram` (`[{"from_ms":0,"to_ms":2000,"count":4}, …, {"from_ms":20000,"to_ms":null,"count":0}]`, the same latencies as the percentiles) for the dashboard charts.
 From `checks_analytics` (latest snapshot per check; benchmark rows excluded). `today` starts at 00:00 Singapore time; `7d` is the last 168 hours. Money protected = RED amounts not released by an analyst + AMBER amounts the customer cancelled or paused (COOL_OFF). False-positive rate = RED checks released ÷ RED checks (PRD A5). Latency = check-in answer → full customer result (`latency_ms.total`), checks with a check-in only. Top typologies: AMBER/RED checks, top 5. `cost_per_check_usd` is null until `GEMINI_PRICE_IN_USD_PER_MTOK` / `GEMINI_PRICE_OUT_USD_PER_MTOK` are set from the published price list (phase 09).
+
+### `GET /watchlist?limit=500`
+Watchlist entries (`WatchlistEntry`: type, normalised value, source SEED|ANALYST_REPORT, reported_count, first/last seen, typologies), most recently seen first, for the console's Watchlist page. Analysts only, read only: only `REPORT_SCAM` and the seed write to it.
 
 ## Ops
 

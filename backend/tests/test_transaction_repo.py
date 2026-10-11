@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import secrets
 import statistics
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -247,3 +247,16 @@ def test_bigquery_returns_what_sqlite_returns(
         client.delete_dataset(
             f"{client.project}.{dataset}", delete_contents=True, not_found_ok=True
         )
+
+
+def test_bigquery_parameter_types_accept_datetime_subclasses() -> None:
+    from google.api_core.datetime_helpers import DatetimeWithNanoseconds
+
+    from app.data.bigquery_repo import param_type
+
+    firestore_ts = DatetimeWithNanoseconds(2026, 10, 11, 6, 0, tzinfo=UTC)  # a check's created_at
+    assert param_type(firestore_ts) == "TIMESTAMP"
+    assert param_type(datetime(2026, 10, 11, tzinfo=UTC)) == "TIMESTAMP"
+    assert (param_type(True), param_type(3), param_type("cust_001")) == ("BOOL", "INT64", "STRING")
+    with pytest.raises(TypeError):
+        param_type(1.5)

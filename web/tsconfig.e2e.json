@@ -5,7 +5,7 @@
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
     "moduleResolution": "bundler",
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "skipLibCheck": true,
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,
@@ -13,7 +13,8 @@
     "noEmit": true,
     "strict": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "paths": { "@/*": ["./src/*"] }
   },
   "include": ["playwright.config.ts", "e2e"]
 }

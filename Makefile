@@ -23,7 +23,8 @@ export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
 
 .PHONY: help setup dev dev-api dev-web emulators test lint format seed-local seed-cloud history \
         a11y playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
-        evidence-dev agent-evals scenario demo-curl api-live eval infra analyst deploy-api deploy-web smoke
+        evidence-dev agent-evals scenario demo-curl api-live eval infra analyst deploy-api deploy-web smoke \
+        console-live
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
@@ -143,3 +144,9 @@ deploy-web: ## Build web/ against the live API, deploy Firebase Hosting + Firest
 
 smoke: ## The live stack: /health, Hosting, CORS, Firebase Auth, the 3 scenarios, then reset-demo
 	PROJECT=$(PROJECT) REGION=$(REGION) scripts/smoke.sh
+
+console-live: ## The live demo's two windows: Tan's transfer -> case in the console within 1 s -> Report -> watchlist, then reset-demo
+	@API_URL="$$(gcloud run services describe $(SERVICE) --project $(PROJECT) --region $(REGION) --format='value(status.url)')"; \
+	ADMIN_TOKEN="$$(gcloud secrets versions access latest --secret admin-reset-token --project $(PROJECT))"; \
+	cd $(WEB) && npx playwright install --only-shell chromium >/dev/null && \
+	API_URL="$$API_URL" ADMIN_TOKEN="$$ADMIN_TOKEN" node e2e-live/console-live.mjs $(or $(SITE),https://$(PROJECT).web.app)

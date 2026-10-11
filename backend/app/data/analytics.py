@@ -21,11 +21,13 @@ from app.models.schemas import (
     CaseStatus,
     CheckAnalyticsRow,
     CheckRecord,
+    LatencyBin,
     LatencyPercentiles,
     MetricsRange,
     MetricsResponse,
     TypologyCount,
     Verdict,
+    VerdictBucket,
 )
 
 SGT = ZoneInfo("Asia/Singapore")
@@ -39,6 +41,9 @@ DECISION_FOR_STATUS: dict[CaseStatus, AnalystAction | None] = {
 }
 # An AMBER check protects the money when the customer does not send it (PRD A5: "AMBER-cancelled").
 AMBER_STOPPED = frozenset({"CANCELLED", "COOL_OFF"})
+# The dashboard's latency histogram: [0, 2 s), [2 s, 4 s) … [20 s, ∞). The p50/p95 targets are
+# 5 s / 10 s (PRD §6), so the bins are finest there.
+LATENCY_EDGES_MS = (0, 2000, 4000, 6000, 8000, 10_000, 15_000, 20_000)
 
 
 def analytics_row(
@@ -80,6 +85,48 @@ def range_start(range_: MetricsRange, now: datetime | None = None) -> datetime:
     return now - timedelta(days=7)
 
 
+def verdict_buckets(
+    rows: Sequence[CheckAnalyticsRow], range_: MetricsRange, now: datetime | None = None
+) -> list[VerdictBucket]:
+    """Verdict counts over time: hourly since 00:00 Singapore time for `today`, per Singapore
+    day for `7d` (every day the 168 hours touch, so 8 buckets). Empty buckets are included, so
+    the chart's time axis has no gaps."""
+    now = now or datetime.now(UTC)
+    hourly = range_ == "today"
+
+    def bucket_of(ts: datetime) -> datetime:
+        local = (ts.replace(tzinfo=UTC) if ts.tzinfo is None else ts).astimezone(SGT)
+        if hourly:
+            return local.replace(minute=0, second=0, microsecond=0)
+        return datetime.combine(local.date(), time(0), SGT)
+
+    step = timedelta(hours=1) if hourly else timedelta(days=1)
+    buckets: dict[datetime, VerdictBucket] = {}
+    t = bucket_of(range_start(range_, now))
+    while t <= now:
+        buckets[t] = VerdictBucket(start=t)
+        t += step
+    for r in rows:
+        bucket = buckets.get(bucket_of(r.ts))
+        if bucket and r.verdict:
+            setattr(bucket, r.verdict, getattr(bucket, r.verdict) + 1)
+    return list(buckets.values())
+
+
+def latency_histogram(latencies: Sequence[int]) -> list[LatencyBin]:
+    edges = LATENCY_EDGES_MS
+    bins = [
+        LatencyBin(from_ms=lo, to_ms=edges[i + 1] if i + 1 < len(edges) else None)
+        for i, lo in enumerate(edges)
+    ]
+    for ms in latencies:
+        for b in reversed(bins):
+            if ms >= b.from_ms:
+                b.count += 1
+                break
+    return bins
+
+
 def percentile(values: Sequence[int], p: float) -> int:
     """Nearest-rank percentile (0 for no values)."""
     if not values:
@@ -93,8 +140,11 @@ def compute_metrics(
     *,
     price_in_per_mtok: float | None = None,
     price_out_per_mtok: float | None = None,
+    range_: MetricsRange = "today",
+    now: datetime | None = None,
 ) -> MetricsResponse:
-    """`rows` is the latest snapshot of each check (AnalyticsRepo.latest_rows).
+    """`rows` is the latest snapshot of each check (AnalyticsRepo.latest_rows) since
+    `range_start(range_, now)`.
 
     - money protected: RED amounts the analyst did not release, plus AMBER amounts the customer
       did not send (cancelled or paused).
@@ -142,4 +192,6 @@ def compute_metrics(
         latency_ms=LatencyPercentiles(p50=percentile(latencies, 50), p95=percentile(latencies, 95)),
         top_typologies=[TypologyCount.model_validate({"typology": t, "count": n}) for t, n in top],
         cost_per_check_usd=cost,
+        verdicts_over_time=verdict_buckets(rows, range_, now),
+        latency_histogram=latency_histogram(latencies),
     )

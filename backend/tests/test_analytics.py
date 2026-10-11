@@ -9,7 +9,14 @@ from typing import Any
 
 import pytest
 
-from app.data.analytics import analytics_row, compute_metrics, percentile, range_start
+from app.data.analytics import (
+    analytics_row,
+    compute_metrics,
+    latency_histogram,
+    percentile,
+    range_start,
+    verdict_buckets,
+)
 from app.data.sqlite_repo import SqliteAnalyticsRepo
 from app.models.schemas import (
     CaseRecord,
@@ -156,6 +163,33 @@ def test_percentile_is_nearest_rank() -> None:
     assert percentile([7], 95) == 7
     assert percentile(list(range(1, 101)), 50) == 50
     assert percentile(list(range(1, 101)), 95) == 95
+
+
+def test_verdicts_over_time_are_hourly_today_and_daily_for_7d() -> None:
+    rows = [
+        row("a", ts=datetime(2026, 10, 11, 0, 30, tzinfo=UTC)),  # 08:30 SGT
+        row("b", ts=datetime(2026, 10, 11, 0, 45, tzinfo=UTC), verdict="RED"),
+        row("c", ts=datetime(2026, 10, 11, 3, 59), verdict="AMBER"),  # naive = UTC: 11:59 SGT
+        row("d", ts=datetime(2026, 10, 10, 15, 0, tzinfo=UTC), verdict=None),  # 23:00 SGT
+    ]
+    today = verdict_buckets(rows, "today", NOW)
+    assert len(today) == 13  # 00:00 … 12:00 Singapore time, empty hours included
+    assert today[0].start.isoformat() == "2026-10-11T00:00:00+08:00"
+    assert (today[8].GREEN, today[8].RED) == (1, 1) and today[11].AMBER == 1
+    assert sum(b.GREEN + b.AMBER + b.RED for b in today) == 3
+    week = verdict_buckets(rows, "7d", NOW)
+    assert [b.start.day for b in week] == [4, 5, 6, 7, 8, 9, 10, 11]
+    assert (week[-1].GREEN, week[-1].AMBER, week[-1].RED) == (1, 1, 1)
+    assert compute_metrics(rows, range_="today", now=NOW).verdicts_over_time == today
+
+
+def test_latency_histogram_bins_are_half_open() -> None:
+    bins = latency_histogram([0, 1999, 2000, 5999, 6000, 19_999, 20_000, 90_000])
+    assert [(b.from_ms, b.to_ms) for b in bins][:2] == [(0, 2000), (2000, 4000)]
+    assert bins[-1].to_ms is None
+    assert [b.count for b in bins] == [2, 1, 1, 1, 0, 0, 1, 2]
+    rows = [row("fast", fast_path=True, latency_ms=10), row("slow", latency_ms=7000)]
+    assert [b.count for b in compute_metrics(rows).latency_histogram] == [0, 0, 0, 1, 0, 0, 0, 0]
 
 
 def test_today_starts_at_midnight_singapore_time() -> None:
