@@ -106,9 +106,15 @@ class FakeClient:
         return Bucket()
 
 
+class FakeIamCreds(FakeCreds):
+    token = "iam-tok"  # cloud-platform scope, unlike the storage client's token
+
+
 async def test_gcs_signs_through_iam_with_the_size_limit() -> None:
     client = FakeClient()
-    store = GcsEvidenceStore("p-pauseguard-evidence", "p", client=client)
+    store = GcsEvidenceStore(
+        "p-pauseguard-evidence", "p", client=client, signing_credentials=FakeIamCreds()
+    )
     signed = await store.sign_upload(CHECK, "0-a.png", "image/png", base_url="ignored")
     assert signed.gcs_uri == f"gs://p-pauseguard-evidence/checks/{CHECK}/0-a.png"
     assert signed.headers == {
@@ -119,13 +125,31 @@ async def test_gcs_signs_through_iam_with_the_size_limit() -> None:
     assert put["blob"] == f"checks/{CHECK}/0-a.png" and put["method"] == "PUT"
     assert put["version"] == "v4" and put["expiration"].total_seconds() == 600
     assert put["service_account_email"] == FakeCreds.service_account_email
-    assert put["access_token"] == "tok" and put["content_type"] == "image/png"
+    # signBlob needs a cloud-platform token; the storage client's own ("tok") is refused on
+    # Cloud Run with ACCESS_TOKEN_SCOPE_INSUFFICIENT.
+    assert put["access_token"] == "iam-tok" and put["content_type"] == "image/png"
 
     await store.read_url(signed.gcs_uri, base_url="ignored")
     get = client.calls[1]
     assert get["method"] == "GET" and get["expiration"].total_seconds() == 300
     with pytest.raises(ValueError):
         await store.read_url("gs://other-bucket/x.png", base_url="ignored")
+
+
+def test_gcs_signing_credentials_default_to_cloud_platform_scope(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scopes_asked: list[list[str]] = []
+
+    def fake_default(scopes: list[str]) -> tuple[FakeIamCreds, str]:
+        scopes_asked.append(scopes)
+        return FakeIamCreds(), "p"
+
+    monkeypatch.setattr("google.auth.default", fake_default)
+    store = GcsEvidenceStore("p-pauseguard-evidence", "p", client=FakeClient())
+    assert store._signing_kwargs()["access_token"] == "iam-tok"
+    store._signing_kwargs()  # cached: google.auth.default is asked once
+    assert scopes_asked == [["https://www.googleapis.com/auth/cloud-platform"]]
 
 
 def test_store_choice_follows_settings(tmp_path: Path) -> None:

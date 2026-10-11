@@ -1,0 +1,38 @@
+rules_version = '2';
+
+// PauseGuard Firestore rules (SECURITY_PRIVACY.md §3). Clients never write: every write goes
+// through the API's service account, which the rules don't apply to. Reads:
+// - checks:   a signed-in client (anonymous auth is fine) may get ONE check by the unguessable ID
+//             the API returned; listing or querying checks is denied.
+// - cases, audit, watchlist, feedback: analysts only (Firebase custom claim role=analyst).
+// - personas: the 3 synthetic demo customers, readable by any signed-in client.
+// Anything not matched below is denied.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isAnalyst() {
+      return signedIn() && request.auth.token.role == 'analyst';
+    }
+
+    match /checks/{checkId} {
+      allow get: if signedIn();
+    }
+    match /personas/{customerId} {
+      allow read: if signedIn();
+    }
+    match /cases/{caseId} {
+      allow read: if isAnalyst();
+    }
+    match /audit/{entryId} {
+      allow read: if isAnalyst();
+    }
+    match /watchlist/{entryId} {
+      allow read: if isAnalyst();
+    }
+    match /feedback/{entryId} {
+      allow read: if isAnalyst();
+    }
+  }
+}

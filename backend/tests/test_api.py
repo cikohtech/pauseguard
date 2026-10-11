@@ -715,7 +715,7 @@ async def test_openapi_documents_every_route_with_the_error_envelope(
         ("GET", "/api/v1/metrics"),
         ("POST", "/api/v1/admin/reset-demo"),
         ("GET", "/api/v1/personas"),
-        ("GET", "/healthz"),
+        ("GET", "/health"),
     }
     for path, ops in spec["paths"].items():
         for op in ops.values():

@@ -39,11 +39,11 @@ get() { curl -sS --fail-with-body "$API$1" ${AUTH[@]+"${AUTH[@]}"}; }
 upload() {  # upload CHECK_ID FILE CONTENT_TYPE -> the URI for evidence_uris
   local signed url
   signed="$(post /uploads/sign "$(jq -nc --arg c "$1" --arg f "$(basename "$2")" --arg t "$3" \
-    '{check_id:$c, filename:$f, content_type:$t}')")"
+    '{check_id:$c, filename:$f, content_type:$t}')")" || return 1
   url="$(jq -r .upload_url <<<"$signed")"
   local headers=()
   while IFS= read -r h; do headers+=(-H "$h"); done < <(jq -r '.headers | to_entries[] | "\(.key): \(.value)"' <<<"$signed")
-  curl -sS --fail-with-body -X PUT "$url" "${headers[@]}" --data-binary "@$2" >/dev/null
+  curl -sS --fail-with-body -X PUT "$url" ${headers[@]+"${headers[@]}"} --data-binary "@$2" >/dev/null || return 1
   jq -r .gcs_uri <<<"$signed"
 }
 
@@ -79,7 +79,8 @@ scenario() {
 
   local uris='[]'
   if [[ -n "$file" ]]; then
-    local uri; uri="$(upload "$check_id" "$file" "$ctype")"
+    local uri
+    uri="$(upload "$check_id" "$file" "$ctype")" || { echo "  ✘ evidence upload failed"; FAILED=1; return 0; }
     uris="$(jq -nc --arg u "$uri" '[$u]')"
     echo "POST /uploads/sign + PUT -> $uri"
   fi

@@ -1,0 +1,12 @@
+[
+  {
+    "origin": [
+      "https://pauseguard-sg.web.app",
+      "https://pauseguard-sg.firebaseapp.com",
+      "http://localhost:5173"
+    ],
+    "method": ["PUT", "GET", "HEAD"],
+    "responseHeader": ["Content-Type", "x-goog-content-length-range"],
+    "maxAgeSeconds": 3600
+  }
+]

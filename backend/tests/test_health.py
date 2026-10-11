@@ -5,11 +5,13 @@ from app.config import Settings
 from app.main import create_app
 
 
-def test_healthz_ok():
+@pytest.mark.parametrize("path", ["/health", "/healthz"])
+def test_health_ok(path: str):
+    # /health is the one Cloud Run serves (it reserves /healthz); /healthz is a local alias.
     settings = Settings(gemini_model="test-model", data_backend="sqlite", _env_file=None)
     client = TestClient(create_app(settings))
 
-    resp = client.get("/healthz")
+    resp = client.get(path)
 
     assert resp.status_code == 200
     assert resp.json() == {
@@ -24,7 +26,7 @@ def test_cors_allows_configured_origin():
     settings = Settings(allowed_origins="http://localhost:5173,https://x.web.app", _env_file=None)
     client = TestClient(create_app(settings))
 
-    resp = client.get("/healthz", headers={"Origin": "https://x.web.app"})
+    resp = client.get("/health", headers={"Origin": "https://x.web.app"})
 
     assert resp.headers["access-control-allow-origin"] == "https://x.web.app"
 

@@ -16,8 +16,8 @@ This phase runs **twice** (see the `PROGRESS.md` rows): **Pass A** on day 4, rig
 2. Re-run the benchmark against the deployed API (`--target cloud`) and update the report.
 3. **Evaluation-period safeguards, every item in `DEPLOYMENT.md` §7:**
    - `--min-instances 1`, `--max-instances 5`, `--concurrency 20`
-   - Cloud Monitoring uptime checks on the hosting URL and `/healthz`, with an alert policy emailing the user
-   - `/healthz` dependency checks; `/admin/selftest`; Cloud Scheduler jobs for the daily selftest and the 6-hourly `/admin/reset-demo`
+   - Cloud Monitoring uptime checks on the hosting URL and `/health` (Cloud Run reserves `/healthz`), with an alert policy emailing the user
+   - `/health` dependency checks; `/admin/selftest`; Cloud Scheduler jobs for the daily selftest and the 6-hourly `/admin/reset-demo`
    - Vertex AI quota checked; backoff on 429
    - Rate limit at 30 checks/hour/IP
 4. Check Cloud Logging and Cloud Trace, and screenshot an agent trace for the deck and video.

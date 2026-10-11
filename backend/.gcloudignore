@@ -1,0 +1,13 @@
+# What `gcloud run deploy --source backend` uploads to Cloud Build (the Dockerfile only needs
+# pyproject.toml, uv.lock and app/). Without this file the local .venv would be uploaded.
+.gcloudignore
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+tests/
+.env
+*.db

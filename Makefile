@@ -8,6 +8,13 @@ BACKEND := backend
 WEB     := web
 UV      := uv --directory $(BACKEND)
 
+# Google Cloud (phase 10). The project comes from GOOGLE_CLOUD_PROJECT in .env.
+PROJECT ?= $(shell grep -E '^GOOGLE_CLOUD_PROJECT=' .env 2>/dev/null | cut -d= -f2 | awk '{print $$1}')
+REGION  ?= asia-southeast1
+SERVICE := pauseguard-api
+# Cloud Run min instances: 0 while building, 1 from submission day on (DEPLOYMENT §7).
+MIN_INSTANCES ?= 0
+
 # Firebase CLI: a global install if there is one, else a pinned copy through npx (no sudo).
 FIREBASE ?= $(shell command -v firebase 2>/dev/null || echo npx --yes firebase-tools@15.31.0)
 # Homebrew's openjdk@21 is keg-only (not on PATH); the emulators need it, so add it if present.
@@ -16,7 +23,7 @@ export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
 
 .PHONY: help setup dev dev-api dev-web emulators test lint format seed-local seed-cloud history \
         playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
-        evidence-dev agent-evals scenario demo-curl api-live eval deploy-api deploy-web smoke
+        evidence-dev agent-evals scenario demo-curl api-live eval infra analyst deploy-api deploy-web smoke
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
@@ -36,7 +43,7 @@ dev: ## API on :8000 + web on :5173 (+ Firestore/Auth emulators if installed). C
 	else \
 		echo "ℹ Firestore emulator skipped (needs Node + Java 11+: brew install openjdk@21)."; \
 	fi; \
-	echo "▶ API  http://localhost:8000/healthz   ▶ Web  http://localhost:5173"; \
+	echo "▶ API  http://localhost:8000/health   ▶ Web  http://localhost:5173"; \
 	$(UV) run uvicorn app.main:app --reload --port 8000 & \
 	(cd $(WEB) && npm run dev) & \
 	wait
@@ -109,11 +116,27 @@ api-live: ## The API end to end with the real agents (live Gemini): upload, answ
 eval: ## phase 09: run the benchmark and write eval/reports/benchmark.md
 	@echo "eval is implemented in phase 09 (prompts/phase-09-benchmark.md)"; exit 1
 
-deploy-api: ## phase 10: Cloud Run deploy of backend/
-	@echo "deploy-api is implemented in phase 10 (prompts/phase-10-deploy.md)"; exit 1
+infra: ## One-time GCP infrastructure (idempotent; creates billable resources): infra/setup.sh
+	PROJECT_ID=$(PROJECT) REGION=$(REGION) infra/setup.sh
 
-deploy-web: ## phase 10: build web/ and deploy to Firebase Hosting
-	@echo "deploy-web is implemented in phase 10 (prompts/phase-10-deploy.md)"; exit 1
+analyst: ## Create/refresh the demo analyst (role=analyst) in Firebase Auth; ARGS=--emulator for local
+	$(UV) run python ../infra/set_analyst_claim.py $(ARGS)
 
-smoke: ## phase 10: /healthz + the 3 demo scenarios against an API
-	@echo "smoke is implemented in phase 10 (prompts/phase-10-deploy.md)"; exit 1
+deploy-api: ## Cloud Run deploy of backend/ (Cloud Build, asia-southeast1); MIN_INSTANCES=1 for judging
+	gcloud run deploy $(SERVICE) --project $(PROJECT) --region $(REGION) --quiet \
+	  --source $(BACKEND) --image $(REGION)-docker.pkg.dev/$(PROJECT)/pauseguard/$(SERVICE) \
+	  --build-service-account projects/$(PROJECT)/serviceAccounts/pauseguard-build@$(PROJECT).iam.gserviceaccount.com \
+	  --service-account pauseguard-api@$(PROJECT).iam.gserviceaccount.com \
+	  --env-vars-file infra/cloudrun.env.yaml --set-secrets ADMIN_RESET_TOKEN=admin-reset-token:latest \
+	  --allow-unauthenticated --min-instances $(MIN_INSTANCES) --max-instances 5 --concurrency 20 \
+	  --memory 1Gi --cpu 1 --timeout 180 --no-cpu-throttling --cpu-boost
+
+deploy-web: ## Build web/ against the live API, deploy Firebase Hosting + Firestore rules/indexes
+	@API_URL="$$(gcloud run services describe $(SERVICE) --project $(PROJECT) --region $(REGION) --format='value(status.url)')"; \
+	test -n "$$API_URL" || { echo "No Cloud Run service $(SERVICE) yet: make deploy-api first"; exit 1; }; \
+	echo "▶ VITE_API_BASE_URL=$$API_URL"; \
+	cd $(WEB) && VITE_API_BASE_URL="$$API_URL" npm run build
+	$(FIREBASE) deploy --project $(PROJECT) --only hosting,firestore:rules,firestore:indexes --non-interactive
+
+smoke: ## The live stack: /health, Hosting, CORS, Firebase Auth, the 3 scenarios, then reset-demo
+	PROJECT=$(PROJECT) REGION=$(REGION) scripts/smoke.sh

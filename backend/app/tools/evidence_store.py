@@ -67,13 +67,22 @@ class EvidenceStore(Protocol):
 
 # --- cloud -----------------------------------------------------------------------------------
 
+CLOUD_PLATFORM_SCOPE = "https://www.googleapis.com/auth/cloud-platform"
+
 
 class GcsEvidenceStore:
     backend = "gcs"
 
-    def __init__(self, bucket: str, project: str, client: Any | None = None) -> None:
+    def __init__(
+        self,
+        bucket: str,
+        project: str,
+        client: Any | None = None,
+        signing_credentials: Any | None = None,
+    ) -> None:
         self.bucket_name, self.project = bucket, project
         self._client = client
+        self._signing_creds = signing_credentials
 
     @property
     def client(self) -> Any:
@@ -88,13 +97,19 @@ class GcsEvidenceStore:
 
     def _signing_kwargs(self) -> dict[str, Any]:
         """Cloud Run's credentials have no private key: sign through the IAM signBlob API with
-        the service account's own token (needs roles/iam.serviceAccountTokenCreator on itself)."""
+        the service account's own token (needs roles/iam.serviceAccountTokenCreator on itself).
+        Not the storage client's token: that one is scoped to Cloud Storage and IAM rejects it
+        (ACCESS_TOKEN_SCOPE_INSUFFICIENT), so signBlob gets its own cloud-platform credentials."""
         from google.auth import credentials as ga_credentials
         from google.auth.transport.requests import Request
 
-        creds = self.client._credentials
-        if isinstance(creds, ga_credentials.Signing):
+        if isinstance(self.client._credentials, ga_credentials.Signing):
             return {}
+        if self._signing_creds is None:
+            import google.auth
+
+            self._signing_creds, _ = google.auth.default(scopes=[CLOUD_PLATFORM_SCOPE])
+        creds: Any = self._signing_creds  # compute_engine / impersonated credentials
         if not creds.valid:
             creds.refresh(Request())
         return {"service_account_email": creds.service_account_email, "access_token": creds.token}

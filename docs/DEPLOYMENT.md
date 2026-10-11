@@ -10,55 +10,51 @@ The target is a public live link that judges can open, with the backend in Singa
 4. `firebase login`, then add Firebase to the same GCP project in the Firebase console, and create a Web app to get the config JSON.
 5. Set a **budget alert** (Billing › Budgets), e.g. US$50 with 50/90/100% alerts.
 
-## 1. One-time infrastructure (`infra/setup.sh`, idempotent)
+## 1. One-time infrastructure (`make infra` → `infra/setup.sh`, idempotent)
+
+`infra/setup.sh` (flags checked against gcloud 588, 11 Oct 2026) looks for each resource before creating it, so it is safe to re-run. It reads the project from `GOOGLE_CLOUD_PROJECT` in `.env`.
+
+| Step | What it creates (all data in `asia-southeast1`) |
+|---|---|
+| APIs | Run, Vertex AI, BigQuery, Firestore, Storage, Secret Manager, Cloud Build, Artifact Registry, Trace, Logging, IAM Credentials (signBlob for the V4 signed URLs), Firebase Hosting/Rules, Identity Toolkit |
+| Firestore | `(default)`, native mode |
+| BigQuery | dataset `pauseguard` (tables come from `make seed-cloud`) |
+| Cloud Storage | `gs://$PROJECT-pauseguard-evidence`: uniform access, public access prevention, `infra/lifecycle.json` (delete after 30 days), `infra/cors.json` (PUT/GET from the Hosting origins + localhost; headers `Content-Type`, `x-goog-content-length-range`) |
+| Artifact Registry | docker repo `pauseguard` (the API image) |
+| Secret Manager | `admin-reset-token` (random, replicated in `asia-southeast1` only) |
+| `pauseguard-api@` (runtime) | project: `aiplatform.user`, `bigquery.jobUser`, `datastore.user`, `logging.logWriter`, `cloudtrace.agent`; dataset: `WRITER` (= `bigquery.dataEditor`, via the dataset's access list, because `bq add-iam-policy-binding -d` needs allowlisting); bucket: `storage.objectAdmin`; secret: `secretAccessor`; itself: `iam.serviceAccountTokenCreator` |
+| `pauseguard-build@` (build) | project: `run.builder`; passed as `--build-service-account`, so source deploys don't depend on the Compute Engine default account |
+
+Then: `make seed-cloud` (BigQuery tables + the Firestore watchlist and personas) and `make analyst` (`infra/set_analyst_claim.py`: creates or refreshes the demo analyst `analyst@harbourbank.example` and sets the custom claim `role=analyst`). The Firebase console steps can't be scripted without upgrading to Identity Platform: **Authentication → Get started → enable Anonymous and Email/Password**.
+
+## 2. Backend → Cloud Run (`make deploy-api`)
 
 ```bash
-REGION=asia-southeast1
-gcloud services enable run.googleapis.com aiplatform.googleapis.com bigquery.googleapis.com \
-  firestore.googleapis.com storage.googleapis.com secretmanager.googleapis.com \
-  cloudbuild.googleapis.com artifactregistry.googleapis.com cloudtrace.googleapis.com \
-  iamcredentials.googleapis.com   # signBlob, for the V4 signed upload/read URLs (phase 05)
-gcloud firestore databases create --location=$REGION --type=firestore-native   # skip if exists
-bq --location=$REGION mk -d $PROJECT_ID:pauseguard
-gcloud storage buckets create gs://$PROJECT_ID-pauseguard-evidence --location=$REGION --uniform-bucket-level-access
-gcloud storage buckets update gs://$PROJECT_ID-pauseguard-evidence --lifecycle-file=infra/lifecycle.json
-gcloud storage buckets update gs://$PROJECT_ID-pauseguard-evidence --cors-file=infra/cors.json
-gcloud artifacts repositories create pauseguard --repository-format=docker --location=$REGION
-gcloud iam service-accounts create pauseguard-api
-# grant the roles listed in SECURITY_PRIVACY.md §3
-printf "%s" "$(openssl rand -hex 24)" | gcloud secrets create admin-reset-token --data-file=-
+gcloud run deploy pauseguard-api --project $PROJECT --region asia-southeast1 --quiet \
+  --source backend --image asia-southeast1-docker.pkg.dev/$PROJECT/pauseguard/pauseguard-api \
+  --build-service-account projects/$PROJECT/serviceAccounts/pauseguard-build@$PROJECT.iam.gserviceaccount.com \
+  --service-account pauseguard-api@$PROJECT.iam.gserviceaccount.com \
+  --env-vars-file infra/cloudrun.env.yaml --set-secrets ADMIN_RESET_TOKEN=admin-reset-token:latest \
+  --allow-unauthenticated --min-instances $MIN_INSTANCES --max-instances 5 --concurrency 20 \
+  --memory 1Gi --cpu 1 --timeout 180 --no-cpu-throttling --cpu-boost
 ```
-Check the exact flags against the current `gcloud` docs; Claude Code should verify each command before running it.
+The env vars live in `infra/cloudrun.env.yaml` (no secrets), because `ALLOWED_ORIGINS` contains commas, which `--set-env-vars` would split. `backend/.gcloudignore` keeps the local `.venv` out of the upload. The API does its own auth (Firebase tokens), so the service is public. `MIN_INSTANCES` is 0 while building; `make deploy-api MIN_INSTANCES=1` from submission day on (§7).
 
-Then run `make seed-cloud` (loads BigQuery tables and the Firestore watchlist and personas), and create the analyst user in Firebase Auth with the custom claim (`infra/set_analyst_claim.py`).
+Why these flags (phase 05): `POST /checks/{id}/messages` answers the customer at the `done` event and then keeps writing the case file and the web findings for up to `CASEFILE_TIMEOUT_SECONDS` (25 s) in the same process. With the default request-based billing, Cloud Run throttles CPU after the response and that work would stall, so the console would wait for its case summary; `--no-cpu-throttling` (instance-based billing) keeps CPU allocated. It costs more only while an instance is up (≈ US$1.7/day for one always-on 1 vCPU/1 GiB instance with `--min-instances 1`; scale-to-zero otherwise). `--timeout 180` covers the SSE stream (it closes after `done`, at most 120 s). `--cpu-boost` shortens cold starts. Uploads go to GCS automatically on Cloud Run (`UPLOAD_BACKEND` defaults to `gcs` when `K_SERVICE` is set; `local` is refused there).
 
-## 2. Backend → Cloud Run
-
-```bash
-gcloud run deploy pauseguard-api --source backend --region $REGION \
-  --service-account pauseguard-api@$PROJECT_ID.iam.gserviceaccount.com \
-  --set-env-vars GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=global,GOOGLE_GENAI_USE_VERTEXAI=TRUE,GEMINI_MODEL=<model>,DATA_BACKEND=bigquery,BQ_DATASET=pauseguard,EVIDENCE_BUCKET=$PROJECT_ID-pauseguard-evidence,ALLOWED_ORIGINS=https://$PROJECT_ID.web.app \
-  --set-secrets ADMIN_RESET_TOKEN=admin-reset-token:latest \
-  --allow-unauthenticated --min-instances 0 --max-instances 5 --memory 1Gi --cpu 1 --timeout 180 \
-  --no-cpu-throttling
-```
-The API does its own auth (Firebase tokens), so the service is public. For judging and demo days: `--min-instances 1` to avoid cold starts, and set it back to 0 afterwards.
-
-Why these flags (phase 05): `POST /checks/{id}/messages` answers the customer at the `done` event and then keeps writing the case file and the web findings for up to `CASEFILE_TIMEOUT_SECONDS` (25 s) in the same process. With the default request-based billing, Cloud Run throttles CPU after the response and that work would stall, so the console would wait for its case summary; `--no-cpu-throttling` (instance-based billing) keeps CPU allocated. It costs more only while an instance is up (≈ US$1.7/day for one always-on 1 vCPU/1 GiB instance with `--min-instances 1`; scale-to-zero otherwise). `--timeout 180` covers the SSE stream (it closes after `done`, at most 120 s). Uploads go to GCS automatically on Cloud Run (`UPLOAD_BACKEND` defaults to `gcs` when `K_SERVICE` is set; `local` is refused there). The bucket CORS file (`infra/cors.json`) must allow `PUT` from the Hosting origins and the request headers `Content-Type` and `x-goog-content-length-range`, which the signed upload URL requires.
+**Health route:** `GET /health`. Cloud Run's front end reserves some paths ending in `z` and answers `/healthz` itself with a Google 404, so uptime checks must use `/health` (`/healthz` remains a local alias).
 
 `backend/Dockerfile`: python:3.12-slim, `uv sync --frozen`, `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
 
-## 3. Frontend → Firebase Hosting
+## 3. Frontend → Firebase Hosting (`make deploy-web`)
 
-`web/.env.production` has `VITE_API_BASE_URL=https://pauseguard-api-xxxxx.a.run.app` and the Firebase config. Then:
-```bash
-cd web && npm run build && firebase deploy --only hosting,firestore:rules,firestore:indexes
-```
-The `firebase.json` rewrites send all paths to `/index.html` (SPA). Optionally, rewrite `/api/**` to the Cloud Run service so everything is on one domain (this avoids CORS).
+The Firebase web config lives in the git-ignored `web/.env.production.local`. `make deploy-web` reads the live API URL from Cloud Run, builds with `VITE_API_BASE_URL=<that URL>` (an env var beats the `.env` files in Vite), then runs `firebase deploy --only hosting,firestore:rules,firestore:indexes`. `firebase.json`: every path is rewritten to `/index.html` (SPA); `index.html` and deep links are `no-cache` and the hashed `/assets/**` are immutable, so a redeploy never leaves a browser with an old `index.html` pointing at deleted assets. Rules: `infra/firestore.rules` (clients may `get` one check by ID; only analysts read cases, audit, watchlist and feedback; no client writes). We call Cloud Run directly with CORS rather than a Hosting `/api/**` rewrite: Hosting rewrites cut requests at 60 s, which would break SSE.
 
-## 4. Smoke test (`make smoke`)
+New composite indexes take a few minutes to build after the first deploy; until then `/cases` answers 500 (`FailedPrecondition: index is currently building`), and even after `gcloud firestore indexes composite list` says READY it can flap for about a minute.
 
-`GET /healthz` → run the 3 demo scenarios through the API → assert the verdicts are GREEN/RED/RED (or AMBER for the job scam) → call `POST /admin/reset-demo`.
+## 4. Smoke test (`make smoke` → `scripts/smoke.sh`)
+
+`GET /health` → Hosting page + SPA deep link + CORS preflight from the Hosting origin → Firebase Auth with real tokens (an anonymous customer starts a check and gets 403 on `/cases`; the demo analyst gets 200) → the 3 demo scenarios through the API (`scripts/demo_curl.sh` with the admin token from Secret Manager: upload, answer, SSE, verdict GREEN / RED / AMBER-or-RED, case file, REPORT_SCAM) → `POST /admin/reset-demo`. `AUTH=0` skips the Auth step; `SCENARIOS=tan` runs one scenario.
 
 ## 5. CI (optional, nice for judges)
 
@@ -82,7 +78,7 @@ Use the **measured tokens per check** from the benchmark and the **current publi
 The rules say the prototype must stay functional **throughout evaluation**, and there are no retries if anything is down. The evaluation dates aren't published, so keep everything running **from submission until results are announced** (and through the 4 Dec finale if shortlisted).
 
 1. **No cold starts or scale-to-zero surprises:** `--min-instances 1` on `pauseguard-api` from submission day onward (this costs a few dollars a month; it's worth it). Set `--max-instances 5` and `--concurrency 20`.
-2. **Uptime checks plus alerts:** create Cloud Monitoring uptime checks on `https://<hosting-domain>/` and `https://<api>/healthz` (every 5 min), with an email/SMS alert policy to the team. `/healthz` must also do a cheap dependency check: Firestore read, BigQuery `SELECT 1` (cached for 60 s), and model reachability (cached for 10 min, so it doesn't spend tokens on every probe).
+2. **Uptime checks plus alerts:** create Cloud Monitoring uptime checks on `https://<hosting-domain>/` and `https://<api>/health` (every 5 min; not `/healthz`, which Cloud Run reserves), with an email/SMS alert policy to the team. `/health` must also do a cheap dependency check: Firestore read, BigQuery `SELECT 1` (cached for 60 s), and model reachability (cached for 10 min, so it doesn't spend tokens on every probe).
 3. **A deep synthetic check once a day:** a Cloud Scheduler job calls `POST /admin/selftest`, which runs the Aisyah (GREEN) scenario end to end through Gemini and logs a pass/fail metric; alert on failure.
 4. **Self-healing demo data:** judges will click around, report scams and hold cases. Run a Cloud Scheduler job every 6 hours that calls `POST /admin/reset-demo` (the 3 personas' checks and cases, plus watchlist entries added by ANALYST_REPORT; the seed entries are kept). Each judge's new checks still work in between resets.
 5. **Gemini quota:** check the Vertex AI quota for the model in your region/`global` and request an increase if it's low. Retry with exponential backoff on 429. Keep the AMBER + review fallback so the UI never breaks.

@@ -71,9 +71,12 @@ def create_app(settings: Settings | None = None, *, services: Services | None = 
     for module in (checks, uploads, cases, metrics, admin, personas):
         app.include_router(module.router, prefix=API_PREFIX)
 
-    @app.get("/healthz", response_model=HealthResponse, tags=["ops"])
-    async def healthz() -> HealthResponse:
-        # Dependency checks (Firestore, BigQuery, model) are added in phase 10.
+    # Cloud Run's front end reserves some paths ending in "z" (it answers /healthz itself with a
+    # 404), so /health is the route uptime checks use; /healthz stays for local habits.
+    @app.get("/health", response_model=HealthResponse, tags=["ops"])
+    @app.get("/healthz", response_model=HealthResponse, include_in_schema=False)
+    async def health() -> HealthResponse:
+        # Dependency checks (Firestore, BigQuery, model) are added in phase 10 pass B.
         return HealthResponse(
             ok=True, model=settings.gemini_model, data_backend=settings.data_backend
         )
