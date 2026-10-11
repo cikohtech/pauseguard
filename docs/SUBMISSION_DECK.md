@@ -26,11 +26,11 @@ flowchart TD
   A[Customer starts transfer] --> B{Transaction risk score}
   B -- low --> G[GREEN: proceed]
   B -- elevated --> C[Check-in: who asked you to pay? + upload evidence]
-  C --> D[Evidence agent + Scam-Intel agent in parallel]
+  C --> D[Evidence agent ∥ watchlist lookup]
   D --> E{Fusion policy}
   E -- GREEN --> G
   E -- AMBER --> F[Explain red flags on screenshot · cool-off · call trusted contact]
-  E -- RED --> H[Hold payment · case file to analyst]
+  E -- RED --> H[Hold payment · Scam-Intel web search ∥ case file, for the analyst]
   H --> I[Analyst: release / hold / escalate / report]
   I -- report --> J[Watchlist updated for all customers]
 ```

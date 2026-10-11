@@ -184,6 +184,7 @@
       "pastedItem": "Pasted message",
       "demo": "Use the demo answer",
       "demoHint": "Fills in this customer's answer and evidence",
+      "consent": "We'll use what you share only to check this payment. It's deleted after 30 days.",
       "submit": "Check now",
       "close": "Close",
       "errors": {

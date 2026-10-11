@@ -50,6 +50,9 @@ def configure_logging(level: str = "INFO", stream: TextIO | None = None) -> None
             foreign_pre_chain=[*shared, structlog.stdlib.add_logger_name],
             processors=[
                 structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                # A stdlib traceback (uvicorn's "Exception in ASGI application") becomes a string
+                # here, so redact_processor masks the exception message too.
+                structlog.processors.format_exc_info,
                 structlog.processors.EventRenamer("message"),
                 redact_processor,
                 structlog.processors.JSONRenderer(),

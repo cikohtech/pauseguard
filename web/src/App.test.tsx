@@ -141,7 +141,12 @@ test('Raj: transfer → check-in → analysis → AMBER, with the right API call
   expect(within(sheet).getByRole('group', { name: /Who asked you to make this payment/ })).toBeInTheDocument()
   await userEvent.click(within(sheet).getByRole('radio', { name: 'A job recruiter' }))
   await userEvent.type(within(sheet).getByLabelText('Tell us more (optional)'), 'He wants a top-up')
-  await userEvent.click(within(sheet).getByRole('button', { name: 'Check now' }))
+  // The consent line (SECURITY_PRIVACY §2) is shown with, and describes, the submit button.
+  const submit = within(sheet).getByRole('button', { name: 'Check now' })
+  expect(submit).toHaveAccessibleDescription(
+    "We'll use what you share only to check this payment. It's deleted after 30 days.",
+  )
+  await userEvent.click(submit)
 
   expect(await screen.findByText('Reading the message')).toBeInTheDocument()
   expect(await screen.findByRole('heading', { level: 1, name: 'Please pause: this looks like a scam' })).toBeInTheDocument()

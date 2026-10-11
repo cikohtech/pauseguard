@@ -35,7 +35,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from app.agents.casefile_agent import CaseFileAgent, CaseFileRequest, fallback_case_file
-from app.agents.evidence_agent import EvidenceAgent, EvidenceItem, EvidenceRequest, EvidenceRun
+from app.agents.evidence_agent import (
+    EvidenceAgent,
+    EvidenceItem,
+    EvidenceRequest,
+    EvidenceRun,
+    offline_analysis,
+)
 from app.agents.explainer_agent import (
     ExplainerAgent,
     ExplainRequest,
@@ -319,7 +325,7 @@ class Orchestrator:
         except Exception as e:  # a bug, not a model error (those are handled inside the agent)
             log.exception("evidence_crashed", check_id=check_id)
             failures.append(f"evidence: {type(e).__name__}")
-        evidence = evidence_run.analysis if evidence_run else None
+        evidence = evidence_run.analysis if evidence_run else offline_analysis(ev_req)
         if evidence_run:
             tokens["evidence"] = evidence_run.tokens
             if evidence_run.failed:

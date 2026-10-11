@@ -4,6 +4,7 @@ when one is reachable (`make emulators`). The emulator side uses its own project
 
 from __future__ import annotations
 
+import asyncio
 import os
 import urllib.request
 from collections.abc import Iterator
@@ -187,6 +188,37 @@ async def test_audit_is_listed_per_case_in_time_order(repo: StateRepo) -> None:
     ids = [await repo.append_audit(e) for e in (later, earlier, other)]
     assert len(set(ids)) == 3
     assert await repo.list_audit("case_1") == [earlier, later]
+
+
+async def test_firestore_watchlist_cache(repo: StateRepo) -> None:
+    """Lookups are cached per instance (hits and misses); this instance's writes clear the
+    cache at once, another instance's writes show up when the TTL runs out."""
+    from app.data.firestore_repo import FirestoreStateRepo
+
+    if not isinstance(repo, FirestoreStateRepo):
+        pytest.skip("the cache is the Firestore repo's")
+
+    fast = FirestoreStateRepo(project=TEST_PROJECT, watchlist_cache_seconds=0.3)
+    other = FirestoreStateRepo(project=TEST_PROJECT)  # another Cloud Run instance
+    entry = WatchlistEntry(
+        type="PHONE", value="+6580000147", source="SEED", reported_count=6,
+        first_seen=T0, last_seen=T0, typologies=[],
+    )  # fmt: skip
+
+    assert await fast.get_watchlist("PHONE", "+65 8000 0147") is None  # miss, cached
+    await other.put_watchlist(entry)
+    assert await fast.get_watchlist("PHONE", "+65 8000 0147") is None  # still the cached miss
+    await asyncio.sleep(0.35)
+    hit = await fast.get_watchlist("PHONE", "+65 8000 0147")
+    assert hit is not None and hit.reported_count == 6  # TTL over: read again
+
+    await fast.upsert_watchlist("PHONE", "+65 8000 0147", source="ANALYST_REPORT")
+    bumped = await fast.get_watchlist("PHONE", "+65 8000 0147")
+    assert bumped is not None and bumped.reported_count == 7  # own write: fresh at once
+
+    off = FirestoreStateRepo(project=TEST_PROJECT, watchlist_cache_seconds=0)
+    await off.get_watchlist("DOMAIN", "x.example")
+    assert off._wl_cache == {}
 
 
 async def test_watchlist_seed_lookup_and_upsert(repo: StateRepo) -> None:

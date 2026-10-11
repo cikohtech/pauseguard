@@ -338,6 +338,14 @@ def fallback_analysis(req: EvidenceRequest) -> EvidenceAnalysis:
     )
 
 
+def offline_analysis(req: EvidenceRequest) -> EvidenceAnalysis | None:
+    """For a run that never returned (the orchestrator's timeout): the deterministic part still
+    applies. An injection in the text we have (answer, pasted chat) gives the fallback with the
+    injection flag, so a slow model can't turn a RED into AMBER; otherwise None, as before."""
+    hits = prescan(req, None)
+    return postprocess(fallback_analysis(req), req, hits) if hits else None
+
+
 def prescan(req: EvidenceRequest, analysis: EvidenceAnalysis | None) -> list[InjectionHit]:
     """Regex pre-scan of everything we can read as text: the customer's answer, pasted text,
     and the model's verbatim quotes (images and PDFs are read through the model's quotes)."""

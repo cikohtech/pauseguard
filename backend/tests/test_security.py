@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import logging
 from pathlib import Path
 
 import pytest
@@ -170,3 +171,26 @@ def test_log_lines_are_redacted() -> None:
     assert line["check_id"] == "chk_1"
     assert line["text"] == "pay [ACCOUNT], call [PHONE]"
     assert line["message"] == "check_done"
+
+
+def test_tracebacks_are_redacted_from_structlog_and_stdlib_loggers() -> None:
+    """An exception message can carry evidence (a payee's phone, an NRIC). uvicorn and the
+    google libraries log through stdlib logging, so their tracebacks must be masked too."""
+    buf = io.StringIO()
+    configure_logging("INFO", stream=buf)
+    try:
+        try:
+            raise ValueError("payee +65 8000 0147, NRIC S1234567D, x@y.example, 123-45678-9")
+        except ValueError:
+            logging.getLogger("uvicorn.error").exception("Exception in ASGI application")
+            get_logger("t").exception("evidence_crashed", check_id="chk_1")
+        lines = [json.loads(s) for s in buf.getvalue().strip().splitlines()]
+    finally:
+        structlog.reset_defaults()
+        configure_logging("INFO")
+    assert [ln["message"] for ln in lines] == ["Exception in ASGI application", "evidence_crashed"]
+    for ln in lines:
+        assert "exc_info" not in ln
+        assert "Traceback (most recent call last)" in ln["exception"]
+        assert "ValueError: payee [PHONE], NRIC [NRIC], [EMAIL], [ACCOUNT]" in ln["exception"]
+        assert "8000 0147" not in json.dumps(ln) and "S1234567D" not in json.dumps(ln)

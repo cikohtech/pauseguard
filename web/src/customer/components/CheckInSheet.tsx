@@ -63,6 +63,7 @@ export function CheckInSheet({
   const { check, updateCheck, persona } = useSession()
   const fileInput = useRef<HTMLInputElement>(null)
   const analysingTitle = useRef<HTMLHeadingElement>(null)
+  const errorLine = useRef<HTMLParagraphElement>(null)
 
   const [phase, setPhase] = useState<'answer' | 'analysing'>('answer')
   const [reply, setReply] = useState<string | null>(null)
@@ -75,6 +76,11 @@ export function CheckInSheet({
   useEffect(() => {
     if (phase === 'analysing') analysingTitle.current?.focus()
   }, [phase])
+
+  // On a phone the message sits below the fold of the sheet: bring it into view.
+  useEffect(() => {
+    if (error) errorLine.current?.scrollIntoView?.({ block: 'nearest' })
+  }, [error])
 
   if (!check?.question) return null
   const question = check.question
@@ -398,13 +404,26 @@ export function CheckInSheet({
                 }}
               />
               {error && (
-                <p role="alert" className="mt-3 text-[15px] font-medium text-destructive">
+                <p ref={errorLine} role="alert" className="mt-3 text-[15px] font-medium text-destructive">
                   {error}
                 </p>
               )}
             </div>
             <div className="shrink-0 border-t border-border px-5 pt-3 pb-safe">
-              <button type="button" onClick={() => void submit()} className={bigButton()}>
+              <p
+                id={`${id}-consent`}
+                data-testid="checkin-consent"
+                className="mb-2.5 flex items-start gap-2 text-[13px] leading-snug text-muted-foreground"
+              >
+                <Lock aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+                {t('customer.checkin.consent')}
+              </p>
+              <button
+                type="button"
+                onClick={() => void submit()}
+                aria-describedby={`${id}-consent`}
+                className={bigButton()}
+              >
                 {t('customer.checkin.submit')}
               </button>
             </div>

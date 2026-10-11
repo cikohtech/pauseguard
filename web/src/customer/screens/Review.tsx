@@ -1,5 +1,5 @@
 import { CircleAlert, Info, LoaderCircle } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useNavigate } from 'react-router-dom'
 
@@ -20,6 +20,12 @@ export function Review() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const errorLine = useRef<HTMLParagraphElement>(null)
+
+  // On a phone the message can sit under the sticky Send button: bring it into view.
+  useEffect(() => {
+    if (error) errorLine.current?.scrollIntoView?.({ block: 'nearest' })
+  }, [error])
 
   if (!transfer) return <Navigate to="/app/transfer" replace />
   const p = persona as DemoPersona
@@ -114,7 +120,7 @@ export function Review() {
           {t('customer.review.edit')}
         </button>
         {error && (
-          <p role="alert" className="mb-4 flex items-start gap-2 rounded-xl bg-verdict-red-soft p-3 text-[15px] text-verdict-red-ink">
+          <p ref={errorLine} role="alert" className="mb-4 flex items-start gap-2 rounded-xl bg-verdict-red-soft p-3 text-[15px] text-verdict-red-ink">
             <CircleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
             {error}
           </p>

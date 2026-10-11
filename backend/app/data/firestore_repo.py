@@ -7,6 +7,7 @@ here; browsers only read, through the realtime listener and the Firestore rules.
 
 from __future__ import annotations
 
+import time
 from collections.abc import Iterable
 from datetime import datetime
 from typing import Any
@@ -39,13 +40,26 @@ FEEDBACK = "feedback"
 PERSONAS = "personas"
 IN_QUERY_MAX = 30  # Firestore's limit for an `in` filter
 BATCH_MAX = 500
+WATCHLIST_CACHE_SECONDS = 30.0
+WATCHLIST_CACHE_MAX = 2000
 
 
 class FirestoreStateRepo:
     def __init__(
-        self, client: firestore.AsyncClient | None = None, *, project: str | None = None
+        self,
+        client: firestore.AsyncClient | None = None,
+        *,
+        project: str | None = None,
+        watchlist_cache_seconds: float = WATCHLIST_CACHE_SECONDS,
     ) -> None:
         self._db = client or firestore.AsyncClient(project=project)
+        # Watchlist lookups (hits and misses) are cached per instance for a few seconds: every
+        # check looks up the same demo payees and numbers twice. Any watchlist write through
+        # this repo (REPORT_SCAM, reset-demo, seeding) clears it, so this instance never serves
+        # a stale entry; another Cloud Run instance may, for at most the TTL. 0 turns it off.
+        self._wl_ttl = watchlist_cache_seconds
+        self._wl_cache: dict[str, tuple[float, WatchlistEntry | None]] = {}
+        self._wl_gen = 0  # bumped by every write; a read that raced a write isn't cached
 
     @property
     def client(self) -> firestore.AsyncClient:
@@ -149,10 +163,22 @@ class FirestoreStateRepo:
         norm = normalise_watchlist_value(type_, value)
         return self._db.collection(WATCHLIST).document(watchlist_doc_id(norm)), norm
 
+    def _wl_written(self) -> None:
+        self._wl_gen += 1
+        self._wl_cache.clear()
+
     async def get_watchlist(self, type_: WatchlistType, value: str) -> WatchlistEntry | None:
         ref, _ = self._wl_ref(type_, value)
+        now, gen = time.monotonic(), self._wl_gen
+        if (hit := self._wl_cache.get(ref.id)) and hit[0] > now:
+            return hit[1]
         snap = await ref.get()
-        return WatchlistEntry.model_validate(snap.to_dict()) if snap.exists else None
+        entry = WatchlistEntry.model_validate(snap.to_dict()) if snap.exists else None
+        if self._wl_ttl > 0 and gen == self._wl_gen:
+            if len(self._wl_cache) >= WATCHLIST_CACHE_MAX:
+                self._wl_cache.clear()
+            self._wl_cache[ref.id] = (now + self._wl_ttl, entry)
+        return entry
 
     async def upsert_watchlist(
         self,
@@ -181,12 +207,14 @@ class FirestoreStateRepo:
             if typos:
                 update["typologies"] = ArrayUnion(typos)
             await ref.update(update)
+        self._wl_written()
         snap = await ref.get()
         return WatchlistEntry.model_validate(snap.to_dict())
 
     async def put_watchlist(self, entry: WatchlistEntry) -> None:
         ref, norm = self._wl_ref(entry.type, entry.value)
         await ref.set(to_doc(entry.model_copy(update={"value": norm})))
+        self._wl_written()
 
     async def list_watchlist(self, *, limit: int = 500) -> list[WatchlistEntry]:
         q = (
@@ -198,7 +226,9 @@ class FirestoreStateRepo:
 
     async def delete_watchlist(self, *, source: WatchlistSource) -> int:
         q = self._db.collection(WATCHLIST).where(filter=FieldFilter("source", "==", source))
-        return await self._delete_where(q)
+        deleted = await self._delete_where(q)
+        self._wl_written()
+        return deleted
 
     # --- feedback ----------------------------------------------------------------------------
 

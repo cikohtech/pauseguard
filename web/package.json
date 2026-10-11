@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:rules": "vitest run --config vitest.rules.config.ts",
     "typecheck": "tsc -b --noEmit",
     "test:e2e": "playwright test"
   },
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@firebase/rules-unit-testing": "5.0.2",
     "@playwright/test": "~1.63.0",
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/jest-dom": "^7.0.1",

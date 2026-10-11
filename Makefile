@@ -21,9 +21,9 @@ FIREBASE ?= $(shell command -v firebase 2>/dev/null || echo npx --yes firebase-t
 BREW_JDK := /opt/homebrew/opt/openjdk@21/bin
 export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
 
-.PHONY: help setup dev dev-api dev-web emulators test lint format seed-local seed-cloud history \
+.PHONY: help setup dev dev-api dev-web emulators test test-rules lint format seed-local seed-cloud history \
         a11y playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
-        evidence-dev agent-evals scenario demo-curl api-live eval infra analyst deploy-api deploy-web smoke \
+        evidence-dev agent-evals scenario demo-curl api-live drills eval infra analyst deploy-api deploy-web smoke \
         console-live
 
 help: ## List the targets
@@ -58,9 +58,15 @@ dev-web: ## Web only
 emulators: ## Firestore + Auth emulators only
 	$(FIREBASE) emulators:start --only firestore,auth --project demo-pauseguard
 
-test: ## Backend pytest (live tests excluded; fusion policy needs 100% branch coverage) + web Vitest
+test: ## Backend pytest (live tests excluded; fusion policy needs 100% branch coverage) + web Vitest + Firestore rules
 	$(UV) run pytest --cov=app/policy --cov-branch --cov-report=term-missing:skip-covered --cov-fail-under=100
 	cd $(WEB) && npm test
+	@if java -version >/dev/null 2>&1; then $(MAKE) --no-print-directory test-rules; \
+	else echo "ℹ Firestore rules tests skipped (need Java 11+: brew install openjdk@21)."; fi
+
+test-rules: ## Firestore rules (infra/firestore.rules) in a throwaway emulator on :8181 (never the dev one)
+	$(FIREBASE) emulators:exec --config infra/firebase.rules-test.json --only firestore \
+	  --project demo-pauseguard-rules "npm --prefix $(CURDIR)/$(WEB) run test:rules"
 
 a11y: ## Customer app in Chromium: 3 scenarios + axe (WCAG 2.1 AA) + keyboard, API mocked (screens in web/test-results/screens)
 	cd $(WEB) && npx playwright install --only-shell chromium && npm run test:e2e
@@ -116,6 +122,10 @@ demo-curl: ## The 3 demo scenarios through a running API (make dev first) with c
 
 api-live: ## The API end to end with the real agents (live Gemini): upload, answer, verdict, REPORT_SCAM
 	$(UV) run pytest -m live -k api_live
+
+drills: ## Failure drills (live Gemini): model down, slow model, 10 MB image, bad files, injection -> eval/reports/drills.md; then the UI side in Chromium
+	$(UV) run pytest -m live -k drills -v
+	cd $(WEB) && npx playwright install --only-shell chromium && npx playwright test e2e/drills.spec.ts
 
 eval: ## phase 09: run the benchmark and write eval/reports/benchmark.md
 	@echo "eval is implemented in phase 09 (prompts/phase-09-benchmark.md)"; exit 1
