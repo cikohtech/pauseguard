@@ -1,7 +1,7 @@
 """PII masking for logs (SECURITY_PRIVACY §2).
 
-Masks phone numbers, account numbers, NRIC-like IDs and emails in log lines. It is not applied to
-the analyst case file, where those values are the evidence. `redact_processor` plugs into
+Masks phone numbers, account numbers, NRIC-like IDs, emails and ID tokens in log lines. It is not
+applied to the analyst case file, where those values are the evidence. `redact_processor` plugs into
 structlog, so every JSON log line is masked before it is written.
 """
 
@@ -15,6 +15,8 @@ from structlog.typing import EventDict, WrappedLogger
 # Order matters: emails, NRICs and IBAN-like accounts first (they contain digit runs that look
 # like phones), then phones, then the broad account pattern.
 _RULES: list[tuple[str, re.Pattern[str]]] = [
+    # Firebase ID tokens (JWTs), e.g. the SSE route's ?access_token= in an access-log line.
+    ("[TOKEN]", re.compile(r"eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]*")),
     ("[EMAIL]", re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")),
     ("[NRIC]", re.compile(r"(?<![A-Za-z0-9])[STFGMstfgm]\d{7}[A-Za-z](?![A-Za-z0-9])")),
     # IBAN-like overseas accounts (MY47 8820 1365).

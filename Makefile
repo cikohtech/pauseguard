@@ -16,7 +16,7 @@ export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
 
 .PHONY: help setup dev dev-api dev-web emulators test lint format seed-local seed-cloud history \
         playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
-        evidence-dev agent-evals scenario eval deploy-api deploy-web smoke
+        evidence-dev agent-evals scenario demo-curl api-live eval deploy-api deploy-web smoke
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
@@ -99,6 +99,12 @@ agent-evals: ## ADK eval sets: 3 golden cases per agent through AgentEvaluator (
 
 scenario: ## The full pipeline on a demo scenario (live Gemini): SCENARIO=tan|raj|aisyah|all, RUNS=1
 	$(UV) run python -m app.agents.orchestrator --scenario $(or $(SCENARIO),all) --runs $(or $(RUNS),1)
+
+demo-curl: ## The 3 demo scenarios through a running API (make dev first) with curl: BASE=, ADMIN_TOKEN=
+	scripts/demo_curl.sh $(SCENARIO)
+
+api-live: ## The API end to end with the real agents (live Gemini): upload, answer, verdict, REPORT_SCAM
+	$(UV) run pytest -m live -k api_live
 
 eval: ## phase 09: run the benchmark and write eval/reports/benchmark.md
 	@echo "eval is implemented in phase 09 (prompts/phase-09-benchmark.md)"; exit 1

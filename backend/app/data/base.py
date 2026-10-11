@@ -1,6 +1,7 @@
 """Repository interfaces (ARCHITECTURE D6).
 
 `TransactionRepo` reads bank data: SQLite locally, BigQuery in cloud, chosen by DATA_BACKEND.
+`AnalyticsRepo` holds `checks_analytics` (append-only check snapshots) on the same backend.
 `StateRepo` holds app state (checks, cases, audit, watchlist, feedback, personas): Firestore
 (emulator locally), or an in-memory twin for unit tests.
 
@@ -17,7 +18,7 @@ Shared semantics, so both TransactionRepo backends return identical results:
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Any, Protocol, runtime_checkable
 
@@ -29,6 +30,7 @@ from app.models.schemas import (
     CaseRecord,
     CaseStatus,
     ChatMessage,
+    CheckAnalyticsRow,
     CheckRecord,
     Customer,
     FeedbackRecord,
@@ -116,6 +118,24 @@ class TransactionRepo(Protocol):
         ...
 
     def ping(self) -> bool: ...
+
+
+@runtime_checkable
+class AnalyticsRepo(Protocol):
+    """`checks_analytics`: one snapshot row per state change of a check (DATA_SPEC §1).
+
+    Rows are only appended (BigQuery cannot UPDATE rows in the streaming buffer); readers keep
+    the latest `recorded_at` per check_id, which `latest_rows` does in SQL on both backends."""
+
+    backend: str
+
+    def record(self, rows: Sequence[CheckAnalyticsRow]) -> None: ...
+
+    def latest_rows(
+        self, since: datetime, *, include_eval: bool = False
+    ) -> list[CheckAnalyticsRow]:
+        """The newest snapshot of every check created at or after `since`, oldest check first."""
+        ...
 
 
 @runtime_checkable

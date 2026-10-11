@@ -67,7 +67,17 @@ WatchlistType = Literal["PHONE", "URL", "DOMAIN", "ACCOUNT"]
 WatchlistSource = Literal["SEED", "ANALYST_REPORT"]
 MessageRole = Literal["assistant", "customer"]
 UploadContentType = Literal["image/png", "image/jpeg", "image/webp", "application/pdf"]
-ErrorCode = Literal["VALIDATION_ERROR", "NOT_FOUND", "FORBIDDEN", "ANALYSIS_TIMEOUT", "INTERNAL"]
+ErrorCode = Literal[
+    "VALIDATION_ERROR",
+    "UNAUTHORIZED",
+    "FORBIDDEN",
+    "NOT_FOUND",
+    "CONFLICT",
+    "RATE_LIMITED",
+    "ANALYSIS_TIMEOUT",
+    "INTERNAL",
+]
+MetricsRange = Literal["today", "7d"]
 TxnReasonCode = Literal[
     "NEW_PAYEE",
     "AMOUNT_SPIKE",
@@ -383,9 +393,13 @@ class SignUploadRequest(BaseModel):
 
 
 class SignUploadResponse(BaseModel):
+    """PUT the file's bytes to `upload_url` with exactly `headers`, then send `gcs_uri` in
+    `evidence_uris`. Locally `gcs_uri` is a repo-relative path under .local_uploads/."""
+
     upload_url: str
     gcs_uri: str
     expires_in: int
+    headers: dict[str, str] = Field(default_factory=dict)
 
 
 class CheckMessageRequest(BaseModel):
@@ -472,15 +486,28 @@ class CheckRecord(BaseModel):
     latency_ms: LatencyMs = Field(default_factory=LatencyMs)
     tokens: TokenUsage = Field(default_factory=TokenUsage)
     customer_choice: CustomerChoice | None = None
+    uploads: list[str] = Field(default_factory=list)  # evidence URIs signed for this check (≤ 3)
+    is_eval: bool = False  # benchmark traffic: kept out of /metrics
 
 
 class ChoiceRequest(BaseModel):
     choice: CustomerChoice
+    # AMBER + PROCEEDED needs the customer's explicit "I understand the risk" confirmation.
+    confirmed: bool = False
+
+
+class ChoiceResponse(BaseModel):
+    check_id: str
+    customer_choice: CustomerChoice
 
 
 class FeedbackRequest(BaseModel):
     helpful: bool
     comment: str | None = Field(default=None, max_length=1000)
+
+
+class FeedbackResponse(BaseModel):
+    feedback_id: str
 
 
 # ---------------------------------------------------------------------------
@@ -546,10 +573,12 @@ class CaseDetail(BaseModel):
     case: CaseRecord
     transfer: Transfer
     txn_risk: TxnRisk | None = None
+    messages: list[ChatMessage] = Field(default_factory=list)  # the check-in, raw text
     evidence: EvidenceAnalysis | None = None
     evidence_links: list[EvidenceLink] = Field(default_factory=list)
     intel: IntelResult | None = None
     fusion: FusionResult | None = None
+    customer_choice: CustomerChoice | None = None
     audit: list[AuditEntry] = Field(default_factory=list)
 
 
@@ -596,6 +625,32 @@ class Persona(BaseModel):
     trusted_contact_name: str | None = None
     trusted_contact_phone: str | None = None
     story: str
+
+
+class CheckAnalyticsRow(BaseModel):
+    """A row of `checks_analytics` (BigQuery in cloud, SQLite locally; DATA_SPEC §1).
+
+    Append-only snapshots: the API writes the check's whole state at `done`, after the customer's
+    choice and after an analyst decision, and readers keep the latest `recorded_at` per check_id
+    (BigQuery cannot UPDATE rows that are still in the streaming buffer)."""
+
+    check_id: str
+    ts: datetime  # when the check was created
+    customer_id: str
+    amount: float | None = None
+    txn_score: int | None = None
+    verdict: Verdict | None = None
+    typology: Typology | None = None
+    confidence: float | None = None
+    latency_ms: int | None = None  # check-in answer -> full customer result (LatencyMs.total)
+    tokens_in: int | None = None
+    tokens_out: int | None = None
+    model: str | None = None
+    analyst_decision: AnalystAction | None = None
+    customer_choice: CustomerChoice | None = None
+    fast_path: bool = False  # GREEN at POST /checks, no check-in (latency is the txn score only)
+    is_eval: bool = False
+    recorded_at: datetime
 
 
 class LatencyPercentiles(BaseModel):
@@ -648,6 +703,7 @@ class SelftestResponse(BaseModel):
 class ErrorBody(BaseModel):
     code: ErrorCode
     message: str
+    details: list[dict[str, object]] | None = None  # VALIDATION_ERROR: one entry per field
 
 
 class ErrorResponse(BaseModel):

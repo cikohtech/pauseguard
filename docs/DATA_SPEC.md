@@ -39,7 +39,8 @@ Keep the column names identical in both backends. DDL lives in `infra/bq/*.json`
 | is_scam_label | BOOL (ground truth for analytics only; never read by the risk tool) |
 | scam_typology_label | STRING nullable |
 
-**checks_analytics** (BigQuery only; streamed from the API for the dashboard and benchmark): `check_id, ts, customer_id, amount, txn_score, verdict, typology, confidence, latency_ms, tokens_in, tokens_out, model, analyst_decision (nullable), is_eval (bool)`
+**checks_analytics** (BigQuery in cloud, a SQLite table locally; streamed from the API for the dashboard and benchmark): `check_id, ts, customer_id, amount, txn_score, verdict, typology, confidence, latency_ms, tokens_in, tokens_out, model, analyst_decision (nullable), customer_choice (nullable), fast_path (bool), is_eval (bool), recorded_at`.
+Rows are **append-only snapshots** of a check's whole state: one at `done` (or at POST /checks for the GREEN fast path), one after the customer's choice and one after an analyst decision. Readers keep the latest `recorded_at` per `check_id` (`AnalyticsRepo.latest_rows`), because BigQuery can't UPDATE rows still in the streaming buffer. `ts` is the check's creation time (the table is partitioned on it); `latency_ms` is answer → full customer result; `fast_path` marks GREEN-at-once checks, which have no model call and are left out of the latency percentiles.
 
 ## 2. Generator (`data/generate/make_synthetic.py`)
 
@@ -74,6 +75,8 @@ checks/{check_id}
   latency_ms: {txn, evidence, intel, explainer, casefile, total}
   tokens: {in, out}
   customer_choice: PROCEEDED|COOL_OFF|CALLED_CONTACT|CANCELLED|null
+  language: en|zh, case_id (AMBER/RED), uploads: [evidence URIs signed for this check, ≤ 3],
+  is_eval: bool (benchmark traffic, set only with the admin token)
 
 cases/{case_id}      (only for AMBER/RED)
   check_id, customer_id, customer_name, amount, verdict, typology, confidence,

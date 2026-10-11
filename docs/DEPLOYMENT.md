@@ -16,7 +16,8 @@ The target is a public live link that judges can open, with the backend in Singa
 REGION=asia-southeast1
 gcloud services enable run.googleapis.com aiplatform.googleapis.com bigquery.googleapis.com \
   firestore.googleapis.com storage.googleapis.com secretmanager.googleapis.com \
-  cloudbuild.googleapis.com artifactregistry.googleapis.com cloudtrace.googleapis.com
+  cloudbuild.googleapis.com artifactregistry.googleapis.com cloudtrace.googleapis.com \
+  iamcredentials.googleapis.com   # signBlob, for the V4 signed upload/read URLs (phase 05)
 gcloud firestore databases create --location=$REGION --type=firestore-native   # skip if exists
 bq --location=$REGION mk -d $PROJECT_ID:pauseguard
 gcloud storage buckets create gs://$PROJECT_ID-pauseguard-evidence --location=$REGION --uniform-bucket-level-access
@@ -38,9 +39,12 @@ gcloud run deploy pauseguard-api --source backend --region $REGION \
   --service-account pauseguard-api@$PROJECT_ID.iam.gserviceaccount.com \
   --set-env-vars GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=global,GOOGLE_GENAI_USE_VERTEXAI=TRUE,GEMINI_MODEL=<model>,DATA_BACKEND=bigquery,BQ_DATASET=pauseguard,EVIDENCE_BUCKET=$PROJECT_ID-pauseguard-evidence,ALLOWED_ORIGINS=https://$PROJECT_ID.web.app \
   --set-secrets ADMIN_RESET_TOKEN=admin-reset-token:latest \
-  --allow-unauthenticated --min-instances 0 --max-instances 5 --memory 1Gi --cpu 1 --timeout 60
+  --allow-unauthenticated --min-instances 0 --max-instances 5 --memory 1Gi --cpu 1 --timeout 180 \
+  --no-cpu-throttling
 ```
 The API does its own auth (Firebase tokens), so the service is public. For judging and demo days: `--min-instances 1` to avoid cold starts, and set it back to 0 afterwards.
+
+Why these flags (phase 05): `POST /checks/{id}/messages` answers the customer at the `done` event and then keeps writing the case file and the web findings for up to `CASEFILE_TIMEOUT_SECONDS` (25 s) in the same process. With the default request-based billing, Cloud Run throttles CPU after the response and that work would stall, so the console would wait for its case summary; `--no-cpu-throttling` (instance-based billing) keeps CPU allocated. It costs more only while an instance is up (≈ US$1.7/day for one always-on 1 vCPU/1 GiB instance with `--min-instances 1`; scale-to-zero otherwise). `--timeout 180` covers the SSE stream (it closes after `done`, at most 120 s). Uploads go to GCS automatically on Cloud Run (`UPLOAD_BACKEND` defaults to `gcs` when `K_SERVICE` is set; `local` is refused there). The bucket CORS file (`infra/cors.json`) must allow `PUT` from the Hosting origins and the request headers `Content-Type` and `x-goog-content-length-range`, which the signed upload URL requires.
 
 `backend/Dockerfile`: python:3.12-slim, `uv sync --frozen`, `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
 

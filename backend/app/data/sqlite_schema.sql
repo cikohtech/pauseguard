@@ -47,9 +47,11 @@ CREATE TABLE IF NOT EXISTS transactions (
   scam_typology_label TEXT
 );
 
--- Streamed by the API (phase 05) for the dashboard and the benchmark.
+-- Streamed by the API (phase 05) for the dashboard and the benchmark. Append-only snapshots of a
+-- check (at done, after the customer's choice, after an analyst decision): readers keep the row
+-- with the latest recorded_at per check_id. recorded_at has microseconds (same text format).
 CREATE TABLE IF NOT EXISTS checks_analytics (
-  check_id         TEXT PRIMARY KEY,
+  check_id         TEXT NOT NULL,
   ts               TEXT NOT NULL,
   customer_id      TEXT NOT NULL,
   amount           REAL,
@@ -62,9 +64,13 @@ CREATE TABLE IF NOT EXISTS checks_analytics (
   tokens_out       INTEGER,
   model            TEXT,
   analyst_decision TEXT,
-  is_eval          INTEGER NOT NULL DEFAULT 0
+  customer_choice  TEXT,
+  fast_path        INTEGER NOT NULL DEFAULT 0,
+  is_eval          INTEGER NOT NULL DEFAULT 0,
+  recorded_at      TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_txn_customer_ts ON transactions (customer_id, ts);
 CREATE INDEX IF NOT EXISTS idx_payees_customer ON payees (customer_id);
 CREATE INDEX IF NOT EXISTS idx_accounts_customer ON accounts (customer_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_ts ON checks_analytics (ts, check_id);

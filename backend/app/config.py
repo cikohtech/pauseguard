@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     state_backend: Literal["firestore", "memory"] = "firestore"  # memory: tests, no emulator
     firestore_emulator_host: str | None = None
     evidence_bucket: str = "your-project-pauseguard-evidence"
+    # Evidence uploads: gcs = signed URLs on EVIDENCE_BUCKET; local = files in LOCAL_UPLOADS_DIR
+    # behind the API's own signed URLs. Unset: gcs on Cloud Run, local elsewhere.
+    upload_backend: Literal["local", "gcs"] | None = None
+    local_uploads_dir: Path = Path("./.local_uploads")  # relative to the repo root
 
     # API
     allowed_origins: str = "http://localhost:5173"  # comma-separated
@@ -57,9 +61,15 @@ class Settings(BaseSettings):
     # No evidence answer after this many seconds: send the request again, first answer wins.
     evidence_hedge_after_seconds: float = 6.0  # 0 = off
     auth_disabled: bool = False
+    firebase_auth_emulator_host: str | None = None  # local: verify Auth-emulator ID tokens
     admin_reset_token: str | None = None  # from Secret Manager in cloud
-    rate_limit_checks: str = "30/hour"
+    rate_limit_checks: str = "30/hour"  # POST /checks per client IP
+    rate_limit_checks_per_customer: str = "120/hour"  # per customer_id (judges share personas)
     log_level: str = "INFO"
+    # Gemini prices for /metrics cost per check (USD per 1M tokens). Filled in by hand from the
+    # published price list (phase 09, eval/pricing.yaml); unset: cost_per_check_usd is null.
+    gemini_price_in_usd_per_mtok: float | None = None
+    gemini_price_out_usd_per_mtok: float | None = None
 
     # Fusion policy thresholds (AGENTS_SPEC §4). Frozen before the test split is run.
     fusion_red_confidence: float = 0.75
@@ -79,13 +89,21 @@ class Settings(BaseSettings):
     def _resolve_and_guard(self) -> Settings:
         if not self.sqlite_path.is_absolute():
             self.sqlite_path = (REPO_ROOT / self.sqlite_path).resolve()
+        if not self.local_uploads_dir.is_absolute():
+            self.local_uploads_dir = (REPO_ROOT / self.local_uploads_dir).resolve()
         if self.k_service and self.auth_disabled:
             raise ValueError("AUTH_DISABLED=true is not allowed on Cloud Run (K_SERVICE is set).")
+        if self.k_service and self.upload_backend == "local":
+            raise ValueError("UPLOAD_BACKEND=local is not allowed on Cloud Run (K_SERVICE is set).")
         return self
 
     @property
     def is_cloud(self) -> bool:
         return self.k_service is not None
+
+    @property
+    def uploads(self) -> Literal["local", "gcs"]:
+        return self.upload_backend or ("gcs" if self.is_cloud else "local")
 
     @property
     def uses_firestore_emulator(self) -> bool:
@@ -112,6 +130,8 @@ class Settings(BaseSettings):
         )
         if self.uses_firestore_emulator and self.firestore_emulator_host:
             os.environ.setdefault("FIRESTORE_EMULATOR_HOST", self.firestore_emulator_host)
+        if self.firebase_auth_emulator_host and not self.is_cloud:
+            os.environ.setdefault("FIREBASE_AUTH_EMULATOR_HOST", self.firebase_auth_emulator_host)
 
 
 @lru_cache

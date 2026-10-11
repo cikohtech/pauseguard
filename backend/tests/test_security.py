@@ -108,6 +108,10 @@ def test_prescan_on_dev_split_text() -> None:
 
 # --- redaction ---------------------------------------------------------------------------
 
+# A fake Firebase ID token (header.payload.signature), assembled here so no token-shaped
+# literal sits in the source for secret scanners to flag.
+FAKE_ID_TOKEN = ".".join(["eyJhbGciOiJSUzI1NiJ9", "eyJ1aWQiOiJhbm9uLTEifQ", "c2lnbmF0dXJl"])
+
 
 @pytest.mark.parametrize(
     ("text", "expected"),
@@ -122,6 +126,10 @@ def test_prescan_on_dev_split_text() -> None:
         ("Bunga Raya MY47 8820 1365 please", "Bunga Raya [ACCOUNT] please"),
         ("NRIC S1234567D on file", "NRIC [NRIC] on file"),
         ("mail tan.ml@example.com", "mail [EMAIL]"),
+        (
+            f"GET /api/v1/checks/chk_1/events?access_token={FAKE_ID_TOKEN} HTTP/1.1",
+            "GET /api/v1/checks/chk_1/events?access_token=[TOKEN] HTTP/1.1",
+        ),
     ],
 )
 def test_redact(text: str, expected: str) -> None:

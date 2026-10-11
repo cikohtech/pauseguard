@@ -65,8 +65,23 @@
     "mode": "NULLABLE"
   },
   {
+    "name": "customer_choice",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "fast_path",
+    "type": "BOOL",
+    "mode": "NULLABLE"
+  },
+  {
     "name": "is_eval",
     "type": "BOOL",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "recorded_at",
+    "type": "TIMESTAMP",
     "mode": "REQUIRED"
   }
 ]

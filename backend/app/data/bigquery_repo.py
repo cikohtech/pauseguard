@@ -1,4 +1,6 @@
-"""TransactionRepo on BigQuery (DATA_BACKEND=bigquery, cloud). Seeded by `make seed-cloud`.
+"""TransactionRepo + AnalyticsRepo on BigQuery (DATA_BACKEND=bigquery, cloud).
+
+Seeded by `make seed-cloud`. Analytics rows are streamed in (`insert_rows_json`).
 
 Same semantics as sqlite_repo.py (see base.py); the parity test (`-m live`) runs the same
 queries on both and compares the results. Every query is parameterised.
@@ -6,6 +8,7 @@ queries on both and compares the results. Every query is parameterised.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
@@ -14,7 +17,7 @@ from google.cloud import bigquery
 
 from app.data.base import HISTORY_DAYS, VELOCITY_HOURS, as_utc, window_start
 from app.data.normalise import normalise_account
-from app.models.schemas import BankTransaction, Customer, Payee, RiskSnapshot
+from app.models.schemas import BankTransaction, CheckAnalyticsRow, Customer, Payee, RiskSnapshot
 
 NORM_ACCOUNT_SQL = "UPPER(REPLACE(REPLACE(account_number, '-', ''), ' ', ''))"
 TXN_COLUMNS = [
@@ -57,7 +60,7 @@ class BigQueryTransactionRepo:
         return f"`{self.project}.{self.dataset}.{table}`"
 
     def _rows(self, sql: str, **params: Any) -> list[bigquery.Row]:
-        types = {str: "STRING", int: "INT64", datetime: "TIMESTAMP"}
+        types = {str: "STRING", int: "INT64", bool: "BOOL", datetime: "TIMESTAMP"}
         config = bigquery.QueryJobConfig(
             query_parameters=[
                 bigquery.ScalarQueryParameter(k, types[type(v)], v) for k, v in params.items()
@@ -173,3 +176,40 @@ class BigQueryTransactionRepo:
         except Exception:  # any failure means "not healthy"
             return False
         return True
+
+
+class BigQueryAnalyticsRepo(BigQueryTransactionRepo):
+    """`checks_analytics` (created by `make seed-cloud`, partitioned by day on ts). Shares the
+    client and query helper with the transaction repo."""
+
+    backend = "bigquery"
+
+    def record(self, rows: Sequence[CheckAnalyticsRow]) -> None:
+        table = f"{self.project}.{self.dataset}.checks_analytics"
+        payload = [r.model_dump(mode="json") for r in rows]
+        # The insert ID makes a retried insert of the same snapshot a no-op (best effort).
+        ids = [f"{r.check_id}:{r.recorded_at.isoformat()}" for r in rows]
+        errors = self.client.insert_rows_json(table, payload, row_ids=ids)
+        if errors:
+            raise RuntimeError(f"checks_analytics insert failed: {errors}")
+
+    def latest_rows(
+        self, since: datetime, *, include_eval: bool = False
+    ) -> list[CheckAnalyticsRow]:
+        rows = self._rows(
+            f"SELECT * EXCEPT (rn) FROM ("
+            f"  SELECT *, ROW_NUMBER() OVER ("
+            f"    PARTITION BY check_id ORDER BY recorded_at DESC) AS rn"
+            f"  FROM {self._t('checks_analytics')}"
+            f"  WHERE ts >= @since AND (@include_eval OR NOT is_eval)"
+            f") WHERE rn = 1 ORDER BY ts, check_id",
+            since=as_utc(since),
+            include_eval=include_eval,
+        )
+        out = []
+        for row in rows:
+            d = dict(row.items())
+            d["amount"] = _num(d["amount"])
+            d["fast_path"] = bool(d.get("fast_path"))
+            out.append(CheckAnalyticsRow.model_validate(d))
+        return out

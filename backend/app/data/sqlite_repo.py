@@ -1,24 +1,28 @@
-"""TransactionRepo on SQLite (DATA_BACKEND=sqlite, local dev). Seeded by `make seed-local`.
+"""TransactionRepo + AnalyticsRepo on SQLite (DATA_BACKEND=sqlite, local dev).
 
-Semantics are defined in base.py; bigquery_repo.py runs the same queries in BigQuery SQL.
-A connection is opened read-only per call: it is cheap for SQLite and safe across threads.
+Seeded by `make seed-local`. Semantics are defined in base.py; bigquery_repo.py runs the same
+queries in BigQuery SQL. A connection is opened per call (read-only for bank data): it is cheap
+for SQLite and safe across threads.
 """
 
 from __future__ import annotations
 
 import sqlite3
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from app.data.base import HISTORY_DAYS, VELOCITY_HOURS, as_utc, window_start
 from app.data.normalise import normalise_account
-from app.models.schemas import BankTransaction, Customer, Payee, RiskSnapshot
+from app.log import get_logger
+from app.models.schemas import BankTransaction, CheckAnalyticsRow, Customer, Payee, RiskSnapshot
 
 SCHEMA_PATH = Path(__file__).with_name("sqlite_schema.sql")
 TS_FORMAT = "%Y-%m-%d %H:%M:%S+00:00"  # the stored format; text order == time order
+RECORDED_FORMAT = "%Y-%m-%d %H:%M:%S.%f+00:00"  # analytics snapshots: same order, microseconds
+ANALYTICS_COLUMNS = list(CheckAnalyticsRow.model_fields)
 
 # Same normalisation as normalise_account() for stored values (digits, dashes, spaces).
 NORM_ACCOUNT_SQL = "UPPER(REPLACE(REPLACE(account_number, '-', ''), ' ', ''))"
@@ -153,3 +157,70 @@ class SqliteTransactionRepo:
         except (FileNotFoundError, sqlite3.Error):
             return False
         return True
+
+
+class SqliteAnalyticsRepo:
+    """`checks_analytics` in the local database. A database built before phase 05 has the old
+    table (check_id as primary key, no recorded_at); it is rebuilt on first use (dev data only).
+    """
+
+    backend = "sqlite"
+
+    def __init__(self, path: Path | str) -> None:
+        self.path = Path(path)
+        self._ready = False
+
+    @contextmanager
+    def _conn(self) -> Iterator[sqlite3.Connection]:
+        if not self.path.exists():
+            raise FileNotFoundError(f"{self.path} not found: run `make seed-local` first.")
+        conn = sqlite3.connect(self.path, timeout=5.0)
+        conn.row_factory = sqlite3.Row
+        try:
+            if not self._ready:
+                cols = {r["name"] for r in conn.execute("PRAGMA table_info(checks_analytics)")}
+                if "recorded_at" not in cols:
+                    get_logger(__name__).warning("checks_analytics_rebuilt", path=str(self.path))
+                    conn.execute("DROP TABLE IF EXISTS checks_analytics")
+                    conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
+                self._ready = True
+            yield conn
+            conn.commit()
+        finally:
+            conn.close()
+
+    def record(self, rows: Sequence[CheckAnalyticsRow]) -> None:
+        marks = ", ".join(f":{c}" for c in ANALYTICS_COLUMNS)
+        values = []
+        for r in rows:
+            d = r.model_dump()
+            d["ts"] = to_db_ts(r.ts)
+            d["recorded_at"] = as_utc_exact(r.recorded_at).strftime(RECORDED_FORMAT)
+            d["fast_path"], d["is_eval"] = int(r.fast_path), int(r.is_eval)
+            values.append(d)
+        with self._conn() as conn:
+            conn.executemany(
+                f"INSERT INTO checks_analytics ({', '.join(ANALYTICS_COLUMNS)}) VALUES ({marks})",
+                values,
+            )
+
+    def latest_rows(
+        self, since: datetime, *, include_eval: bool = False
+    ) -> list[CheckAnalyticsRow]:
+        with self._conn() as conn:
+            rows = conn.execute(
+                f"""
+                SELECT {", ".join(ANALYTICS_COLUMNS)} FROM (
+                  SELECT *, ROW_NUMBER() OVER (
+                    PARTITION BY check_id ORDER BY recorded_at DESC, rowid DESC) AS rn
+                  FROM checks_analytics WHERE ts >= :since AND (:include_eval OR is_eval = 0)
+                ) WHERE rn = 1 ORDER BY ts, check_id
+                """,
+                {"since": to_db_ts(since), "include_eval": int(include_eval)},
+            ).fetchall()
+        return [CheckAnalyticsRow.model_validate(dict(r)) for r in rows]
+
+
+def as_utc_exact(dt: datetime) -> datetime:
+    """Like as_utc, but keeps the microseconds (snapshot order within one second)."""
+    return dt.replace(tzinfo=UTC) if dt.tzinfo is None else dt.astimezone(UTC)

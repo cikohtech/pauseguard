@@ -103,6 +103,10 @@ class CheckStateError(RuntimeError):
     """The check is not waiting for a check-in answer (the API maps this to 409)."""
 
 
+class UnknownCustomerError(ValueError):
+    """`customer_id` is not a customer of the (synthetic) bank (the API maps this to 422)."""
+
+
 def new_id(prefix: str) -> str:
     """A time-ordered, ULID-style ID: 'chk_01J9...' (48-bit ms timestamp + 80 random bits)."""
     n = (time.time_ns() // 1_000_000) << 80 | secrets.randbits(80)
@@ -181,7 +185,12 @@ class Orchestrator:
     # --- POST /checks ------------------------------------------------------------------------
 
     async def start(
-        self, req: CreateCheckRequest, *, as_of: datetime | None = None, check_id: str | None = None
+        self,
+        req: CreateCheckRequest,
+        *,
+        as_of: datetime | None = None,
+        check_id: str | None = None,
+        is_eval: bool = False,
     ) -> CreateCheckResponse:
         t0 = time.perf_counter()
         check_id = check_id or new_id("chk")
@@ -194,8 +203,10 @@ class Orchestrator:
             lookup_entities(self.state, accounts=[transfer.account_number]),
             asyncio.to_thread(self.txn_repo.get_customer, req.customer_id),
         )
+        if customer is None:
+            raise UnknownCustomerError(f"Unknown customer_id {req.customer_id!r}")
         txn = risk_from_snapshot(snapshot, transfer, now=now, watchlist_hit=bool(payee_matches))
-        language = lang_of(req.language or (customer.preferred_language if customer else "en"))
+        language = lang_of(req.language or customer.preferred_language)
         txn_ms = _ms(t0)
         record = CheckRecord(
             check_id=check_id,
@@ -206,6 +217,7 @@ class Orchestrator:
             language=language,
             txn_risk=txn,
             latency_ms=LatencyMs(txn=txn_ms),
+            is_eval=is_eval,
         )
 
         if txn.score < self.settings.txn_green_fast_path_below and not payee_matches:
