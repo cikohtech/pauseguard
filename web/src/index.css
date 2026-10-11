@@ -13,6 +13,14 @@
     --color-verdict-green: var(--verdict-green);
     --color-verdict-amber: var(--verdict-amber);
     --color-verdict-red: var(--verdict-red);
+    --color-verdict-green-ink: var(--verdict-green-ink);
+    --color-verdict-amber-ink: var(--verdict-amber-ink);
+    --color-verdict-red-ink: var(--verdict-red-ink);
+    --color-verdict-green-soft: var(--verdict-green-soft);
+    --color-verdict-amber-soft: var(--verdict-amber-soft);
+    --color-verdict-red-soft: var(--verdict-red-soft);
+    --color-primary-soft: var(--primary-soft);
+    --color-brand-deep: var(--brand-deep);
     --color-surface: var(--surface);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -63,15 +71,15 @@
     --popover-foreground: #0F1B24;
     --primary: #0F5E6E;
     --primary-foreground: #FFFFFF;
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
+    --secondary: #E6F1F3;
+    --secondary-foreground: #0F5E6E;
+    --muted: #EEF2F4;
     --muted-foreground: #5B6B77;
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
+    --accent: #EEF4F5;
+    --accent-foreground: #0F1B24;
+    --destructive: #C0392B;
+    --border: #E1E7EB;
+    --input: #C9D3D9;
     --ring: #0F5E6E;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
@@ -91,6 +99,16 @@
     --verdict-green: #1F8A5B;
     --verdict-amber: #B7791F;
     --verdict-red: #C0392B;
+    /* The verdict colours above are for icons, borders and large text. Body text in a verdict
+       colour uses the darker "ink" shade (WCAG AA 4.5:1 on white and on the soft tints). */
+    --verdict-green-ink: #17694A;
+    --verdict-amber-ink: #8A5A12;
+    --verdict-red-ink: #A93226;
+    --verdict-green-soft: #E8F4EE;
+    --verdict-amber-soft: #FBF3E6;
+    --verdict-red-soft: #FBEBE9;
+    --primary-soft: #E6F1F3;
+    --brand-deep: #0A4552;
 }
 
 .dark {
@@ -102,13 +120,13 @@
     --popover-foreground: #E8EEF2;
     --primary: #5FB3C4;
     --primary-foreground: #0B141A;
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
+    --secondary: #173843;
+    --secondary-foreground: #BFE3EA;
+    --muted: #1A2A34;
     --muted-foreground: #9AAAB6;
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
+    --accent: #1A2A34;
+    --accent-foreground: #E8EEF2;
+    --destructive: #E5675A;
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: #5FB3C4;
@@ -129,6 +147,14 @@
     --verdict-green: #3DBA82;
     --verdict-amber: #E0A33B;
     --verdict-red: #E5675A;
+    --verdict-green-ink: #6FD3A4;
+    --verdict-amber-ink: #F0BE6A;
+    --verdict-red-ink: #F29185;
+    --verdict-green-soft: #12301F;
+    --verdict-amber-soft: #33270F;
+    --verdict-red-soft: #3A1A16;
+    --primary-soft: #173843;
+    --brand-deep: #0A4552;
 }
 
 @layer base {
@@ -141,4 +167,25 @@
   html {
     @apply font-sans;
     }
+}
+
+@keyframes grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* The fake status bar in the desktop phone frame turns white over a screen's dark header. */
+[data-phone]:has([data-statusbar="light"]) .phone-statusbar {
+  color: #FFFFFF;
+}
+
+@layer utilities {
+  /* Room for the phone's home indicator / the browser's safe area at the bottom of a screen. */
+  .pb-safe {
+    padding-bottom: max(1rem, var(--sab, 0px), env(safe-area-inset-bottom));
+  }
+  /* Room for the status bar (phone frame) or the notch (real phone) above a screen's header. */
+  .pt-sat {
+    padding-top: var(--sat, 0px);
+  }
 }

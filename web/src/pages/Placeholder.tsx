@@ -5,9 +5,9 @@ import { LanguageToggle } from '@/components/LanguageToggle'
 import { ShieldMark } from '@/components/ShieldMark'
 import { BANK_NAME, PRODUCT_NAME } from '@/lib/product'
 
-type Area = 'app' | 'console' | 'notFound'
+type Area = 'console' | 'notFound'
 
-// Stand-in for /app/* (phase 06), /console/* (phase 07) and unknown routes.
+// Stand-in for /console/* (phase 07) and unknown routes.
 export function Placeholder({ area }: { area: Area }) {
   const { t } = useTranslation()
   const vars = { product: PRODUCT_NAME, bank: BANK_NAME }

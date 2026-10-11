@@ -6,14 +6,13 @@
   "landing": {
     "tagline": "Pause before you pay.",
     "pitch": "Fraud models check the transaction. {{product}} checks the conversation that caused it.",
-    "status": "Prototype scaffold: the customer app and analyst console are being built.",
+    "status": "The customer app is ready to try. The analyst console is still being built.",
     "tryApp": "Try the customer app",
     "openConsole": "Open the analyst console",
     "footer": "Prototype for the Google Cloud AI Builder Cup 2026 · Built on Gemini, ADK, Cloud Run, BigQuery, Firestore · All data synthetic"
   },
   "app": {
-    "title": "{{bank}} app with {{product}}",
-    "placeholder": "The customer banking demo arrives in phase 06."
+    "title": "{{bank}} app with {{product}}"
   },
   "console": {
     "title": "{{product}} analyst console",
@@ -22,5 +21,256 @@
   "notFound": {
     "title": "Page not found",
     "home": "Back to the home page"
+  },
+  "customer": {
+    "frame": {
+      "intro": "A mock mobile banking app. Pick a customer, make a transfer, and {{product}} checks the conversation behind it.",
+      "switchPersona": "Switch customer",
+      "about": "About {{product}}",
+      "synthetic": "All people, banks, phone numbers and accounts here are synthetic.",
+      "api": {
+        "checking": "Connecting to the live API…",
+        "ok": "Live API on Cloud Run",
+        "down": "The API isn't answering yet. It may be waking up.",
+        "okLocal": "Connected to the local API"
+      }
+    },
+    "personas": {
+      "cust_001": {
+        "name": "Mrs Tan Mei Ling",
+        "short": "Mei Ling",
+        "story": "Retiree. A man who says he is from MAS tells her to move S$8,000 to a “safe account”.",
+        "tag": "Scam: fake official",
+        "contact": "my son, Jun Hao",
+        "contactYour": "your son, Jun Hao"
+      },
+      "cust_002": {
+        "name": "Raj Kumar",
+        "short": "Raj",
+        "story": "Gig worker. A Telegram “recruiter” asks for a S$450 top-up to unlock his commission.",
+        "tag": "Scam: job task",
+        "contact": "my sister, Priya",
+        "contactYour": "your sister, Priya"
+      },
+      "cust_003": {
+        "name": "Nur Aisyah",
+        "short": "Aisyah",
+        "story": "Teacher. Pays a S$3,200 deposit to her new landlord and has the tenancy agreement.",
+        "tag": "Real payment",
+        "contact": "my husband, Ahmad",
+        "contactYour": "your husband, Ahmad"
+      }
+    },
+    "picker": {
+      "title": "Choose a demo customer",
+      "subtitle": "Each one makes a different transfer. See what {{product}} does.",
+      "age": "Age {{age}}",
+      "language": "Speaks {{language}}",
+      "languages": {
+        "en": "English",
+        "zh": "Chinese"
+      },
+      "choose": "Continue as {{name}}"
+    },
+    "bar": {
+      "back": "Back",
+      "language": "Language",
+      "switchTo": "中文"
+    },
+    "home": {
+      "greeting": {
+        "morning": "Good morning, {{name}}",
+        "afternoon": "Good afternoon, {{name}}",
+        "evening": "Good evening, {{name}}"
+      },
+      "account": "Everyday Savings",
+      "accountNo": "••• {{suffix}}",
+      "available": "Available balance",
+      "transfer": "Transfer",
+      "transferHint": "To a saved or new payee",
+      "recent": "Recent activity",
+      "protected": "Payments are checked by {{product}}",
+      "txn": {
+        "retirementPayout": "Retirement payout",
+        "rideEarnings": "Ride-hail earnings",
+        "groceries": "Groceries",
+        "salary": "Salary"
+      },
+      "kinds": {
+        "bill": "Bill payment",
+        "paynow": "PayNow",
+        "income": "Money in",
+        "rent": "Rent",
+        "shopping": "Card",
+        "transfer": "Transfer"
+      },
+      "justNow": "Just now"
+    },
+    "nav": {
+      "label": "Main",
+      "home": "Home",
+      "transfer": "Transfer",
+      "switch": "Switch customer"
+    },
+    "transfer": {
+      "title": "Transfer money",
+      "from": "From",
+      "to": "To",
+      "saved": "Saved payees",
+      "newPayee": "New payee",
+      "payeeName": "Payee name",
+      "bank": "Bank",
+      "account": "Account number",
+      "accountHint": "For example 123-45678-9",
+      "amount": "Amount",
+      "available": "Available {{balance}}",
+      "note": "Note (optional)",
+      "prefill": "Prefill demo scenario",
+      "prefilled": "Demo scenario filled in.",
+      "next": "Review transfer",
+      "errors": {
+        "payee": "Enter the payee's name.",
+        "account": "Enter the account number (digits and dashes).",
+        "amount": "Enter an amount above S$0.",
+        "balance": "That's more than your available balance."
+      }
+    },
+    "review": {
+      "title": "Review transfer",
+      "subtitle": "Check the details before you send.",
+      "to": "To",
+      "bank": "Bank",
+      "account": "Account",
+      "amount": "Amount",
+      "note": "Note",
+      "from": "From",
+      "fee": "Fee",
+      "free": "Free",
+      "newPayee": "First transfer to this payee",
+      "send": "Send {{amount}}",
+      "sending": "Sending…",
+      "edit": "Edit"
+    },
+    "checkin": {
+      "title": "Quick safety check",
+      "duration": "Takes about 10 seconds",
+      "why": "We ask this for some payments to new payees. Your money hasn't left your account.",
+      "quickReplies": "Choose an answer",
+      "textLabel": "Tell us more (optional)",
+      "textPlaceholder": "For example: someone called me and said…",
+      "add": "Add a screenshot or file",
+      "addHint": "Screenshot, photo or PDF of the message that asked you to pay",
+      "paste": "Paste the message",
+      "pasteLabel": "The message you received",
+      "pastePlaceholder": "Paste the chat or SMS here",
+      "remove": "Remove {{name}}",
+      "pastedItem": "Pasted message",
+      "demo": "Use the demo answer",
+      "demoHint": "Fills in this customer's answer and evidence",
+      "submit": "Check now",
+      "close": "Close",
+      "errors": {
+        "type": "Please add a PNG, JPG, WEBP or PDF file.",
+        "size": "Files must be under 10 MB.",
+        "max": "You can add up to 3 items.",
+        "needAnswer": "Choose an answer or tell us in your own words.",
+        "upload": "We couldn't upload {{name}}. Please try again."
+      }
+    },
+    "analysing": {
+      "title": "Checking your payment",
+      "note": "Your money hasn't been sent yet.",
+      "steps": {
+        "reading": "Reading the message",
+        "payee": "Checking the payee",
+        "compare": "Comparing with known scams",
+        "explain": "Writing your explanation"
+      },
+      "state": {
+        "waiting": "waiting",
+        "active": "in progress",
+        "done": "done"
+      }
+    },
+    "verdict": {
+      "word": {
+        "GREEN": "Looks good",
+        "AMBER": "Pause and check",
+        "RED": "On hold"
+      },
+      "announce": "{{word}}. {{headline}}",
+      "evidenceTitle": "What we found",
+      "evidenceHint": "Each number marks a warning sign in what you shared.",
+      "imageAlt": "Your evidence {{name}}, with {{count}} warning signs marked",
+      "boxLabel": "Warning sign {{n}}: {{title}}",
+      "pasted": "The message you pasted",
+      "pdf": "PDF document",
+      "pause": "Pause for 24 hours",
+      "callContact": "Call {{contact}}",
+      "call1799": "Call 1799 anti-scam helpline",
+      "proceed": "I understand the risk, continue",
+      "fraudTeam": "Our fraud team will call you within 30 minutes on your registered number. Never share your OTP with anyone.",
+      "review": "A member of our team will also look at this payment.",
+      "home": "Back to home",
+      "continueNow": "Continue",
+      "continuing": "Sending your transfer…",
+      "confirm": {
+        "title": "Send this payment anyway?",
+        "body": "Scammers often rush you or ask you to keep it secret. If anyone is pressuring you, stop and call {{contact}} or 1799 first.",
+        "cancel": "Go back",
+        "confirm": "Yes, send {{amount}}"
+      }
+    },
+    "flags": {
+      "AUTHORITY_CLAIM": "Says they are an official",
+      "URGENCY": "Rushing you",
+      "SECRECY_REQUEST": "Asks you to keep it secret",
+      "SAFE_ACCOUNT": "“Safe account”",
+      "GUARANTEED_RETURNS": "Guaranteed returns",
+      "UPFRONT_FEE": "Fee paid in advance",
+      "PAY_TO_EARN": "Pay to earn",
+      "OFF_PLATFORM_PAYMENT": "Payment outside the platform",
+      "REMOTE_ACCESS_APP": "Remote-access app",
+      "SUSPICIOUS_URL": "Suspicious link",
+      "NEW_NUMBER_FRIEND": "“Friend” on a new number",
+      "CHANGED_BANK_DETAILS": "Changed bank details",
+      "CRYPTO_DESTINATION": "Crypto destination",
+      "COACHING_TO_LIE": "Told what to say",
+      "THREAT_OR_FEAR": "Threats",
+      "TOO_GOOD_TO_BE_TRUE": "Too good to be true",
+      "PAYEE_NAME_MISMATCH": "Name doesn't match the account",
+      "WATCHLIST_MATCH": "Reported to us before"
+    },
+    "feedback": {
+      "question": "Was this helpful?",
+      "yes": "Yes, helpful",
+      "no": "Not helpful",
+      "thanks": "Thanks for telling us."
+    },
+    "outcome": {
+      "sent": {
+        "title": "Transfer sent",
+        "body": "{{amount}} to {{payee}}",
+        "ref": "Reference",
+        "when": "Sent",
+        "checked": "Checked by {{product}}"
+      },
+      "paused": {
+        "title": "Paused for 24 hours",
+        "body": "Nothing has been sent. We'll remind you on {{when}}. Talk to someone you trust before you decide.",
+        "cancel": "Cancel this transfer"
+      },
+      "cancelled": {
+        "title": "Transfer cancelled",
+        "body": "No money was sent."
+      },
+      "home": "Back to home"
+    },
+    "errors": {
+      "network": "We couldn't reach Harbour Bank. Check your connection and try again.",
+      "generic": "Something went wrong. Please try again.",
+      "rateLimited": "Too many tries. Please wait a few minutes and try again.",
+      "retry": "Try again"
+    }
   }
 }

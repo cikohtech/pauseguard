@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Playwright (make a11y)
+test-results
+playwright-report
+dist-e2e

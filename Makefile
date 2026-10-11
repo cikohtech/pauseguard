@@ -22,7 +22,7 @@ BREW_JDK := /opt/homebrew/opt/openjdk@21/bin
 export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
 
 .PHONY: help setup dev dev-api dev-web emulators test lint format seed-local seed-cloud history \
-        playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
+        a11y playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
         evidence-dev agent-evals scenario demo-curl api-live eval infra analyst deploy-api deploy-web smoke
 
 help: ## List the targets
@@ -60,6 +60,9 @@ emulators: ## Firestore + Auth emulators only
 test: ## Backend pytest (live tests excluded; fusion policy needs 100% branch coverage) + web Vitest
 	$(UV) run pytest --cov=app/policy --cov-branch --cov-report=term-missing:skip-covered --cov-fail-under=100
 	cd $(WEB) && npm test
+
+a11y: ## Customer app in Chromium: 3 scenarios + axe (WCAG 2.1 AA) + keyboard, API mocked (screens in web/test-results/screens)
+	cd $(WEB) && npx playwright install --only-shell chromium && npm run test:e2e
 
 lint: ## ruff + mypy (backend), oxlint + tsc (web)
 	$(UV) run ruff check .
