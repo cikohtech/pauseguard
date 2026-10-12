@@ -89,6 +89,29 @@ test('picking Mrs Tan switches the app to Chinese; the header toggle switches it
   expect(await screen.findByRole('heading', { name: /Good (morning|afternoon|evening), Mei Ling/ })).toBeInTheDocument()
 })
 
+test('a remembered persona does not force its language: the landing page opens the app in English', async () => {
+  fakeApi({ 'GET /personas': () => [] })
+  sessionStorage.setItem('pauseguard.persona', 'cust_001') // Mrs Tan, picked earlier in this tab
+  renderAt('/')
+  await userEvent.click(screen.getByRole('link', { name: /Try the customer app/ }))
+  expect(await screen.findByRole('button', { name: 'Continue as Mrs Tan Mei Ling' })).toBeInTheDocument()
+  expect(document.documentElement.lang).toBe('en')
+})
+
+test('after a reload as Mrs Tan (Chinese), the English button sticks', async () => {
+  fakeApi({ 'GET /personas': () => [] })
+  sessionStorage.setItem('pauseguard.persona', 'cust_001')
+  await i18n.changeLanguage('zh') // the language she was in before the reload
+  renderAt('/app/home')
+  expect(await screen.findByRole('heading', { name: /陈女士，(早上|下午|晚上)好/ })).toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: '语言: English' }))
+  expect(await screen.findByRole('heading', { name: /Good (morning|afternoon|evening), Mei Ling/ })).toBeInTheDocument()
+  await new Promise((r) => setTimeout(r, 50)) // nothing switches it back
+  expect(screen.getByRole('heading', { name: /Good (morning|afternoon|evening), Mei Ling/ })).toBeInTheDocument()
+  expect(i18n.language).toBe('en')
+})
+
 test('Raj: transfer → check-in → analysis → AMBER, with the right API calls', async () => {
   fakeApi({
     'GET /personas': () => [],

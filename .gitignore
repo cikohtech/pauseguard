@@ -10,8 +10,10 @@ web/.env.*.local
 *service-account*.json
 *credentials*.json
 
-# Not for judges (research notes, pitch Q&A prep)
-private/
+# Not for judges (research notes, pitch Q&A prep, build-phase prompts).
+# Root-anchored so backend/app/agents/prompts/ and data/generate/prompts/ stay tracked.
+/private/
+/prompts/
 
 # Local data and outputs
 *.db

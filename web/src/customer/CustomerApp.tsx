@@ -1,5 +1,5 @@
 import { ArrowLeft, CircleCheck, CircleDashed, CircleAlert } from 'lucide-react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
 
@@ -21,7 +21,6 @@ export function CustomerApp() {
   useEffect(() => pingApi(), [])
   return (
     <SessionProvider>
-      <RestoreLanguage />
       <PhoneFrame caption={<Caption />}>
         <Routes>
           <Route index element={<PersonaPicker />} />
@@ -40,18 +39,6 @@ export function CustomerApp() {
 function RequirePersona({ children }: { children: ReactNode }) {
   const { persona } = useSession()
   return persona ? children : <Navigate to="/app" replace />
-}
-
-/** After a reload the persona comes back from sessionStorage: speak their language again.
- *  Once, on open, so the header toggle keeps working afterwards. */
-function RestoreLanguage() {
-  const { persona } = useSession()
-  const { i18n } = useTranslation()
-  const [language] = useState(() => persona?.language)
-  useEffect(() => {
-    if (language) void i18n.changeLanguage(language)
-  }, [i18n, language])
-  return null
 }
 
 /** The desktop caption beside the phone: what this is, and who you are playing. */
