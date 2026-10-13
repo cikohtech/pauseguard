@@ -62,3 +62,14 @@ private/                       ← git-ignored: research notes and pitch Q&A pre
 - If Claude goes off-spec, tell it: "Re-read docs/<file>.md and follow it."
 - Keep `docs/DECISIONS.md` honest. Judges ask "why", and this file is your answer sheet.
 - Never let it commit `.env` or key files. Use Application Default Credentials only.
+
+## Quick start (New addition -A)
+
+```bash
+make setup       # backend (uv) + web (npm) deps, .env, git hooks
+make seed-local  # synthetic data -> SQLite (about 2 s; data/seed/ is git-ignored)
+make test        # backend pytest + web Vitest (+ Firestore rules if Java is installed)
+make dev         # API on :8000, web on :5173
+```
+
+`make test` also works before `make seed-local`: the tests generate any missing seed files themselves.
