@@ -218,6 +218,8 @@ def pct_ci(k: int, n: int) -> str:
 def secs(ms: int | None) -> str:
     if ms is None:
         return "n/a"
+    if ms < 1:
+        return "<1 ms"
     return f"{ms} ms" if ms < 1000 else f"{ms / 1000:.1f} s"
 
 

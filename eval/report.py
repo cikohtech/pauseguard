@@ -36,6 +36,7 @@ from metrics import (  # noqa: E402
     SYSTEM_NAMES,
     VERDICTS,
     Row,
+    Summary,
     age_band,
     confusion,
     group,
@@ -166,9 +167,12 @@ def headline(run: RunData, price: dict[str, float]) -> str:
     if b0:
         parts.append(f"rules alone stopped {pct(b0.recall)} of scams")
     if b1:
+        budget = run.meta.get("agent_timeout_s") or 0
+        late = sum((r.get("answer_ms") or 0) > budget * 1000 for r in run.systems["b1"])
         parts.append(
-            f"a single Gemini prompt stopped {pct(b1.recall)} "
-            f"(and {pct(b1.fpr)} of legitimate payments)"
+            f"a single Gemini prompt with no time limit stopped {pct(b1.recall)} (and "
+            f"{pct(b1.fpr)} of legitimate payments), but {late} of its {b1.n} answers took "
+            f"longer than PauseGuard's {budget:g} s budget"
         )
     parts.append(
         f"PauseGuard stopped {pct(pg.recall)} with a {pct(pg.fpr)} false-positive rate "
@@ -199,6 +203,60 @@ def breakdown(run: RunData, title: str, key: Any, order: list[str] | None = None
         n = f"{sample.scams} / {sample.legit}" if sample else "–"
         lines.append(f"| {name} | {n} | {' | '.join(cells)} |")
     return lines
+
+
+def fallback_note(rows: list[Row]) -> list[str]:
+    """Split "stopped" into stopped by the analysis vs. by the safe fallback (time budget)."""
+    fb = [r for r in rows if r.get("needs_review")]
+    if not fb:
+        return []
+    scams = [r["id"] for r in fb if r["label"] == "SCAM"]
+    legit = [r["id"] for r in fb if r["label"] == "LEGIT"]
+    analysed = [r for r in rows if not r.get("needs_review")]
+    a = summarise(analysed)
+    which = (
+        f"{_n(len(scams), 'scam')} ({', '.join(scams) or 'none'}) and "
+        f"{_n(len(legit), 'legitimate payment')} ({', '.join(legit) or 'none'})"
+    )
+    finished = f"recall {_frac(a.scams_stopped, a.scams)}, FPR {_frac(a.legit_stopped, a.legit)}"
+    return [
+        f"- The fallbacks: {which}, AMBER because the analysis did not finish in time, not "
+        f"because it found anything. Counting only the checks whose analysis finished: "
+        f"{finished}."
+    ]
+
+
+def ablation_health(run: RunData) -> list[str]:
+    out = []
+    for system in ABLATION_SYSTEMS:
+        if system not in run.systems:
+            continue
+        failed, asked = timeout_share(run.systems[system])
+        if failed > MAX_TIMEOUT_SHARE * asked:
+            fb = [r for r in run.systems[system] if r.get("needs_review")]
+            legit = sum(r["label"] == "LEGIT" for r in fb)
+            name = SYSTEM_NAMES[system]
+            out += [
+                f"*{name}* ran into a slow endpoint: {failed} of {asked} checks hit the time "
+                f"budget (AMBER + review), {legit} of them legitimate payments, so its FPR and "
+                "typology accuracy are worse than its analysis. Read it as indicative.",
+                "",
+            ]
+    return out
+
+
+def latency_verdict(pg: Summary) -> str:
+    met = (pg.answer_p50 or 0) <= PRD_ANSWER_P50_MS and (pg.answer_p95 or 0) <= PRD_ANSWER_P95_MS
+    return (
+        f"Answer → full customer result: p50 {secs(pg.answer_p50)}, p95 {secs(pg.answer_p95)} "
+        f"against the PRD's {PRD_ANSWER_P50_MS / 1000:g} s / {PRD_ANSWER_P95_MS / 1000:g} s: "
+        + (
+            "**met**."
+            if met
+            else "**not met** on this run. The p95 sits at the 12 s budget, "
+            "where a slow check falls back to AMBER + review."
+        )
+    )
 
 
 def degraded_banner(run: RunData) -> list[str]:
@@ -357,6 +415,8 @@ def misses(run: RunData) -> list[str]:
         "| Case | Scam type | Lang | Evidence | Amount | Txn score | Why |",
         "|---|---|---|---|---|---|---|",
     ]
+    if not missed:
+        lines[-2:] = ["None."]
     for r in missed:
         why = "fast path: never asked" if r.get("fast_path") else _why(r)
         lines.append(
@@ -370,11 +430,13 @@ def misses(run: RunData) -> list[str]:
         "| Case | Kind | Lang | Evidence | Verdict | Read as | Why |",
         "|---|---|---|---|---|---|---|",
     ]
+    if not false_alarms:
+        lines[-2:] = ["None."]
     for r in false_alarms:
         lines.append(
             f"| {r['id']} | {r['scenario']} | {r['language']} | {r['evidence_type']} | "
             f"{r['verdict']}{' (needs review)' if r.get('needs_review') else ''} | "
-            f"{r.get('typology_pred')} ({_f(r.get('confidence'))}) | {_why(r)} |"
+            f"{r.get('typology_pred') or '–'} ({_f(r.get('confidence'))}) | {_why(r)} |"
         )
     return lines
 
@@ -504,7 +566,8 @@ def charts(run: RunData, out_dir: Path = CHARTS) -> list[Path]:
                         ha="center", va="bottom", xytext=(0, 3), textcoords="offset points",
                         color=INK, fontsize=11)  # fmt: skip
     ax.set_xticks(list(x), [names[s] for s in systems])
-    ax.set_ylim(0, 110)
+    ax.set_ylim(0, 128)  # headroom: the legend sits above the 100% labels
+    ax.set_yticks(range(0, 101, 20))
     ax.set_ylabel("% of cases")
     ax.yaxis.grid(True, color=GRID, linewidth=0.8)
     ax.set_axisbelow(True)
@@ -700,6 +763,7 @@ def build(runs: dict[str, RunData], primary: RunData, split: str = "test") -> st
         f"took the GREEN fast path (a low score with no check-in{fast_rule}; "
         f"{pg.fast_path_scams} of them scams). {pg.failures} checks fell back to AMBER + human "
         "review (a model error or the time budget), which counts as stopped.",
+        *fallback_note(pg_rows),
         "- B1 gets the same inputs (built by the evidence agent's own code), the transaction "
         "score and reasons, no time budget and one retry; see `eval/baselines/single_prompt.py`.",
         *b1_with_budget(primary, meta.get("agent_timeout_s")),
@@ -724,6 +788,7 @@ def build(runs: dict[str, RunData], primary: RunData, split: str = "test") -> st
             "",
             *ablation_table(ablations),
             "",
+            *ablation_health(ablations),
         ]
     out += [
         "## Fairness breakdowns",
@@ -753,6 +818,8 @@ def build(runs: dict[str, RunData], primary: RunData, split: str = "test") -> st
         "![Typology confusion](charts/benchmark_typology.png)",
         "",
         "## Latency",
+        "",
+        latency_verdict(pg),
         "",
         "PauseGuard, per step (checks with a check-in):",
         "",
@@ -846,6 +913,10 @@ def _pred(r: Row) -> str:
     if r.get("fast_path"):
         return "not asked"
     return str(r.get("typology_pred") or "UNKNOWN")
+
+
+def _n(k: int, noun: str) -> str:
+    return f"{k} {noun}" + ("" if k == 1 else "s")
 
 
 def _frac(k: int, n: int) -> str:
