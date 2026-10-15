@@ -17,6 +17,7 @@ dependencies = [
     "slowapi>=0.1.10",
     "sse-starlette>=3.5.0",
     "structlog>=26.1.0",
+    "tzdata>=2026.5",
     "uvicorn[standard]>=0.54.0",
 ]
 
