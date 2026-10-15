@@ -83,6 +83,7 @@ class IntelRun:
     latency_ms: int
     tokens: TokenUsage
     searches: int = 0
+    grounding_queries: int = 0  # Google Search queries the searches made (the billed unit)
     error: str | None = None
 
 
@@ -239,6 +240,7 @@ class IntelAgent:
             latency_ms=round((time.perf_counter() - start) * 1000),
             tokens=run.tokens,
             searches=len(used),
+            grounding_queries=sum(len(r.queries) for r in records),
             error=run.error,
         )
         log.info(
@@ -249,6 +251,7 @@ class IntelAgent:
             tokens_in=run.tokens.in_,
             tokens_out=run.tokens.out,
             searches=len(used),
+            grounding_queries=intel_run.grounding_queries,
             findings=[(f.query[:80], f.risk, len(f.sources)) for f in findings],
             failed=run.failed,
         )

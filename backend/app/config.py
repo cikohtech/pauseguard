@@ -81,6 +81,9 @@ class Settings(BaseSettings):
     # payment only from this amount (SGD); below it the verdict is AMBER (cool-off). 0 = off.
     fusion_red_min_amount: float = 1000.0
     txn_green_fast_path_below: int = 30
+    # A first payment to a new payee always gets the check-in, however low its score: the small
+    # opening payment of a scam scores 20-25 (DECISIONS 2026-10-15, phase 09). False = score only.
+    checkin_every_new_payee: bool = True
 
     # Set by Cloud Run itself; used to detect "running in cloud".
     k_service: str | None = Field(default=None, alias="K_SERVICE")

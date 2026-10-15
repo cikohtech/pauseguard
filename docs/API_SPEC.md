@@ -103,6 +103,7 @@ Watchlist entries (`WatchlistEntry`: type, normalised value, source SEED|ANALYST
 
 - `GET /health` → `{"ok":true,"model":"<GEMINI_MODEL>","data_backend":"bigquery"}`. Not `/healthz`: Cloud Run reserves some paths ending in `z` and answers `/healthz` itself with a 404 (it stays as a local-only alias).
 - `POST /admin/reset-demo` (needs an admin token from Secret Manager, `X-Admin-Token`): resets the demo personas' checks and cases, so the live demo can be re-run. Response `{"checks_deleted":1,"cases_deleted":1,"watchlist_deleted":1}`; ANALYST_REPORT watchlist entries are deleted, seed entries, audit and analytics are kept.
+- `POST /admin/purge-eval` (admin token): deletes every check marked as benchmark traffic (`X-PauseGuard-Eval: true`) and the cases they opened, so a benchmark run against the live stack leaves nothing in the analyst queue. Response `{"checks_deleted":100,"cases_deleted":52}`; their `checks_analytics` rows stay (marked `is_eval`, excluded from `/metrics`). `eval/run_benchmark.py --api` calls it at the end of a run.
 - `POST /admin/selftest` (admin token): runs the Aisyah GREEN scenario end to end through Gemini and returns pass/fail plus latency. Cloud Scheduler calls it daily (see `DEPLOYMENT.md` §7).
 - `GET /health` also checks the dependencies (Firestore, BigQuery and model reachability, cached) so uptime checks catch real outages.
 

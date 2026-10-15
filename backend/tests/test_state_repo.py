@@ -177,6 +177,22 @@ async def test_cases(repo: StateRepo) -> None:
     assert [c.case_id for c in await repo.list_cases()] == ["case_3"]
 
 
+async def test_delete_eval_checks_takes_their_cases_only(repo: StateRepo) -> None:
+    """The benchmark's checks (is_eval) and their cases go; real traffic stays."""
+    bench = a_check("chk_eval", "cust_123").model_copy(update={"is_eval": True})
+    await repo.create_check(bench.model_copy(update={"case_id": "case_eval"}))
+    await repo.create_check(
+        a_check("chk_eval_green", "cust_124").model_copy(update={"is_eval": True})
+    )
+    await repo.create_check(a_check("chk_real").model_copy(update={"case_id": "case_real"}))
+    await repo.create_case(a_case("case_eval", "cust_123"))
+    await repo.create_case(a_case("case_real"))
+    assert await repo.delete_eval_checks() == (2, 1)
+    assert [c.check_id for c in await repo.list_checks()] == ["chk_real"]
+    assert [c.case_id for c in await repo.list_cases()] == ["case_real"]
+    assert await repo.delete_eval_checks() == (0, 0)
+
+
 async def test_audit_is_listed_per_case_in_time_order(repo: StateRepo) -> None:
     later = AuditEntry(
         actor="daniel", action="REPORT_SCAM", case_id="case_1", ts=T0 + timedelta(minutes=2)

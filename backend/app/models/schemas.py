@@ -730,6 +730,11 @@ class ResetDemoResponse(BaseModel):
     watchlist_deleted: int
 
 
+class PurgeEvalResponse(BaseModel):
+    checks_deleted: int
+    cases_deleted: int
+
+
 class SelftestResponse(BaseModel):
     passed: bool
     verdict: Verdict | None = None

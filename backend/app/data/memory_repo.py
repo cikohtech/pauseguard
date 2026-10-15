@@ -94,6 +94,15 @@ class MemoryStateRepo:
     async def delete_checks_for(self, customer_ids: Iterable[str]) -> int:
         return self._delete_for_customers("checks", customer_ids)
 
+    async def delete_eval_checks(self) -> tuple[int, int]:
+        checks, cases = self._col("checks"), self._col("cases")
+        doomed = [k for k, d in checks.items() if d.get("is_eval")]
+        case_ids = {str(c) for k in doomed if (c := checks[k].get("case_id"))}
+        for k in doomed:
+            del checks[k]
+        gone = [k for k in case_ids if cases.pop(k, None) is not None]
+        return len(doomed), len(gone)
+
     # --- cases -------------------------------------------------------------------------------
 
     async def create_case(self, case: CaseRecord) -> None:

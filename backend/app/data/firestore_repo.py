@@ -119,6 +119,18 @@ class FirestoreStateRepo:
     async def delete_checks_for(self, customer_ids: Iterable[str]) -> int:
         return await self._delete_for_customers(CHECKS, customer_ids)
 
+    async def delete_eval_checks(self) -> tuple[int, int]:
+        q = self._db.collection(CHECKS).where(filter=FieldFilter("is_eval", "==", True))
+        docs = [s.to_dict() or {} async for s in q.stream()]
+        case_ids = list(dict.fromkeys(d["case_id"] for d in docs if d.get("case_id")))
+        cases = 0
+        for i in range(0, len(case_ids), IN_QUERY_MAX):
+            ids = case_ids[i : i + IN_QUERY_MAX]
+            cases += await self._delete_where(
+                self._db.collection(CASES).where(filter=FieldFilter("case_id", "in", ids))
+            )
+        return await self._delete_where(q), cases
+
     # --- cases -------------------------------------------------------------------------------
 
     async def create_case(self, case: CaseRecord) -> None:

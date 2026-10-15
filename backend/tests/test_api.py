@@ -720,6 +720,26 @@ async def test_reset_demo(client: httpx.AsyncClient, services: Services) -> None
     assert await services.state.get_watchlist("PHONE", "+65 8000 0147")  # seed entries stay
 
 
+async def test_purge_eval_removes_benchmark_checks_and_their_cases(
+    client: httpx.AsyncClient, services: Services
+) -> None:
+    flagged = ADMIN | {"X-PauseGuard-Eval": "true"}
+    bench = (await client.post("/api/v1/checks", json=create_body("tan"), headers=flagged)).json()
+    r = await client.post(
+        f"/api/v1/checks/{bench['check_id']}/messages", json=message_body("tan", []), headers=ADMIN
+    )
+    assert r.status_code == 200 and r.json()["case_id"]
+    real = await run(client, "raj")
+    await services.drain()
+    denied = await client.post("/api/v1/admin/purge-eval", headers=ANALYST)
+    assert denied.status_code == 403
+    purged = await client.post("/api/v1/admin/purge-eval", headers=ADMIN)
+    assert purged.json() == {"checks_deleted": 1, "cases_deleted": 1}
+    assert await services.state.get_check(bench["check_id"]) is None
+    assert await services.state.get_case(r.json()["case_id"]) is None
+    assert await services.state.get_check(real["check_id"])  # real traffic stays
+
+
 async def test_personas_are_public(client: httpx.AsyncClient) -> None:
     r = await client.get("/api/v1/personas")
     assert [p["customer_id"] for p in r.json()] == ["cust_001", "cust_002", "cust_003"]
@@ -762,6 +782,7 @@ async def test_openapi_documents_every_route_with_the_error_envelope(
         ("GET", "/api/v1/metrics"),
         ("GET", "/api/v1/watchlist"),
         ("POST", "/api/v1/admin/reset-demo"),
+        ("POST", "/api/v1/admin/purge-eval"),
         ("GET", "/api/v1/personas"),
         ("GET", "/health"),
     }

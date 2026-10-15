@@ -6,7 +6,8 @@
     outcome = await orch.run_check(create_req, message_req)     # both (CLI, benchmark)
 
 start():   transaction risk ∥ payee-account watchlist lookup ∥ customer lookup (no LLM).
-           Score < 30 and no watchlist hit -> GREEN at once; otherwise a templated check-in.
+           A known payee, score < 30 and no watchlist hit -> GREEN at once; otherwise (a new
+           payee always) a templated check-in.
 analyse(): customer-facing part, inside AGENT_TIMEOUT_SECONDS:
              evidence agent ∥ watchlist lookup of the payee account and of the entities a regex
              finds in the customer's text -> watchlist lookup of the entities the evidence agent
@@ -226,7 +227,13 @@ class Orchestrator:
             is_eval=is_eval,
         )
 
-        if txn.score < self.settings.txn_green_fast_path_below and not payee_matches:
+        new_payee = bool(txn.features and txn.features.is_new_payee)
+        ask_anyway = new_payee and self.settings.checkin_every_new_payee
+        if (
+            txn.score < self.settings.txn_green_fast_path_below
+            and not payee_matches
+            and not ask_anyway
+        ):
             message = green_message(language)
             record.status = "DONE"
             record.fusion = FusionResult(

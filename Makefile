@@ -23,7 +23,7 @@ export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
 
 .PHONY: help setup dev dev-api dev-web emulators test test-rules lint format seed-local seed-cloud history \
         a11y playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
-        evidence-dev agent-evals scenario demo-curl api-live drills eval infra analyst deploy-api deploy-web smoke \
+        evidence-dev agent-evals scenario demo-curl api-live drills eval eval-report infra analyst deploy-api deploy-web smoke \
         console-live
 
 help: ## List the targets
@@ -72,8 +72,8 @@ a11y: ## Customer app in Chromium: 3 scenarios + axe (WCAG 2.1 AA) + keyboard, A
 	cd $(WEB) && npx playwright install --only-shell chromium && npm run test:e2e
 
 lint: ## ruff + mypy (backend), oxlint + tsc (web)
-	$(UV) run ruff check .
-	$(UV) run ruff format --check .
+	$(UV) run ruff check . ../eval
+	$(UV) run ruff format --check . ../eval
 	$(UV) run mypy app
 	cd $(WEB) && npm run lint && npm run typecheck
 
@@ -127,8 +127,18 @@ drills: ## Failure drills (live Gemini): model down, slow model, 10 MB image, ba
 	$(UV) run pytest -m live -k drills -v
 	cd $(WEB) && npx playwright install --only-shell chromium && npx playwright test e2e/drills.spec.ts
 
-eval: ## phase 09: run the benchmark and write eval/reports/benchmark.md
-	@echo "eval is implemented in phase 09 (prompts/phase-09-benchmark.md)"; exit 1
+eval: ## Benchmark on the test split (live Gemini): rules vs single prompt vs PauseGuard -> eval/reports/benchmark.md. API=deployed (or a URL) for the live API; RUN_ARGS= passes runner flags
+	@$(MAKE) --no-print-directory eval-verify
+	@set -e; if [ -n "$(API)" ]; then \
+	  url="$(API)"; \
+	  if [ "$$url" = deployed ]; then url="$$(gcloud run services describe $(SERVICE) --project $(PROJECT) --region $(REGION) --format='value(status.url)')"; fi; \
+	  export ADMIN_TOKEN="$${ADMIN_TOKEN:-$$(gcloud secrets versions access latest --secret admin-reset-token --project $(PROJECT))}"; \
+	  $(UV) run --group eval python ../eval/run_benchmark.py --api "$$url" $(RUN_ARGS); \
+	else $(UV) run --group eval python ../eval/run_benchmark.py --local $(RUN_ARGS); fi
+	@$(MAKE) --no-print-directory eval-report
+
+eval-report: ## Rebuild eval/reports/benchmark.md + charts from eval/results/ (no model calls); REPORT_ARGS=--run <id>
+	$(UV) run --group eval python ../eval/report.py $(REPORT_ARGS)
 
 infra: ## One-time GCP infrastructure (idempotent; creates billable resources): infra/setup.sh
 	PROJECT_ID=$(PROJECT) REGION=$(REGION) infra/setup.sh

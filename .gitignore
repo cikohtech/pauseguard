@@ -23,7 +23,10 @@ data/seed/*.db.tmp
 data/seed/*.csv
 data/seed/personas.json
 .local_uploads/
-eval/results/
+# Benchmark raw results: only the reported test-split runs are kept (make eval-report rebuilds
+# the report from them); dev-split tuning runs stay local.
+eval/results/*
+!eval/results/*_test_*.jsonl
 
 # Python
 __pycache__/
