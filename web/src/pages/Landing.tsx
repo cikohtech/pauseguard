@@ -1,9 +1,11 @@
 import { ArrowRight, ExternalLink, LayoutDashboard, MessageSquareText, ScanSearch, ShieldCheck, Smartphone } from 'lucide-react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { ShieldMark } from '@/components/ShieldMark'
+import { warmUpApi } from '@/lib/api'
 import { PRODUCT_NAME } from '@/lib/product'
 
 const SOURCE_URL =
@@ -19,6 +21,7 @@ const STEPS = [
 export function Landing() {
   const { t } = useTranslation()
   const vars = { product: PRODUCT_NAME }
+  useEffect(warmUpApi, [])
   return (
     <div className="flex min-h-svh flex-col bg-[linear-gradient(180deg,var(--primary-soft)_0%,var(--background)_55%)]">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 sm:px-8">

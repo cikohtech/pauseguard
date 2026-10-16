@@ -48,13 +48,21 @@ afterEach(async () => {
 })
 
 test('landing page shows the tagline and both entry points', () => {
+  fakeApi({})
   renderAt('/')
   expect(screen.getByRole('heading', { name: 'Pause before you pay.' })).toBeInTheDocument()
   expect(screen.getByRole('link', { name: /Try the customer app/ })).toHaveAttribute('href', '/app')
   expect(screen.getByRole('link', { name: /analyst console/ })).toHaveAttribute('href', '/console')
 })
 
+test('landing page wakes the API while the judge reads it', () => {
+  fakeApi({})
+  renderAt('/')
+  expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/health$/))
+})
+
 test('landing page cites the 81.8% statistic and switches to Chinese', async () => {
+  fakeApi({})
   renderAt('/')
   expect(screen.getByText('81.8%')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: /Singapore Police Force, Feb 2026/ })).toHaveAttribute(

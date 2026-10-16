@@ -162,8 +162,8 @@ deploy-web: ## Build web/ against the live API, deploy Firebase Hosting + Firest
 	cd $(WEB) && VITE_API_BASE_URL="$$API_URL" npm run build
 	$(FIREBASE) deploy --project $(PROJECT) --only hosting,firestore:rules,firestore:indexes --non-interactive
 
-uptime: ## Evaluation safeguards (DEPLOYMENT §7): uptime checks + alerts to ALERT_EMAIL, Scheduler reset/selftest; RUN_JOBS=1 runs both jobs now
-	PROJECT_ID=$(PROJECT) REGION=$(REGION) SERVICE=$(SERVICE) ALERT_EMAIL=$(ALERT_EMAIL) RUN_JOBS=$(RUN_JOBS) infra/uptime.sh
+uptime: ## Evaluation safeguards (DEPLOYMENT §7): web uptime check + alerts to ALERT_EMAIL, Scheduler reset/selftest; RUN_JOBS=1 runs both jobs now, API_UPTIME=1 probes /health too
+	PROJECT_ID=$(PROJECT) REGION=$(REGION) SERVICE=$(SERVICE) ALERT_EMAIL=$(ALERT_EMAIL) RUN_JOBS=$(RUN_JOBS) API_UPTIME=$(API_UPTIME) infra/uptime.sh
 
 smoke: ## The live stack: /health, Hosting, CORS, Firebase Auth, the 3 scenarios, then reset-demo
 	PROJECT=$(PROJECT) REGION=$(REGION) scripts/smoke.sh

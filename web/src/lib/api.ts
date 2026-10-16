@@ -160,6 +160,12 @@ export class ApiError extends Error {
 
 export const apiUrl = (path: string) => `${API_BASE_URL}/api/v1${path}`
 
+/** Wakes the API while the judge reads the landing page: Cloud Run scales to zero between visits
+ *  and a cold start takes about 8 s (DECISIONS, phase 10 pass B). Fire and forget. */
+export function warmUpApi(): void {
+  fetch(`${API_BASE_URL}/health`).catch(() => {})
+}
+
 /** The ID token to send: the customer app's by default; the console passes its analyst's. */
 export type TokenSource = () => Promise<string | null>
 

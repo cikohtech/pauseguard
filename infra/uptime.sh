@@ -4,12 +4,16 @@
 #
 #   ALERT_EMAIL=you@example.com infra/uptime.sh        # make uptime ALERT_EMAIL=...
 #   RUN_JOBS=1 ...                                      # also run both Scheduler jobs once now
+#   API_UPTIME=1 ...                                    # also probe the API's /health (see below)
 #
 # Creates (flags checked against gcloud 588, 16 Oct 2026):
 #   - an email notification channel for ALERT_EMAIL (REST: the GA gcloud has no `channels`)
-#   - uptime checks every 5 min from all 6 regions on https://$PROJECT.web.app/ and the API's
-#     /health (which answers 503 when Firestore, BigQuery or Gemini is down; Cloud Run reserves
-#     /healthz)
+#   - an uptime check every 5 min from all 6 regions on https://$PROJECT.web.app/; with
+#     API_UPTIME=1 also on the API's /health (503 when Firestore, BigQuery or Gemini is down;
+#     Cloud Run reserves /healthz). Off by default (DECISIONS, phase 10 pass B): with CPU always
+#     allocated, Cloud Run bills an instance for its whole life, and a probe every few minutes
+#     keeps one alive around the clock (≈ the cost of --min-instances 1). The daily selftest and
+#     its log alert watch the API instead.
 #   - alert policies: an uptime check failing from 2+ regions; `selftest_failed` in the API logs or
 #     a failed Scheduler attempt (infra/monitoring/*.json)
 #   - Cloud Scheduler jobs (asia-southeast1, Asia/Singapore time) that send the X-Admin-Token:
@@ -76,7 +80,11 @@ uptime_check() {  # NAME HOST PATH [extra flags...]
   fi
 }
 uptime_check pauseguard-web "$WEB_HOST" / --matcher-content=PauseGuard --matcher-type=contains-string
-uptime_check pauseguard-api-health "$API_HOST" /health
+if [[ "${API_UPTIME:-0}" == 1 ]]; then
+  uptime_check pauseguard-api-health "$API_HOST" /health
+else
+  echo "  pauseguard-api-health skipped (API_UPTIME=1 adds it; it keeps a billed instance warm)"
+fi
 
 step "Alert policies"
 policy() {  # FILE
