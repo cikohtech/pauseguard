@@ -13,12 +13,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import admin, cases, checks, metrics, personas, uploads, watchlist
+from app.api import admin, cases, checks, health, metrics, personas, uploads, watchlist
 from app.api.deps import Services
 from app.api.errors import install_error_handlers
 from app.config import Settings, get_settings
 from app.log import configure_logging, get_logger
-from app.models.schemas import HealthResponse
+from app.telemetry import setup_tracing
 
 API_PREFIX = "/api/v1"
 
@@ -34,6 +34,7 @@ def create_app(settings: Settings | None = None, *, services: Services | None = 
     settings.export_sdk_env()
     configure_logging(settings.log_level)
     log = get_logger(__name__)
+    tracing = setup_tracing(settings)  # Cloud Trace on Cloud Run (app/telemetry.py)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -70,16 +71,7 @@ def create_app(settings: Settings | None = None, *, services: Services | None = 
     install_error_handlers(app)
     for module in (checks, uploads, cases, metrics, watchlist, admin, personas):
         app.include_router(module.router, prefix=API_PREFIX)
-
-    # Cloud Run's front end reserves some paths ending in "z" (it answers /healthz itself with a
-    # 404), so /health is the route uptime checks use; /healthz stays for local habits.
-    @app.get("/health", response_model=HealthResponse, tags=["ops"])
-    @app.get("/healthz", response_model=HealthResponse, include_in_schema=False)
-    async def health() -> HealthResponse:
-        # Dependency checks (Firestore, BigQuery, model) are added in phase 10 pass B.
-        return HealthResponse(
-            ok=True, model=settings.gemini_model, data_backend=settings.data_backend
-        )
+    app.include_router(health.router)  # /health, outside /api/v1 (uptime checks, smoke)
 
     if settings.auth_disabled:
         log.warning("auth_disabled", note="local dev only: every request is a local analyst")
@@ -90,6 +82,7 @@ def create_app(settings: Settings | None = None, *, services: Services | None = 
         data_backend=settings.data_backend,
         uploads=settings.uploads,
         cloud=settings.is_cloud,
+        cloud_trace=tracing,
     )
     return app
 

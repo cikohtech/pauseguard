@@ -20,7 +20,8 @@ Scammers write the evidence, so assume it will contain instructions aimed at the
 ## 3. Auth and IAM (prototype level)
 
 - Customers: Firebase anonymous auth, plus a persona picker. This is a demo limitation, documented in the README. Any signed-in user may create a check for any of the bank's (synthetic) customers, and a check is reachable by anyone who has its ID (unguessable, 80 random bits); a real deployment binds checks to the bank's authenticated session.
-- Ops and service callers (smoke test, benchmark, Cloud Scheduler) send `X-Admin-Token` (Secret Manager `admin-reset-token`, compared in constant time). It passes every route and skips the rate limit, so it never goes into the web app.
+- Ops and service callers (smoke test, benchmark, Cloud Scheduler) send `X-Admin-Token` (Secret Manager `admin-reset-token`, compared in constant time). It passes every route and skips the rate limit, so it never goes into the web app. The two Scheduler jobs hold it as a request header in their job config (readable only by project owners/Scheduler viewers); `infra/uptime.sh` refreshes it after a rotation.
+- Cloud Trace (phase 10 pass B) gets the ADK agent, model and tool spans with IDs, model names, token counts and timings only: `ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS=false` keeps prompts, evidence and answers out of the spans (they would otherwise be span attributes, unredacted).
 - `AUTH_DISABLED=true` exists for local dev only: Settings refuses to start with it when `K_SERVICE` is set (Cloud Run), and the API logs a warning whenever it is on.
 - Evidence: `POST /checks/{id}/messages` only accepts URIs that `POST /uploads/sign` issued for that check, so a caller can't make the model read other objects in the bucket.
 - Analysts: Firebase email/password with the custom claim `role=analyst`. The API verifies ID tokens with `firebase-admin`.

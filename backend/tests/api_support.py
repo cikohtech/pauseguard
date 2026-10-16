@@ -18,6 +18,7 @@ from app.agents.explainer_agent import ExplainRequest, ExplainRun, static_messag
 from app.agents.intel_agent import IntelRequest, IntelRun
 from app.agents.orchestrator import Orchestrator
 from app.api.deps import Services
+from app.api.health import HealthProbe, ModelPing
 from app.config import Settings
 from app.data.memory_repo import MemoryStateRepo
 from app.data.sqlite_repo import SCHEMA_PATH, SqliteAnalyticsRepo, SqliteTransactionRepo
@@ -154,6 +155,7 @@ def build_services(
     settings: Settings | None = None,
     orchestrator: Orchestrator | None = None,
     evidence: StubEvidence | None = None,
+    model_ping: ModelPing | None = None,
 ) -> Services:
     s = settings or make_settings(tmp_path)
     orch = orchestrator or PinnedOrchestrator(
@@ -173,7 +175,12 @@ def build_services(
         orchestrator=orch,
         store=LocalEvidenceStore(s.local_uploads_dir),
         verify_token=verify_token,
+        health=HealthProbe(state, txn_repo, model_ping or model_answers),
     )
+
+
+async def model_answers() -> None:
+    """The /health model check without Vertex AI."""
 
 
 def client_for(services: Services, *, raise_app_exceptions: bool = True) -> httpx.AsyncClient:

@@ -715,7 +715,12 @@ async def test_reset_demo(client: httpx.AsyncClient, services: Services) -> None
     denied = await client.post("/api/v1/admin/reset-demo", headers=ANALYST)
     assert denied.status_code == 403
     r = await client.post("/api/v1/admin/reset-demo", headers=ADMIN)
-    assert r.json() == {"checks_deleted": 1, "cases_deleted": 1, "watchlist_deleted": 1}
+    assert r.json() == {
+        "checks_deleted": 1,
+        "cases_deleted": 1,
+        "watchlist_deleted": 1,
+        "seed_restored": 30,
+    }
     assert await services.state.get_check(tan["check_id"]) is None
     assert await services.state.get_watchlist("PHONE", "+65 8000 0147")  # seed entries stay
 
@@ -783,14 +788,17 @@ async def test_openapi_documents_every_route_with_the_error_envelope(
         ("GET", "/api/v1/watchlist"),
         ("POST", "/api/v1/admin/reset-demo"),
         ("POST", "/api/v1/admin/purge-eval"),
+        ("POST", "/api/v1/admin/selftest"),
         ("GET", "/api/v1/personas"),
         ("GET", "/health"),
     }
+    # The ops probes answer 503 with their own report, so uptime checks and Scheduler see why.
+    reports = {("/health", "503"), ("/api/v1/admin/selftest", "503")}
     for path, ops in spec["paths"].items():
         for op in ops.values():
             assert op.get("summary") and op.get("tags"), path
             for status, resp in op["responses"].items():
-                if status.startswith(("4", "5")):
+                if status.startswith(("4", "5")) and (path, status) not in reports:
                     ref = resp["content"]["application/json"]["schema"]["$ref"]
                     assert ref.endswith("/ErrorResponse"), (path, status)
     assert (await client.get("/docs")).status_code == 200

@@ -69,13 +69,28 @@ def metering() -> Iterator[TokenUsage]:
         _METER.reset(token)
 
 
+# Quota (429) or an overloaded model (503): the genai client retries with exponential backoff
+# (0.5 s, then 1 s, with jitter) before the error reaches the AgentRunner's own retry and the
+# safe fallback. Short on purpose: the customer-facing budget is AGENT_TIMEOUT_SECONDS.
+RETRY_OPTIONS = types.HttpRetryOptions(
+    attempts=3, initial_delay=0.5, max_delay=2.0, exp_base=2.0, http_status_codes=[429, 503]
+)
+
+
 @lru_cache
 def shared_model(model_id: str) -> Gemini:
     """One Gemini instance for every agent in the process. Given a model *name*, ADK builds a
     new Gemini (and genai Client) on every call, which reloads credentials (locally a `gcloud`
     subprocess), fetches a new token and opens a new TLS connection each time. One shared
     instance keeps one client per event loop: credentials once, connections kept alive."""
-    return Gemini(model=model_id)
+    return Gemini(model=model_id, retry_options=RETRY_OPTIONS)
+
+
+async def ping_model(model_id: str) -> None:
+    """GET /health's model check: count_tokens is free and generates nothing, but it goes through
+    the same client, credentials and Vertex AI endpoint as the agents. Raises when unreachable."""
+    client = shared_model(model_id).api_client
+    await client.aio.models.count_tokens(model=model_id, contents="ping")
 
 
 def resolve_model(model: str | BaseLlm | None, settings: Settings) -> BaseLlm:

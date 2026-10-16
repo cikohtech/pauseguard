@@ -81,6 +81,9 @@ class FakeBlob:
         self.calls.append({"blob": self.name, **kw})
         return f"https://storage.googleapis.com/b/{self.name}?X-Goog-Signature=x"
 
+    def upload_from_string(self, data: bytes, content_type: str) -> None:
+        self.calls.append({"blob": self.name, "upload": data, "content_type": content_type})
+
 
 class FakeCreds:
     valid = False
@@ -134,6 +137,20 @@ async def test_gcs_signs_through_iam_with_the_size_limit() -> None:
     assert get["method"] == "GET" and get["expiration"].total_seconds() == 300
     with pytest.raises(ValueError):
         await store.read_url("gs://other-bucket/x.png", base_url="ignored")
+
+
+async def test_server_side_put_writes_where_a_signed_upload_would(tmp_path: Path) -> None:
+    client = FakeClient()
+    gcs = GcsEvidenceStore("p-pauseguard-evidence", "p", client=client)
+    uri = await gcs.put(CHECK, "0-a.pdf", b"%PDF", "application/pdf")
+    assert uri == gcs.uri_for(CHECK, "0-a.pdf")
+    assert client.calls == [
+        {"blob": f"checks/{CHECK}/0-a.pdf", "upload": b"%PDF", "content_type": "application/pdf"}
+    ]
+    local = LocalEvidenceStore(tmp_path)
+    uri = await local.put(CHECK, "0-a.pdf", b"%PDF", "application/pdf")
+    assert uri == local.uri_for(CHECK, "0-a.pdf")
+    assert local.path_for(CHECK, "0-a.pdf").read_bytes() == b"%PDF"
 
 
 def test_gcs_signing_credentials_default_to_cloud_platform_scope(

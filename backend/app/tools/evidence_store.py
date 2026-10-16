@@ -64,6 +64,10 @@ class EvidenceStore(Protocol):
 
     async def read_url(self, uri: str, *, base_url: str) -> str: ...
 
+    async def put(self, check_id: str, name: str, data: bytes, content_type: str) -> str:
+        """Server-side write (no signed URL): /admin/selftest's own evidence. Returns the URI."""
+        ...
+
 
 # --- cloud -----------------------------------------------------------------------------------
 
@@ -151,6 +155,11 @@ class GcsEvidenceStore:
             method="GET",
         )
 
+    async def put(self, check_id: str, name: str, data: bytes, content_type: str) -> str:
+        blob = self.client.bucket(self.bucket_name).blob(f"checks/{check_id}/{name}")
+        await asyncio.to_thread(blob.upload_from_string, data, content_type=content_type)
+        return self.uri_for(check_id, name)
+
 
 # --- local dev -------------------------------------------------------------------------------
 
@@ -213,6 +222,10 @@ class LocalEvidenceStore:
         path = self.path_for(check_id, name)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
+
+    async def put(self, check_id: str, name: str, data: bytes, content_type: str) -> str:
+        await asyncio.to_thread(self.save, check_id, name, data)
+        return self.uri_for(check_id, name)
 
 
 def evidence_store(settings: Settings) -> EvidenceStore:

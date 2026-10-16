@@ -180,8 +180,10 @@ class BigQueryTransactionRepo:
         )
 
     def ping(self) -> bool:
+        """GET /health: a query job runs (API up, roles/bigquery.jobUser). No table, so nothing
+        is billed; a query that reads a table bills at least 10 MB, once a minute."""
         try:
-            self._rows(f"SELECT 1 FROM {self._t('customers')} LIMIT 1")
+            self._rows("SELECT 1")
         except Exception:  # any failure means "not healthy"
             return False
         return True

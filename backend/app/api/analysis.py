@@ -31,6 +31,7 @@ from app.models.schemas import (
     ProgressEvent,
     TxnRisk,
 )
+from app.telemetry import tracer
 
 log = get_logger(__name__)
 
@@ -87,13 +88,18 @@ async def answer(
             done.set_result(event.data)
 
     async def pipeline() -> None:
-        try:
-            await services.orchestrator.analyse(check_id, msg, on_event=on_event)
-        except Exception as e:
-            if not done.done():
-                done.set_exception(e)  # the request answers (409/404, or the safe AMBER)
-                return
-            log.exception("analysis_failed_after_done", check_id=check_id)
+        # One trace per check in Cloud Trace: ADK's agent, model and tool spans nest under it.
+        with tracer.start_as_current_span(
+            "pauseguard.check", attributes={"check_id": check_id, "is_eval": check.is_eval}
+        ) as span:
+            try:
+                outcome = await services.orchestrator.analyse(check_id, msg, on_event=on_event)
+                span.set_attribute("verdict", outcome.fusion.verdict)
+            except Exception as e:
+                if not done.done():
+                    done.set_exception(e)  # the request answers (409/404, or the safe AMBER)
+                    return
+                log.exception("analysis_failed_after_done", check_id=check_id)
         await record_snapshot(services, check_id)
 
     services.inflight.add(check_id)

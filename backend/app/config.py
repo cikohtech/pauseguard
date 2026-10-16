@@ -16,6 +16,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = BACKEND_DIR.parent
+# Files the API image needs from outside backend/ (the build context): the seed watchlist (for
+# /admin/reset-demo) and Aisyah's tenancy PDF (for /admin/selftest). Copies, kept identical to
+# data/seed/ and data/demo/ by tests/test_selftest.py.
+ASSETS_DIR = BACKEND_DIR / "app" / "assets"
 EMULATOR_PROJECT = "demo-pauseguard"  # offline project ID used by the local Firebase emulators
 
 
@@ -66,6 +70,8 @@ class Settings(BaseSettings):
     rate_limit_checks: str = "30/hour"  # POST /checks per client IP
     rate_limit_checks_per_customer: str = "120/hour"  # per customer_id (judges share personas)
     log_level: str = "INFO"
+    # ADK agent spans to Cloud Trace (telemetry.googleapis.com). Unset: on on Cloud Run only.
+    cloud_trace: bool | None = None
     # Gemini prices for /metrics cost per check (USD per 1M tokens). Filled in by hand from the
     # published price list (phase 09, eval/pricing.yaml); unset: cost_per_check_usd is null.
     gemini_price_in_usd_per_mtok: float | None = None
@@ -103,6 +109,10 @@ class Settings(BaseSettings):
     @property
     def is_cloud(self) -> bool:
         return self.k_service is not None
+
+    @property
+    def cloud_trace_enabled(self) -> bool:
+        return self.is_cloud if self.cloud_trace is None else self.cloud_trace
 
     @property
     def uploads(self) -> Literal["local", "gcs"]:

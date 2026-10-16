@@ -44,6 +44,7 @@ step "APIs"
 gc services enable run.googleapis.com aiplatform.googleapis.com bigquery.googleapis.com \
   firestore.googleapis.com storage.googleapis.com secretmanager.googleapis.com \
   cloudbuild.googleapis.com artifactregistry.googleapis.com cloudtrace.googleapis.com \
+  telemetry.googleapis.com \
   logging.googleapis.com iamcredentials.googleapis.com firebasehosting.googleapis.com \
   firebaserules.googleapis.com identitytoolkit.googleapis.com
 echo "  enabled"

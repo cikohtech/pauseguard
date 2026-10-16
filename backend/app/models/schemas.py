@@ -721,25 +721,34 @@ class HealthResponse(BaseModel):
     ok: bool
     model: str
     data_backend: str
-    dependencies: dict[str, bool] | None = None  # Firestore, BigQuery, model (cached)
+    # {"firestore": true, "bigquery": true, "gemini": true}; "sqlite" instead of bigquery locally
+    dependencies: dict[str, bool] | None = None
 
 
 class ResetDemoResponse(BaseModel):
     checks_deleted: int
     cases_deleted: int
-    watchlist_deleted: int
+    watchlist_deleted: int  # ANALYST_REPORT entries
+    seed_restored: int = 0  # seed entries put back as seeded (REPORT_SCAM bumps their counts)
+
+
+class SelftestResponse(BaseModel):
+    """POST /admin/selftest: Aisyah's GREEN scenario end to end through Gemini (DEPLOYMENT §7.3).
+    The same body comes with 503 when it fails."""
+
+    passed: bool
+    scenario: str
+    expected: list[Verdict]
+    verdict: Verdict | None = None
+    needs_review: bool = False
+    check_id: str | None = None
+    latency_ms: int  # start of the check to the verdict, wall clock
+    reason: str | None = None  # why it failed
 
 
 class PurgeEvalResponse(BaseModel):
     checks_deleted: int
     cases_deleted: int
-
-
-class SelftestResponse(BaseModel):
-    passed: bool
-    verdict: Verdict | None = None
-    latency_ms: int
-    detail: str | None = None
 
 
 class ErrorBody(BaseModel):

@@ -19,7 +19,7 @@ import asyncio
 import secrets
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import Depends, Request
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
@@ -32,6 +32,9 @@ from app.config import EMULATOR_PROJECT, Settings
 from app.data.base import AnalyticsRepo, StateRepo, TransactionRepo
 from app.log import get_logger
 from app.tools.evidence_store import EvidenceStore
+
+if TYPE_CHECKING:
+    from app.api.health import HealthProbe
 
 log = get_logger(__name__)
 
@@ -50,12 +53,19 @@ class Services:
     verify_token: TokenVerifier
     hub: EventHub = field(default_factory=EventHub)
     limiter: CheckRateLimiter | None = None
+    health: HealthProbe | None = None  # GET /health's dependency checks (tests pass a fake model)
     tasks: set[asyncio.Task[Any]] = field(default_factory=set)
     inflight: set[str] = field(default_factory=set)  # check IDs being analysed here
 
     def __post_init__(self) -> None:
         if self.limiter is None:
             self.limiter = CheckRateLimiter(self.settings)
+        if self.health is None:
+            from app.agents._runtime import ping_model
+            from app.api.health import HealthProbe
+
+            model = self.settings.gemini_model
+            self.health = HealthProbe(self.state, self.txn_repo, lambda: ping_model(model))
 
     def spawn(self, coro: Coroutine[Any, Any, Any], *, name: str) -> asyncio.Task[Any]:
         """A background task that outlives the request (the case file, analytics rows). Kept

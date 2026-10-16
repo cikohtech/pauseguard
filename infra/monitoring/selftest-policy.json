@@ -1,0 +1,21 @@
+{
+  "displayName": "PauseGuard: selftest or scheduled job failed",
+  "documentation": {
+    "mimeType": "text/markdown",
+    "content": "Either the daily `POST /admin/selftest` (Aisyah's GREEN scenario through Gemini) did not come out GREEN, or a Cloud Scheduler job (selftest, 6-hourly reset-demo) failed. The `selftest_failed` log line has the verdict and the reason. A Gemini slowdown shows as `AMBER + needs_review`: re-run with `gcloud scheduler jobs run pauseguard-selftest --location asia-southeast1`. Runbook: docs/DEPLOYMENT.md §7."
+  },
+  "combiner": "OR",
+  "conditions": [
+    {
+      "displayName": "selftest_failed, or a Scheduler attempt ended in an error",
+      "conditionMatchedLog": {
+        "filter": "(resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"__SERVICE__\" AND jsonPayload.message=\"selftest_failed\") OR (resource.type=\"cloud_scheduler_job\" AND resource.labels.job_id=~\"^pauseguard-\" AND severity>=ERROR)"
+      }
+    }
+  ],
+  "alertStrategy": {
+    "notificationRateLimit": { "period": "3600s" },
+    "autoClose": "86400s"
+  },
+  "notificationChannels": ["__CHANNEL__"]
+}

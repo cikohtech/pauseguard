@@ -24,7 +24,7 @@ export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
 .PHONY: help setup dev dev-api dev-web emulators test test-rules lint format seed-local seed-cloud history \
         a11y playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
         evidence-dev agent-evals scenario demo-curl api-live drills eval eval-report infra analyst deploy-api deploy-web smoke \
-        console-live
+        console-live uptime
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
@@ -161,6 +161,9 @@ deploy-web: ## Build web/ against the live API, deploy Firebase Hosting + Firest
 	echo "▶ VITE_API_BASE_URL=$$API_URL"; \
 	cd $(WEB) && VITE_API_BASE_URL="$$API_URL" npm run build
 	$(FIREBASE) deploy --project $(PROJECT) --only hosting,firestore:rules,firestore:indexes --non-interactive
+
+uptime: ## Evaluation safeguards (DEPLOYMENT §7): uptime checks + alerts to ALERT_EMAIL, Scheduler reset/selftest; RUN_JOBS=1 runs both jobs now
+	PROJECT_ID=$(PROJECT) REGION=$(REGION) SERVICE=$(SERVICE) ALERT_EMAIL=$(ALERT_EMAIL) RUN_JOBS=$(RUN_JOBS) infra/uptime.sh
 
 smoke: ## The live stack: /health, Hosting, CORS, Firebase Auth, the 3 scenarios, then reset-demo
 	PROJECT=$(PROJECT) REGION=$(REGION) scripts/smoke.sh

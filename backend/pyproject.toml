@@ -11,6 +11,7 @@ dependencies = [
     "google-cloud-firestore>=2.34.1",
     "google-cloud-storage>=3.17.0",
     "google-genai>=2.29.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.42.1",
     "pydantic>=2.14.0",
     "pydantic-settings>=2.15.0",
     "python-multipart>=0.0.32",

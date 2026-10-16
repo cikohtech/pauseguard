@@ -16,7 +16,7 @@ The target is a public live link that judges can open, with the backend in Singa
 
 | Step | What it creates (all data in `asia-southeast1`) |
 |---|---|
-| APIs | Run, Vertex AI, BigQuery, Firestore, Storage, Secret Manager, Cloud Build, Artifact Registry, Trace, Logging, IAM Credentials (signBlob for the V4 signed URLs), Firebase Hosting/Rules, Identity Toolkit |
+| APIs | Run, Vertex AI, BigQuery, Firestore, Storage, Secret Manager, Cloud Build, Artifact Registry, Trace + Telemetry (OTLP), Logging, IAM Credentials (signBlob for the V4 signed URLs), Firebase Hosting/Rules, Identity Toolkit |
 | Firestore | `(default)`, native mode |
 | BigQuery | dataset `pauseguard` (tables come from `make seed-cloud`) |
 | Cloud Storage | `gs://$PROJECT-pauseguard-evidence`: uniform access, public access prevention, `infra/lifecycle.json` (delete after 30 days), `infra/cors.json` (PUT/GET from the Hosting origins + localhost; headers `Content-Type`, `x-goog-content-length-range`) |
@@ -87,3 +87,16 @@ The rules say the prototype must stay functional **throughout evaluation**, and 
 8. **Freeze the release:** tag `v1.0-submission` and deploy exactly that tag. During evaluation, fix only critical bugs, in a branch, smoke-tested first, then redeploy. Never delete or rename the Cloud Run service, Firebase site, bucket or dataset.
 9. **Keep the GitHub repo public** throughout. Don't rename, transfer or make it private.
 10. **Check from outside:** open the live link, the video and the repo in an incognito window, on mobile data, from another device, the day after submitting and then weekly.
+
+### As built (phase 10 pass B, `make uptime` → `infra/uptime.sh`, idempotent)
+
+| Item | What exists |
+|---|---|
+| Cloud Run | `make deploy-api MIN_INSTANCES=1`: min 1, max 5, concurrency 20, CPU always allocated |
+| `/health` | Firestore read (every call), BigQuery `SELECT 1` (60 s cache, nothing billed), Gemini `count_tokens` (10 min cache, free); 503 + which dependency on failure |
+| Uptime checks | `pauseguard-web` (`https://<project>.web.app/`, body must contain "PauseGuard") and `pauseguard-api-health` (`<api>/health`), every 5 min from all 6 regions, 20 s timeout, SSL validated |
+| Alert policies | "PauseGuard: live site or API down" (a check failing from 2+ regions for 5 min) and "PauseGuard: selftest or scheduled job failed" (log alert: `selftest_failed` in the API logs, or a `pauseguard-*` Scheduler attempt at ERROR; at most one email an hour), both to the `ALERT_EMAIL` channel |
+| Scheduler (asia-southeast1, Asia/Singapore) | `pauseguard-reset-demo` `0 */6 * * *` → `POST /api/v1/admin/reset-demo`; `pauseguard-selftest` `30 7 * * *` → `POST /api/v1/admin/selftest` (no retries, 120 s deadline). Both send `X-Admin-Token`; re-run `make uptime` after rotating the secret. `make uptime RUN_JOBS=1` runs both once |
+| Gemini quota | Standard PayGo on the `global` endpoint: throughput limits are per organisation and rise with spend (Flash Tier 1 = 2M tokens/min, checked 16 Oct 2026), so there is no project quota to raise; a check uses ≈ 6k tokens. 429/503 are retried by the genai client (3 attempts, 0.5 s → 1 s backoff with jitter), then the AgentRunner's retry, then AMBER + review |
+| Rate limit | 30 checks/hour per IP, 120/hour per customer (`infra/cloudrun.env.yaml`) |
+| Cloud Trace | ADK spans exported via telemetry.googleapis.com (`roles/cloudtrace.agent` includes `telemetry.traces.write`), one `pauseguard.check` trace per answer, no message content |
