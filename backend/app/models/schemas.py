@@ -742,7 +742,8 @@ class SelftestResponse(BaseModel):
     verdict: Verdict | None = None
     needs_review: bool = False
     check_id: str | None = None
-    latency_ms: int  # start of the check to the verdict, wall clock
+    latency_ms: int  # start of the check to the verdict, wall clock (the last attempt)
+    attempts: int = 1  # 2 when the first run ended in the safe AMBER + review
     reason: str | None = None  # why it failed
 
 

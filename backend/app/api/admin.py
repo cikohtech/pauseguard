@@ -102,9 +102,16 @@ async def purge_eval(
 async def selftest(services: ServicesDep, _: AdminDep) -> JSONResponse:
     """Starts Aisyah's S$3,200 rent deposit, attaches her tenancy agreement (PDF) and answers the
     check-in, exactly like the app does, through the real agents. Passes when the verdict is
-    GREEN with no review. The check is marked as test traffic (kept out of /metrics) and the
-    6-hourly reset removes it. 503 with the same body on failure."""
+    GREEN with no review. A run that ends in the safe AMBER + review (usually one slow Gemini
+    call hitting the 12 s budget) is tried once more, so `attempts` is 1 or 2 and only two misses
+    in a row fail. The checks are marked as test traffic (kept out of /metrics) and the 6-hourly
+    reset removes them. 503 with the same body on failure."""
     result = await run_selftest(services)
+    if not result.passed and result.needs_review:
+        first = result.reason
+        result = await run_selftest(services)
+        result.attempts = 2
+        result.reason = result.reason and f"{result.reason} (attempt 1: {first})"
     fields = result.model_dump(exclude={"expected", "scenario"})
     if result.passed:
         log.info("selftest_passed", **fields)

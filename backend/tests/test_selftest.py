@@ -26,6 +26,7 @@ from tests.api_support import (
     StubEvidence,
     build_services,
     client_for,
+    make_settings,
 )
 
 
@@ -45,7 +46,9 @@ def evidence() -> StubEvidence:
 def services(
     tmp_path: Path, state: MemoryStateRepo, sqlite_repo: SqliteTransactionRepo, evidence: Any
 ) -> Services:
-    return build_services(tmp_path, state, sqlite_repo, evidence=evidence)
+    # A 1 s budget keeps the timeout tests quick (the stub agents answer at once).
+    settings = make_settings(tmp_path, agent_timeout_seconds=1.0)
+    return build_services(tmp_path, state, sqlite_repo, evidence=evidence, settings=settings)
 
 
 @pytest.fixture
@@ -77,7 +80,7 @@ async def test_selftest_runs_aisyah_with_her_pdf_and_passes_green(
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["passed"] and body["verdict"] == "GREEN" and body["scenario"] == "aisyah"
-    assert body["expected"] == ["GREEN"] and body["reason"] is None
+    assert body["expected"] == ["GREEN"] and body["reason"] is None and body["attempts"] == 1
     check = await services.state.get_check(body["check_id"])
     assert check is not None and check.is_eval  # kept out of /metrics
     assert check.customer_id == "cust_003" and check.status == "DONE"
@@ -106,12 +109,30 @@ async def test_a_wrong_verdict_fails_with_503_and_a_reason(client: httpx.AsyncCl
 
 
 @pytest.mark.parametrize("evidence", [StubEvidence(delay=30)])
-async def test_a_timeout_fails_as_amber_needs_review(client: httpx.AsyncClient) -> None:
+async def test_two_timeouts_in_a_row_fail_as_amber_needs_review(
+    client: httpx.AsyncClient, evidence: StubEvidence
+) -> None:
     r = await client.post("/api/v1/admin/selftest", headers=ADMIN)
     assert r.status_code == 503
     body = r.json()
-    assert body["verdict"] == "AMBER" and body["needs_review"]
-    assert body["reason"] == "expected GREEN, got AMBER + needs_review"
+    assert body["verdict"] == "AMBER" and body["needs_review"] and body["attempts"] == 2
+    miss = "expected GREEN, got AMBER + needs_review"
+    assert body["reason"] == f"{miss} (attempt 1: {miss})"
+    assert len(evidence.requests) == 2
+
+
+class SlowOnce(StubEvidence):
+    async def analyse(self, req: Any) -> Any:
+        self.delay = 30 if not self.requests else 0  # one slow Gemini call, then a normal one
+        return await super().analyse(req)
+
+
+@pytest.mark.parametrize("evidence", [SlowOnce()])
+async def test_one_slow_model_call_is_retried_and_passes(client: httpx.AsyncClient) -> None:
+    r = await client.post("/api/v1/admin/selftest", headers=ADMIN)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["passed"] and body["attempts"] == 2 and body["reason"] is None
 
 
 async def test_no_check_in_means_gemini_was_never_called(

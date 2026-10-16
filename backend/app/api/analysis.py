@@ -15,6 +15,8 @@ from __future__ import annotations
 import asyncio
 import time
 
+from opentelemetry import trace
+
 from app.agents.casefile_agent import CaseFileRequest, fallback_case_file
 from app.agents.explainer_agent import static_message
 from app.agents.orchestrator import CheckStateError, new_id
@@ -82,19 +84,21 @@ async def answer(
     loop = asyncio.get_running_loop()
     done: asyncio.Future[dict[str, object]] = loop.create_future()
 
+    # One trace per check in Cloud Trace: ADK's agent, model and tool spans nest under it.
+    span = tracer.start_span(
+        "pauseguard.check", attributes={"check_id": check_id, "is_eval": check.is_eval}
+    )
+
     def on_event(event: ProgressEvent) -> None:
         services.hub.publish(check_id, event)
         if event.type == "done" and event.data is not None and not done.done():
+            span.set_attribute("verdict", str(event.data.get("verdict")))
             done.set_result(event.data)
 
     async def pipeline() -> None:
-        # One trace per check in Cloud Trace: ADK's agent, model and tool spans nest under it.
-        with tracer.start_as_current_span(
-            "pauseguard.check", attributes={"check_id": check_id, "is_eval": check.is_eval}
-        ) as span:
+        with trace.use_span(span, end_on_exit=True):
             try:
-                outcome = await services.orchestrator.analyse(check_id, msg, on_event=on_event)
-                span.set_attribute("verdict", outcome.fusion.verdict)
+                await services.orchestrator.analyse(check_id, msg, on_event=on_event)
             except Exception as e:
                 if not done.done():
                     done.set_exception(e)  # the request answers (409/404, or the safe AMBER)
