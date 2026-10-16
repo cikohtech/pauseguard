@@ -136,7 +136,8 @@ Unit-test every branch, and log the thresholds in config so the eval can tune th
 ```
 on POST /checks:
   txn = compute_txn_risk()
-  if txn.score < 30 and no watchlist hit → GREEN (template), done
+  if known payee and txn.score < 30 and no watchlist hit → GREEN (template), done
+  (a new payee always gets the check-in: the small opening payment of a scam scores 20-25)
   else status=CHECKIN, return question
 
 on POST /checks/{id}/messages:

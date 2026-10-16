@@ -50,7 +50,7 @@ Keep a rendered PNG of this at `docs/img/architecture.png` for the deck (phase 1
 
 1. Customer fills in a transfer → `POST /api/v1/checks` with the transfer details.
 2. API creates `checks/{check_id}` in Firestore (status `SCORING`) and calls the **Transaction Risk** tool (BigQuery or SQLite). This takes under 300 ms and needs no LLM.
-3. If `txn_score < 30` and there's no watchlist hit on the payee → verdict GREEN immediately, no check-in.
+3. If the payee is a **known** payee, `txn_score < 30` and there's no watchlist hit on the payee → verdict GREEN immediately, no check-in. A first payment to a new payee always gets the check-in (`CHECKIN_EVERY_NEW_PAYEE`, DECISIONS 2026-10-15).
 4. Otherwise → status `CHECKIN`, and the response includes the first check-in question (from a template, not generated, so it's instant).
 5. Customer replies `POST /api/v1/checks/{id}/messages` with text and optional `evidence_uris` (uploaded first via `POST /api/v1/uploads/sign`).
 6. Orchestrator runs **in parallel**: Evidence agent (image/PDF/text/audio) and the watchlist lookups (payee account and the entities in the customer's text), then a watchlist pass on the entities the evidence agent found. The transaction features are already computed.

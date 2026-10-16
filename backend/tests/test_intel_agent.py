@@ -112,6 +112,7 @@ async def test_search_findings_are_grounded(settings: Settings, state: MemorySta
     run = await agent.investigate(tan_request(), state=state)
 
     assert run.called_model and not run.failed and run.searches == 1
+    assert run.grounding_queries == 1  # one web_search_query in the grounding metadata
     [finding] = run.result.web_findings
     assert finding.query == MAS_REQ and finding.risk == "HIGH"
     assert finding.sources == URIS  # the grounding URLs, not the model's
@@ -138,7 +139,7 @@ async def test_search_budget_and_phone_guard(settings: Settings, state: MemorySt
         [grounded("a", URIS[:1]), grounded("b", URIS[1:])],
     )
     run = await agent.investigate(tan_request(), state=state)
-    assert run.searches == 2 and len(search_llm.requests) == 2
+    assert run.searches == 2 and len(search_llm.requests) == 2 and run.grounding_queries == 2
     tool_replies = request_text(intel_llm.requests[-1]) + str(intel_llm.requests[-1].contents)
     assert "never searched" in tool_replies
     assert "Search budget used up (2 per check)" in tool_replies

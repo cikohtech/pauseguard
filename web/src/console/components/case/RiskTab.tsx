@@ -11,8 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { Verdict } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
-// Thresholds of the transaction score (AGENTS_SPEC §1): below 30 the GREEN fast path skips the
-// check-in; the rules-only baseline calls ≥ 40 AMBER and ≥ 70 RED.
+// Thresholds of the transaction score (AGENTS_SPEC §1): below 30 a known payee takes the GREEN
+// fast path (a new payee always gets the check-in); the rules-only baseline: ≥ 40 AMBER, ≥ 70 RED.
 const BANDS = [
   { from: 70, label: 'High', color: CHART.RED },
   { from: 40, label: 'Elevated', color: CHART.AMBER },

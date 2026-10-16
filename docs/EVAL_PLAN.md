@@ -47,6 +47,14 @@ Treat SCAM as positive and "stopped" as verdict ∈ {AMBER, RED}.
   4. Typology confusion heatmap
 - The headline sentence is generated from the numbers, e.g. "Rules alone stopped 41% of scams; PauseGuard stopped 93% with a 4% false-positive rate, in 3.8 s median at US$0.004 per check."
 
+**As built (phase 09).** `make eval` = `make eval-verify` → `eval/run_benchmark.py --local` → `eval/report.py`; `make eval API=deployed` runs against Cloud Run; `make eval-report` rebuilds the report from `eval/results/` without calling a model.
+- All systems share one transaction-risk step per case: locally `compute_txn_risk` on a fresh SQLite database from the generator with a pinned end date (2026-10-10), scored at a pinned "now" (10:00 SGT that day), so B0 is identical on every run; with `--api`, the deployed `POST /checks` (BigQuery, scored at request time), and B0/B1 reuse that score.
+- B1 (`eval/baselines/single_prompt.py`) gets the same inputs as the evidence agent (built by its own `build_parts`) plus the transaction score and reasons, no latency budget and one retry; a failed call is AMBER, as in the product.
+- Two local-only ablations: **always ask** (GREEN fast path off) and **answer only** (the evidence left out). They separate "the trigger never asked" from "the analysis missed it".
+- A pre-flight check times three one-word Gemini replies and refuses to run (unless `--force`) when the median is above 5 s: the global endpoint sometimes takes 20–50 s per call, and a run then measures the outage, not the system. The result is saved with the rows.
+- `--api` marks its traffic (`X-PauseGuard-Eval`) and calls `POST /admin/purge-eval` at the end, so no benchmark case stays in the analyst console.
+- Rows: `eval/results/<stamp>_<target>_<split>_<system>.jsonl`. Test-split runs are committed; dev-split runs stay local. Rates are reported with Wilson 95% intervals; cost uses `eval/pricing.yaml` (published price, source URL and date).
+
 ## 6. Honesty rules
 
 - Report the test split only, with dates and model ID.

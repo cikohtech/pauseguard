@@ -8,13 +8,21 @@ from pathlib import Path
 
 import pytest
 
-from app.data.seed import generate, load_sqlite
+from app.data.seed import SEED_DIR, generate, load_sqlite
 from app.data.sqlite_repo import SqliteTransactionRepo
 
 SGT = timezone(timedelta(hours=8))
 END_DATE = date(2026, 10, 10)
 AS_OF = datetime.combine(END_DATE, time(0), SGT)  # the end of the generated history
 SEED = 42
+
+
+@pytest.fixture(scope="session", autouse=True)
+def default_seed_files() -> None:
+    """data/seed/personas.json and the CSVs are git-ignored, so a fresh clone lacks them and tests
+    that read the default seed dir would fail. Generate them once if missing (about 2 s)."""
+    if not (SEED_DIR / "personas.json").exists():
+        generate(SEED, END_DATE, SEED_DIR)
 
 
 @pytest.fixture(scope="session")

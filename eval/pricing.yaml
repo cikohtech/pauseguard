@@ -1,0 +1,30 @@
+# Vertex AI prices used for "cost per check" in eval/reports/benchmark.md (EVAL_PLAN §4).
+# Copied by hand from Google's published price list. Never invent or estimate a price here: if
+# the model changes, fetch the page again and update the date.
+source_url: https://cloud.google.com/vertex-ai/generative-ai/pricing
+page_title: Agent Platform Pricing | Google Cloud  # Vertex AI generative AI pricing
+retrieved: 2026-10-15
+currency: USD
+
+models:
+  gemini-3.8-flash:
+    # Standard (pay-as-you-go) tier, Global endpoint (GOOGLE_CLOUD_LOCATION=global), prompts of
+    # <= 200K input tokens. "Gemini 3.8 Flash, Gemini 3.7 Flash, Gemini 3.6 Flash ... are offered
+    # with introductory pricing of $0.75 / $3.75 per 1M tokens input / output through
+    # December 31, 2026. Starting January 1, 2027, standard pricing of $1.5 / $7.5 per 1M tokens
+    # input / output will apply."
+    input_per_mtok: 0.75 # text, image, video, audio input
+    output_per_mtok: 3.75 # text output, response and reasoning (thinking tokens are output)
+    cached_input_per_mtok: 0.075 # not used: no context caching
+    valid_until: 2026-12-31
+    list_price_from_2027:
+      input_per_mtok: 1.50
+      output_per_mtok: 7.50
+
+grounding:
+  # Grounding with Google Search, Gemini 3 models (the Scam-Intel agent's web search; runs only
+  # for AMBER/RED checks, after the verdict). "Includes 5,000 Grounding Queries per month at no
+  # charge, aggregated across all Gemini 3 and Gemini 4 models. Grounding Queries exceeding those
+  # limits are billed at $14 per 1,000 Grounding Queries."
+  free_queries_per_month: 5000
+  per_1000_queries: 14.00

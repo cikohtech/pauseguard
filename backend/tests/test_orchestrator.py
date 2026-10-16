@@ -157,6 +157,28 @@ async def test_low_risk_known_payee_is_green_at_once(
     assert all(llm.requests == [] for llm in llms.values())
 
 
+async def test_a_new_payee_always_gets_the_check_in(
+    state: MemoryStateRepo, sqlite_repo: SqliteTransactionRepo
+) -> None:
+    """S$58 to a new payee scores 20 (NEW_PAYEE only), the shape of a scam's small opening
+    payment: it still gets the question. With the setting off, the score alone decides."""
+    req = CreateCheckRequest(
+        customer_id="cust_003",
+        transfer=Transfer(payee_name="Parcel Fee Desk", account_number="214-99001-7", amount=58),
+    )
+    o, llms = build(state, sqlite_repo)
+    r = await o.start(req, as_of=AS_OF)
+    assert r.txn_risk and r.txn_risk.score < 30 and r.txn_risk.features
+    assert r.txn_risk.features.is_new_payee
+    assert r.status == "CHECKIN" and r.verdict is None and r.question
+    score_only = Orchestrator(
+        txn_repo=sqlite_repo, state=state, settings=settings(checkin_every_new_payee=False)
+    )
+    green = await score_only.start(req, as_of=AS_OF)
+    assert green.status == "DONE" and green.verdict == "GREEN"
+    assert all(llm.requests == [] for llm in llms.values())
+
+
 async def test_tan_starts_with_a_chinese_check_in_and_the_watchlist_hit(
     state: MemoryStateRepo, sqlite_repo: SqliteTransactionRepo
 ) -> None:
