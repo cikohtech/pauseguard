@@ -1,6 +1,6 @@
 # PauseGuard: Claude Code Starter Kit
 
-This folder contains everything Claude Code needs to build **PauseGuard** (the "ScamShield" idea, renamed) for the **Google Cloud AI Builder Cup 2026**: the product, the contest rules, the architecture, and the phase-by-phase build prompts.
+This folder contains everything Claude Code needs to build **PauseGuard** for the **Google Cloud AI Builder Cup 2026**: the product, the contest rules, the architecture, and the phase-by-phase build prompts.
 
 > Phase 11 replaces this README with the real project README.
 
