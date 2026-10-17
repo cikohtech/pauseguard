@@ -1,8 +1,10 @@
-import { CircleCheckBig, Clock, ShieldCheck, Undo2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useNavigate } from 'react-router-dom'
 
+import { Icon, type IconName } from '@/components/icons/Icon'
+import { Shape, type ShapeName } from '@/components/m3/Expressive'
+import { PauseGuardLogo } from '@/components/ShieldMark'
 import { FeedbackThumbs } from '@/customer/components/FeedbackThumbs'
 import { HarbourLogo, LangSwitch, Screen } from '@/customer/components/Screen'
 import { formatDateTime, formatSgd, transferRef } from '@/customer/format'
@@ -11,6 +13,12 @@ import { bigButton } from '@/customer/styles'
 import { api } from '@/lib/api'
 import { PRODUCT_NAME } from '@/lib/product'
 import { cn } from '@/lib/utils'
+
+const LOOK: Record<'sent' | 'paused' | 'cancelled', { icon: IconName; shape: ShapeName; tint: string }> = {
+  sent: { icon: 'check_circle', shape: 'sunny', tint: 'text-verdict-green' },
+  paused: { icon: 'pause_circle', shape: 'cookie9', tint: 'text-verdict-amber' },
+  cancelled: { icon: 'undo', shape: 'cookie4', tint: 'text-secondary' },
+}
 
 /** After the verdict: transfer sent, paused for 24 hours, or cancelled. */
 export function Outcome() {
@@ -39,19 +47,20 @@ export function Outcome() {
     setOutcome('cancelled')
   }
 
-  const look = {
-    sent: { icon: CircleCheckBig, tint: 'bg-verdict-green' },
-    paused: { icon: Clock, tint: 'bg-verdict-amber' },
-    cancelled: { icon: Undo2, tint: 'bg-muted-foreground' },
-  }[outcome]
-  const Icon = look.icon
+  const look = LOOK[outcome]
   const checked = check && (check.fastVerdict === 'GREEN' || check.result?.verdict === 'GREEN')
+  const row = (label: string, value: string, mono = false) => (
+    <div className="flex min-h-14 items-center justify-between gap-4 rounded-xs bg-surface-container-lowest px-4 py-3 first:rounded-t-xl last:rounded-b-xl">
+      <dt className="text-body-l text-on-surface-variant">{label}</dt>
+      <dd className={cn('text-right text-body-l font-medium', mono && 'tabular-nums')}>{value}</dd>
+    </div>
+  )
 
   return (
     <Screen
       header={
         <header className="pt-sat shrink-0">
-          <div className="flex h-14 items-center justify-between px-5">
+          <div className="flex h-16 items-center justify-between pr-1 pl-5">
             <HarbourLogo />
             <LangSwitch />
           </div>
@@ -69,22 +78,16 @@ export function Outcome() {
           </button>
         </div>
       }
-      className="px-5"
+      className="px-4"
     >
-      <div data-testid={`outcome-${outcome}`} className="flex flex-col items-center pt-10 text-center">
-        <span
-          aria-hidden="true"
-          className={cn(
-            'flex size-20 items-center justify-center rounded-full text-white shadow-lg motion-safe:animate-in motion-safe:zoom-in-75',
-            look.tint,
-          )}
-        >
-          <Icon className="size-10" />
-        </span>
-        <h1 ref={heading} tabIndex={-1} className="mt-5 text-[26px] font-semibold outline-none">
+      <div data-testid={`outcome-${outcome}`} key={outcome} className="flex flex-col items-center pt-10 text-center">
+        <Shape shape={look.shape} spin className={cn('pop-in flex size-28', look.tint)}>
+          <Icon name={look.icon} fill className="size-14 text-white" />
+        </Shape>
+        <h1 ref={heading} tabIndex={-1} className="rise-in mt-6 text-headline-m outline-none">
           {t(`customer.outcome.${outcome}.title`)}
         </h1>
-        <p role="status" className="mt-2 max-w-xs text-[16px] leading-relaxed text-muted-foreground">
+        <p role="status" className="rise-in mt-2 max-w-xs text-body-l text-on-surface-variant">
           {outcome === 'sent' && t('customer.outcome.sent.body', { amount, payee: transfer.payee_name })}
           {outcome === 'paused' &&
             t('customer.outcome.paused.body', {
@@ -95,30 +98,16 @@ export function Outcome() {
       </div>
 
       {outcome === 'sent' && (
-        <dl className="mt-8 divide-y divide-border rounded-2xl bg-card px-4 ring-1 ring-border">
-          <div className="flex justify-between gap-4 py-3">
-            <dt className="text-muted-foreground">{t('customer.review.amount')}</dt>
-            <dd className="font-semibold tabular-nums">{amount}</dd>
-          </div>
-          <div className="flex justify-between gap-4 py-3">
-            <dt className="text-muted-foreground">{t('customer.review.to')}</dt>
-            <dd className="text-right font-medium">{transfer.payee_name}</dd>
-          </div>
-          {check && (
-            <div className="flex justify-between gap-4 py-3">
-              <dt className="text-muted-foreground">{t('customer.outcome.sent.ref')}</dt>
-              <dd className="font-medium tabular-nums">{transferRef(check.id)}</dd>
-            </div>
-          )}
-          <div className="flex justify-between gap-4 py-3">
-            <dt className="text-muted-foreground">{t('customer.outcome.sent.when')}</dt>
-            <dd className="font-medium">{formatDateTime(at, i18n.language)}</dd>
-          </div>
+        <dl className="rise-in mt-8 flex flex-col gap-0.5">
+          {row(t('customer.review.amount'), amount, true)}
+          {row(t('customer.review.to'), transfer.payee_name)}
+          {check && row(t('customer.outcome.sent.ref'), transferRef(check.id) ?? '—', true)}
+          {row(t('customer.outcome.sent.when'), formatDateTime(at, i18n.language))}
         </dl>
       )}
       {outcome === 'sent' && checked && (
-        <p className="mt-4 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
-          <ShieldCheck aria-hidden="true" className="size-4 text-primary" />
+        <p className="mt-4 flex items-center justify-center gap-2 text-body-m text-on-surface-variant">
+          <PauseGuardLogo className="size-5" />
           {t('customer.outcome.sent.checked', { product: PRODUCT_NAME })}
         </p>
       )}

@@ -69,7 +69,8 @@ test('landing page cites the 81.8% statistic and switches to Chinese', async () 
     'href',
     expect.stringContaining('police.gov.sg'),
   )
-  expect(screen.getAllByRole('listitem')).toHaveLength(3) // Check, Explain, Protect
+  const how = screen.getByRole('heading', { name: 'How it works' }).closest('section')!
+  expect(within(how).getAllByRole('listitem')).toHaveLength(3) // Check, Explain, Protect
   await userEvent.click(screen.getByRole('button', { name: 'Language' }))
   expect(await screen.findByRole('heading', { name: '付款之前，先停一停。' })).toBeInTheDocument()
 })

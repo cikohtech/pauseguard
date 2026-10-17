@@ -1,10 +1,9 @@
-import { AppWindow, Building2, CreditCard, Link2, Phone, ShieldBan } from 'lucide-react'
-
 import type { CaseDetail } from '@/console/api'
-import { Section, VerdictBadge } from '@/console/components/bits'
+import { Section } from '@/console/components/bits'
 import { analystFlags, entityChips, evidenceSources, type EntityKind } from '@/console/evidence'
 import { FLAG_LABEL, dateTime } from '@/console/format'
 import { EvidenceCard, type EvidenceCopy } from '@/customer/components/EvidenceCard'
+import { Icon, type IconName } from '@/components/icons/Icon'
 import { cn } from '@/lib/utils'
 
 const COPY: EvidenceCopy = {
@@ -17,12 +16,12 @@ const COPY: EvidenceCopy = {
   flagTitle: (code) => FLAG_LABEL[code] ?? code,
 }
 
-const ENTITY: Record<EntityKind, { label: string; icon: typeof Phone }> = {
-  PHONE: { label: 'Phone', icon: Phone },
-  URL: { label: 'Link', icon: Link2 },
-  ACCOUNT: { label: 'Account', icon: CreditCard },
-  ORG: { label: 'Organisation', icon: Building2 },
-  APP: { label: 'App', icon: AppWindow },
+const ENTITY: Record<EntityKind, { label: string; icon: IconName }> = {
+  PHONE: { label: 'Phone', icon: 'call' },
+  URL: { label: 'Link', icon: 'link' },
+  ACCOUNT: { label: 'Account', icon: 'credit_card' },
+  ORG: { label: 'Organisation', icon: 'apartment' },
+  APP: { label: 'App', icon: 'apps' },
 }
 
 export function EvidenceTab({ detail }: { detail: CaseDetail }) {
@@ -31,7 +30,7 @@ export function EvidenceTab({ detail }: { detail: CaseDetail }) {
   const chips = entityChips(detail)
   const ev = detail.evidence
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+    <div className="grid gap-4 @4xl:grid-cols-[minmax(0,1fr)_340px]">
       <div className="min-w-0">
         {flags.length > 0 ? (
           <EvidenceCard
@@ -43,8 +42,8 @@ export function EvidenceTab({ detail }: { detail: CaseDetail }) {
             showSeverity
           />
         ) : (
-          <Section title="Evidence with flags">
-            <p className="text-sm text-muted-foreground">
+          <Section title="Evidence with flags" icon="document_search">
+            <p className="text-body-m text-on-surface-variant">
               {ev?.evidence_present ? 'No warning signs were found in the evidence.' : 'The customer shared no evidence.'}
             </p>
           </Section>
@@ -52,26 +51,28 @@ export function EvidenceTab({ detail }: { detail: CaseDetail }) {
       </div>
 
       <div className="flex min-w-0 flex-col gap-4">
-        <Section title="Extracted entities">
+        <Section title="Extracted entities" icon="category">
           {chips.length > 0 ? (
             <ul className="flex flex-wrap gap-2" aria-label="Extracted entities">
               {chips.map((c) => {
-                const { label, icon: Icon } = ENTITY[c.kind]
+                const { label, icon } = ENTITY[c.kind]
                 return (
                   <li
                     key={`${c.kind}-${c.value}`}
                     className={cn(
-                      'inline-flex max-w-full items-center gap-1.5 rounded-lg border px-2 py-1 text-sm',
-                      c.onWatchlist ? 'border-verdict-red/40 bg-verdict-red-soft' : 'border-border bg-muted/50',
+                      'inline-flex min-h-8 max-w-full items-center gap-1.5 rounded-sm border px-2.5 py-1 text-body-m',
+                      c.onWatchlist ? 'border-transparent bg-verdict-red-soft text-verdict-red-ink' : 'border-outline-variant text-on-surface',
                     )}
                   >
-                    <Icon aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
+                    <Icon name={icon} className="size-4" />
                     <span className="sr-only">{label}: </span>
                     <span className="truncate font-mono text-[13px]">{c.value}</span>
-                    {c.payee && <span className="text-xs text-muted-foreground">payee</span>}
+                    {c.payee && (
+                      <span className="rounded-xs bg-surface-container-high px-1.5 text-label-s font-medium text-on-surface-variant">payee</span>
+                    )}
                     {c.onWatchlist && (
-                      <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-verdict-red-ink">
-                        <ShieldBan aria-hidden="true" className="size-3.5" />
+                      <span className="inline-flex items-center gap-0.5 text-label-m font-medium">
+                        <Icon name="policy" fill className="size-3.5" />
                         on watchlist
                       </span>
                     )}
@@ -80,39 +81,39 @@ export function EvidenceTab({ detail }: { detail: CaseDetail }) {
               })}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground">None found.</p>
+            <p className="text-body-m text-on-surface-variant">None found.</p>
           )}
-          <p className="mt-3 text-xs text-muted-foreground">
+          <p className="mt-3 text-body-s text-on-surface-variant">
             “Report as scam” adds the phones, links and accounts to the watchlist (official .gov.sg domains and the
             customer’s own contacts are never added).
           </p>
         </Section>
 
         {ev && (
-          <Section title="What the evidence says">
-            <p className="text-sm">{ev.summary}</p>
-            <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+          <Section title="What the evidence says" icon="description">
+            <p className="text-body-m">{ev.summary}</p>
+            <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-body-m">
               {ev.claimed_sender?.name && (
                 <>
-                  <dt className="text-muted-foreground">Sender</dt>
+                  <dt className="text-on-surface-variant">Sender</dt>
                   <dd>{ev.claimed_sender.name}</dd>
                 </>
               )}
               {ev.claimed_sender?.claimed_org && (
                 <>
-                  <dt className="text-muted-foreground">Claims to be</dt>
+                  <dt className="text-on-surface-variant">Claims to be</dt>
                   <dd>{ev.claimed_sender.claimed_org}</dd>
                 </>
               )}
               {ev.claimed_sender?.channel && (
                 <>
-                  <dt className="text-muted-foreground">Channel</dt>
+                  <dt className="text-on-surface-variant">Channel</dt>
                   <dd>{ev.claimed_sender.channel}</dd>
                 </>
               )}
               {ev.payment_instruction?.reason_given && (
                 <>
-                  <dt className="text-muted-foreground">Reason given</dt>
+                  <dt className="text-on-surface-variant">Reason given</dt>
                   <dd>{ev.payment_instruction.reason_given}</dd>
                 </>
               )}
@@ -120,25 +121,25 @@ export function EvidenceTab({ detail }: { detail: CaseDetail }) {
           </Section>
         )}
 
-        <Section title="Check-in transcript">
-          <ol className="flex flex-col gap-3 text-sm">
+        <Section title="Check-in transcript" icon="forum">
+          <ol className="flex flex-col gap-3 text-body-m">
             {detail.messages.map((m, i) => (
               <li key={i} className={cn('flex flex-col gap-1', m.role === 'customer' && 'items-end text-right')}>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-body-s text-on-surface-variant">
                   {m.role === 'assistant' ? 'PauseGuard asked' : 'Customer answered'} · {dateTime(new Date(m.ts))}
                 </span>
                 <span
                   className={cn(
-                    'max-w-[90%] rounded-xl px-3 py-2',
-                    m.role === 'assistant' ? 'bg-muted' : 'bg-primary-soft text-secondary-foreground',
+                    'max-w-[90%] rounded-lg px-4 py-2.5 text-left',
+                    m.role === 'assistant' ? 'rounded-tl-xs bg-surface-container' : 'rounded-tr-xs bg-primary-container text-on-primary-container',
                   )}
                 >
-                  {m.text || <em className="text-muted-foreground">(no text)</em>}
+                  {m.text || <em className="text-on-surface-variant">(no text)</em>}
                 </span>
                 {m.pasted_text && (
                   <details className="w-full text-left">
-                    <summary className="cursor-pointer text-xs font-medium text-primary">Pasted text (raw)</summary>
-                    <pre className="mt-1 max-h-60 overflow-auto rounded-lg bg-muted p-2 font-mono text-xs whitespace-pre-wrap">
+                    <summary className="cursor-pointer text-label-l font-medium text-primary">Pasted text (raw)</summary>
+                    <pre className="mt-1 max-h-60 overflow-auto rounded-lg bg-surface-container p-3 font-mono text-xs whitespace-pre-wrap">
                       {m.pasted_text}
                     </pre>
                   </details>
@@ -148,9 +149,9 @@ export function EvidenceTab({ detail }: { detail: CaseDetail }) {
           </ol>
         </Section>
 
-        <p className="flex items-center gap-2 text-xs text-muted-foreground">
-          <VerdictBadge verdict={detail.case.verdict} /> Evidence links are signed for 5 minutes; reopen the case to
-          refresh them.
+        <p className="flex items-center gap-2 text-body-s text-on-surface-variant">
+          <Icon name="lock" className="size-4" />
+          Evidence links are signed for 5 minutes; reopen the case to refresh them.
         </p>
       </div>
     </div>

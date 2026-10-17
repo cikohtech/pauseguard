@@ -1,6 +1,6 @@
-import { Check, Circle, LoaderCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+import { Icon } from '@/components/icons/Icon'
 import { STEPS, type Progress } from '@/customer/progress'
 import { cn } from '@/lib/utils'
 
@@ -10,7 +10,7 @@ export function StepTicks({ progress }: { progress: Progress }) {
   const current = STEPS.find((s) => progress[s] === 'active')
   return (
     <>
-      <ol className="flex flex-col gap-1">
+      <ol className="flex flex-col gap-0.5">
         {STEPS.map((step) => {
           const state = progress[step]
           return (
@@ -18,25 +18,29 @@ export function StepTicks({ progress }: { progress: Progress }) {
               key={step}
               data-testid={`step-${step}`}
               data-state={state}
-              className="flex min-h-12 items-center gap-3 rounded-xl px-3"
+              className={cn(
+                'flex min-h-14 items-center gap-4 rounded-xs px-4 transition-colors duration-300 first:rounded-t-xl last:rounded-b-xl',
+                state === 'active' ? 'bg-secondary-container' : 'bg-surface-container-lowest',
+              )}
             >
               <span
                 aria-hidden="true"
                 className={cn(
-                  'inline-flex size-7 items-center justify-center rounded-full transition-colors duration-300',
-                  state === 'done' && 'bg-verdict-green-ink text-white',
-                  state === 'active' && 'bg-primary-soft text-primary',
-                  state === 'waiting' && 'text-muted-foreground/60',
+                  'inline-flex size-7 shrink-0 items-center justify-center rounded-full transition-colors duration-300',
+                  state === 'done' && 'pop-in bg-verdict-green text-white',
+                  state === 'active' && 'text-primary',
+                  state === 'waiting' && 'border-2 border-outline-variant',
                 )}
               >
-                {state === 'done' && <Check className="size-4" strokeWidth={3} />}
-                {state === 'active' && <LoaderCircle className="size-4 motion-safe:animate-spin" strokeWidth={2.5} />}
-                {state === 'waiting' && <Circle className="size-5" />}
+                {state === 'done' && <Icon name="check" className="size-[18px]" />}
+                {state === 'active' && <Icon name="progress_activity" className="size-6 motion-safe:animate-spin" />}
               </span>
               <span
                 className={cn(
-                  'text-[16px]',
-                  state === 'waiting' ? 'text-muted-foreground' : 'font-medium text-foreground',
+                  'text-body-l',
+                  state === 'waiting' && 'text-on-surface-variant',
+                  state === 'active' && 'font-medium text-on-secondary-container',
+                  state === 'done' && 'text-on-surface',
                 )}
               >
                 {t(`customer.analysing.steps.${step}`)}

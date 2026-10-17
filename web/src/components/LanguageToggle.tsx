@@ -1,20 +1,20 @@
-import { Languages } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { Button } from '@/components/ui/button'
+import { Icon } from '@/components/icons/Icon'
+import { button } from '@/components/m3/styles'
 
 export function LanguageToggle() {
   const { t, i18n } = useTranslation()
   const next = i18n.language === 'zh' ? 'en' : 'zh'
   return (
-    <Button
-      variant="ghost"
-      size="sm"
+    <button
+      type="button"
       onClick={() => void i18n.changeLanguage(next)}
       aria-label={t('common.language')}
+      className={button('text', 'sm', 'text-on-surface-variant')}
     >
-      <Languages aria-hidden="true" />
-      {t('common.switchTo')}
-    </Button>
+      <Icon name="translate" />
+      <span lang={next === 'zh' ? 'zh-Hans' : 'en'}>{t('common.switchTo')}</span>
+    </button>
   )
 }

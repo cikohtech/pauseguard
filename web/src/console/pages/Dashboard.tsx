@@ -1,4 +1,3 @@
-import { RefreshCw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
@@ -7,6 +6,9 @@ import { AXIS_PROPS, CHART } from '@/console/chartTheme'
 import { ChartCard, DataTable, Legend, TooltipCard } from '@/console/components/charts'
 import { TYPOLOGY_LABEL, compactMoney, dateShort, hourLabel, percent, seconds } from '@/console/format'
 import { useConsoleTitle } from '@/console/title'
+import { Icon, type IconName } from '@/components/icons/Icon'
+import { Shape } from '@/components/m3/Expressive'
+import { iconButton } from '@/components/m3/styles'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Verdict } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -51,45 +53,49 @@ export function Dashboard() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="mx-auto flex max-w-[1280px] flex-col gap-5 px-4 py-5 sm:px-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="mx-auto flex max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-headline-s text-on-surface">Dashboard</h1>
+            <p className="mt-1 flex flex-wrap items-center gap-1.5 text-body-m text-on-surface-variant">
+              <span aria-hidden="true" className="relative flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-verdict-green opacity-60 motion-reduce:hidden" />
+                <span className="relative inline-flex size-2 rounded-full bg-verdict-green" />
+              </span>
               Live checks from the customer app (benchmark runs excluded). Refreshes every 15 s
               {updated && <> · updated {hourLabel(updated)}</>}.
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div role="group" aria-label="Time range" className="inline-flex rounded-lg border border-border bg-card p-0.5">
-              {(['today', '7d'] as const).map((r) => (
+            {/* M3 segmented button: the selected segment is tonal and shows a check */}
+            <div role="group" aria-label="Time range" className="inline-flex h-10 overflow-hidden rounded-full border border-outline">
+              {(['today', '7d'] as const).map((r, i) => (
                 <button
                   key={r}
                   type="button"
                   aria-pressed={range === r}
                   onClick={() => setRange(r)}
                   className={cn(
-                    'min-h-10 rounded-md px-3 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
-                    range === r ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+                    'ripple inline-flex min-w-28 items-center justify-center gap-2 px-4 text-label-l font-medium focus-visible:outline-offset-[-3px]',
+                    i > 0 && 'border-l border-outline',
+                    range === r ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface',
                   )}
                 >
+                  {range === r && <Icon name="check" className="size-[18px]" />}
                   {r === 'today' ? 'Today' : 'Last 7 days'}
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={() => setTick((t) => t + 1)}
-              className="inline-flex size-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <RefreshCw aria-hidden="true" className="size-4" />
+            <button type="button" onClick={() => setTick((t) => t + 1)} title="Refresh" className={iconButton('outlined', 'size-10')}>
+              <Icon name="refresh" className="!size-5" />
               <span className="sr-only">Refresh</span>
             </button>
           </div>
         </div>
 
         {failed && !metrics && (
-          <p role="alert" className="rounded-lg bg-verdict-red-soft px-3 py-2 text-sm text-verdict-red-ink">
+          <p role="alert" className="flex items-center gap-2 rounded-lg bg-error-container px-4 py-3 text-body-m text-on-error-container">
+            <Icon name="error" className="size-5" />
             The metrics couldn’t be loaded. Retrying every 15 seconds.
           </p>
         )}
@@ -106,13 +112,50 @@ export function Dashboard() {
   )
 }
 
-function Tile({ label, value, note, hero = false, children }: { label: string; value: string; note?: string; hero?: boolean; children?: React.ReactNode }) {
+function Tile({
+  label,
+  value,
+  note,
+  icon,
+  children,
+}: {
+  label: string
+  value: string
+  note?: string
+  icon: IconName
+  children?: React.ReactNode
+}) {
   return (
-    <div className={cn('flex flex-col rounded-xl border border-border bg-card p-4', hero && 'bg-primary-soft sm:col-span-2')}>
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className={cn('mt-1 font-semibold tracking-tight', hero ? 'text-5xl text-brand-deep' : 'text-2xl')}>{value}</p>
+    <div className="flex flex-col rounded-xl border border-outline-variant/80 bg-surface-container-lowest p-5">
+      <p className="flex items-center gap-2.5 text-title-s text-on-surface-variant">
+        <span className="inline-flex size-9 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
+          <Icon name={icon} className="size-5" />
+        </span>
+        {label}
+      </p>
+      <p className="mt-3 text-headline-l tracking-[-0.01em] text-on-surface tabular-nums">{value}</p>
       {children}
-      {note && <p className="mt-auto pt-2 text-xs text-muted-foreground">{note}</p>}
+      {note && <p className="mt-auto pt-2 text-body-s text-on-surface-variant">{note}</p>}
+    </div>
+  )
+}
+
+/** The headline number: money kept from scammers. */
+function Hero({ label, value, note }: { label: string; value: string; note: string }) {
+  return (
+    <div className="relative flex flex-col overflow-hidden rounded-xl bg-primary-container p-6 text-on-primary-container sm:col-span-2">
+      <Shape shape="cookie12" spin className="pointer-events-none absolute -top-16 -right-14 size-64 text-primary opacity-[0.09]" />
+      <p className="relative flex items-center gap-2.5 text-title-m">
+        <span className="inline-flex size-9 items-center justify-center rounded-full bg-primary text-on-primary">
+          <Icon name="verified_user" fill className="size-5" />
+        </span>
+        {label}
+      </p>
+      <p className="relative mt-4 text-display-l tracking-[-0.03em] tabular-nums">{value}</p>
+      <p className="relative mt-auto flex items-start gap-2 pt-3 text-body-m opacity-90">
+        <Icon name="info" className="mt-0.5 size-4" />
+        {note}
+      </p>
     </div>
   )
 }
@@ -121,55 +164,60 @@ function Kpis({ m, range }: { m: Metrics; range: MetricsRange }) {
   const flagged = m.verdicts.RED + m.verdicts.AMBER
   const total = VERDICTS.reduce((n, v) => n + m.verdicts[v], 0)
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpis">
-      <Tile
-        hero
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpis">
+      <Hero
         label={`Money protected ${range === 'today' ? 'today' : 'in 7 days'}`}
         value={compactMoney(m.money_protected_sgd)}
         note="Held RED transfers not released, plus AMBER transfers the customer paused or cancelled."
       />
-      <Tile label="Checks" value={m.checks.toLocaleString('en-SG')} note={`${flagged} flagged RED or AMBER`} />
-      <Tile label="Verdicts" value={total ? `${m.verdicts.RED} · ${m.verdicts.AMBER} · ${m.verdicts.GREEN}` : '0'} note="RED · AMBER · GREEN">
+      <Tile icon="verified_user" label="Checks" value={m.checks.toLocaleString('en-SG')} note={`${flagged} flagged RED or AMBER`} />
+      <Tile icon="bar_chart" label="Verdicts" value={total ? `${m.verdicts.RED} · ${m.verdicts.AMBER} · ${m.verdicts.GREEN}` : '0'} note="RED · AMBER · GREEN">
         {total > 0 && (
-          <div className="mt-2 flex h-2 gap-0.5 overflow-hidden rounded-full" aria-hidden="true">
+          <div className="mt-3 flex h-2 gap-0.5" aria-hidden="true">
             {(['RED', 'AMBER', 'GREEN'] as const).map((v) =>
-              m.verdicts[v] ? <span key={v} style={{ flexGrow: m.verdicts[v], background: CHART[v] }} /> : null,
+              m.verdicts[v] ? <span key={v} className="rounded-full" style={{ flexGrow: m.verdicts[v], background: CHART[v] }} /> : null,
             )}
           </div>
         )}
       </Tile>
       <Tile
+        icon="rule"
         label="False-positive rate"
         value={m.verdicts.RED ? percent(m.false_positive_rate, 1) : '—'}
         note="RED checks an analyst released ÷ RED checks"
       />
       <Tile
+        icon="timer"
         label="Latency p50 / p95"
         value={m.latency_ms.p50 ? `${seconds(m.latency_ms.p50)} / ${seconds(m.latency_ms.p95)}` : '—'}
         note="Customer’s answer → full result (targets 5 s / 10 s)"
       />
       <Tile
+        icon="payments"
         label="Cost per check"
         value={m.cost_per_check_usd === null ? 'Not priced' : `US$${m.cost_per_check_usd.toFixed(4)}`}
         note={m.cost_per_check_usd === null ? 'Set from the published Gemini price list' : 'Gemini tokens × list price'}
       />
-      <Tile label="Typologies seen" value={String(m.top_typologies.length)} note="Distinct scam types in flagged checks (top 5)" />
+      <Tile icon="category" label="Typologies seen" value={String(m.top_typologies.length)} note="Distinct scam types in flagged checks (top 5)" />
     </div>
   )
 }
 
 function KpiSkeleton() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-busy="true" aria-label="Loading metrics">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-busy="true" aria-label="Loading metrics">
       {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-        <Skeleton key={i} className={cn('h-28 rounded-xl', i === 0 && 'sm:col-span-2')} />
+        <Skeleton key={i} className={cn('h-36 rounded-xl', i === 0 && 'sm:col-span-2')} />
       ))}
     </div>
   )
 }
 
 const Empty = ({ text }: { text: string }) => (
-  <div className="flex h-full items-center justify-center rounded-lg bg-muted/50 text-sm text-muted-foreground">{text}</div>
+  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg bg-surface-container-low text-body-m text-on-surface-variant">
+    <Icon name="monitoring" className="size-8 opacity-60" />
+    {text}
+  </div>
 )
 
 function VerdictsChart({ m, range, className }: { m: Metrics; range: MetricsRange; className?: string }) {
@@ -190,7 +238,7 @@ function VerdictsChart({ m, range, className }: { m: Metrics; range: MetricsRang
               <XAxis dataKey="label" {...AXIS_PROPS} minTickGap={12} />
               <YAxis allowDecimals={false} width={36} {...AXIS_PROPS} axisLine={false} />
               <Tooltip
-                cursor={{ fill: 'var(--muted)' }}
+                cursor={{ fill: 'var(--surface-container)' }}
                 content={({ active, payload, label: l }) =>
                   active && payload?.length ? (
                     <TooltipCard
@@ -210,7 +258,7 @@ function VerdictsChart({ m, range, className }: { m: Metrics; range: MetricsRang
                   dataKey={v}
                   stackId="v"
                   fill={CHART[v]}
-                  stroke="var(--card)"
+                  stroke="var(--surface-container-lowest)"
                   strokeWidth={2}
                   maxBarSize={24}
                   radius={i === VERDICTS.length - 1 ? [4, 4, 0, 0] : 0}
@@ -247,7 +295,7 @@ function TypologyChart({ m }: { m: Metrics }) {
               <XAxis type="number" allowDecimals={false} {...AXIS_PROPS} axisLine={false} />
               <YAxis type="category" dataKey="name" width={150} {...AXIS_PROPS} />
               <Tooltip
-                cursor={{ fill: 'var(--muted)' }}
+                cursor={{ fill: 'var(--surface-container)' }}
                 content={({ active, payload }) =>
                   active && payload?.length ? (
                     <TooltipCard
@@ -258,7 +306,7 @@ function TypologyChart({ m }: { m: Metrics }) {
                 }
               />
               <Bar dataKey="count" fill={CHART.primary} maxBarSize={20} radius={[0, 4, 4, 0]} isAnimationActive={false}>
-                <LabelList dataKey="count" position="right" className="fill-foreground text-[12px] font-semibold" />
+                <LabelList dataKey="count" position="right" className="fill-on-surface text-[12px] font-medium" />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -294,7 +342,7 @@ function LatencyChart({ m }: { m: Metrics }) {
               <XAxis dataKey="label" {...AXIS_PROPS} interval={0} fontSize={11} />
               <YAxis allowDecimals={false} width={36} {...AXIS_PROPS} axisLine={false} />
               <Tooltip
-                cursor={{ fill: 'var(--muted)' }}
+                cursor={{ fill: 'var(--surface-container)' }}
                 content={({ active, payload, label }) =>
                   active && payload?.length ? (
                     <TooltipCard title={String(label)} rows={[{ label: 'Checks', value: String(payload[0].value) }]} />
@@ -305,7 +353,7 @@ function LatencyChart({ m }: { m: Metrics }) {
                 <LabelList
                   dataKey="count"
                   position="top"
-                  className="fill-foreground text-[12px] font-semibold"
+                  className="fill-on-surface text-[12px] font-medium"
                   formatter={(v: unknown) => (Number(v) > 0 ? String(v) : '')}
                 />
               </Bar>

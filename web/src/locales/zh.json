@@ -30,7 +30,9 @@
     "openConsole": "打开分析员控制台",
     "openConsoleHint": "已预填演示账号",
     "sideBySide": "最佳演示：两个窗口并排打开，提交陈女士的转账，看案件实时出现。",
-    "footer": "Google Cloud AI Builder Cup 2026 参赛原型 · 基于 Gemini、ADK、Cloud Run、BigQuery、Firestore · 所有数据均为模拟数据"
+    "footer": "Google Cloud AI Builder Cup 2026 参赛原型 · 基于 Gemini、ADK、Cloud Run、BigQuery、Firestore · 所有数据均为模拟数据",
+    "eyebrow": "Google Cloud AI Builder Cup 2026 · 银行与金融",
+    "builtOn": "基于 Google Cloud 构建"
   },
   "app": {
     "title": "{{bank}} 应用（含 {{product}}）"
@@ -50,7 +52,17 @@
         "ok": "在线 API 运行于 Cloud Run",
         "down": "API 暂时没有响应，可能正在启动。",
         "okLocal": "已连接本地 API"
-      }
+      },
+      "playing": "演示客户",
+      "tryTitle": "四步体验",
+      "try": {
+        "pick": "选择一位客户：陈女士、Raj 或 Aisyah。",
+        "transfer": "点“转账”，再点“填入演示情景”。",
+        "answer": "点“发送”，然后在安全确认中点“使用演示答案”。",
+        "console": "在旁边打开分析员控制台，看案件实时出现。"
+      },
+      "consoleLink": "打开分析员控制台",
+      "newTab": "（在新标签页中打开）"
     },
     "personas": {
       "cust_001": {
@@ -87,7 +99,8 @@
         "en": "英语",
         "zh": "中文"
       },
-      "choose": "以 {{name}} 的身份继续"
+      "choose": "以 {{name}} 的身份继续",
+      "badge": "{{product}} 演示"
     },
     "bar": {
       "back": "返回",
@@ -208,7 +221,8 @@
         "waiting": "等待中",
         "active": "进行中",
         "done": "已完成"
-      }
+      },
+      "poweredBy": "由 Google Cloud 上的 Gemini 检查"
     },
     "verdict": {
       "word": {

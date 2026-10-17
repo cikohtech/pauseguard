@@ -1,16 +1,12 @@
-import {
-  ClipboardPaste,
-  FileText,
-  ImagePlus,
-  Lock,
-  ShieldCheck,
-  Sparkles,
-  X,
-} from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
+import { Icon, Sparkle } from '@/components/icons/Icon'
+import { LoadingIndicator, Shape } from '@/components/m3/Expressive'
+import { Field } from '@/components/m3/Field'
+import { button, chip, fieldBase, iconButton } from '@/components/m3/styles'
+import { PauseGuardLogo } from '@/components/ShieldMark'
 import { usePortalContainer } from '@/customer/portal'
 import { StepTicks } from '@/customer/components/StepTicks'
 import type { DemoPersona } from '@/customer/demo'
@@ -220,11 +216,7 @@ export function CheckInSheet({
   }
 
   const analysing = phase === 'analysing'
-  const chip = (checked: boolean) =>
-    cn(
-      'inline-flex min-h-11 cursor-pointer items-center rounded-full border px-4 text-[15px] font-medium transition-colors has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50',
-      checked ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-card hover:bg-muted',
-    )
+  const textArea = cn(fieldBase, 'resize-none py-4 placeholder:opacity-0 focus:placeholder:opacity-100')
 
   return (
     <Dialog open={open} onOpenChange={(o) => !analysing && onOpenChange(o)}>
@@ -235,102 +227,127 @@ export function CheckInSheet({
         onEscapeKeyDown={(e) => analysing && e.preventDefault()}
         onInteractOutside={(e) => analysing && e.preventDefault()}
         data-testid="checkin-sheet"
+        className="[--field-bg:var(--surface-container-low)]"
       >
-        <div aria-hidden="true" className="mx-auto mt-2.5 h-1.5 w-10 shrink-0 rounded-full bg-border" />
-        <div className="flex shrink-0 items-center gap-3 px-5 pt-3 pb-3">
-          <span className="inline-flex size-11 items-center justify-center rounded-full bg-primary-soft text-primary">
-            <ShieldCheck aria-hidden="true" className="size-6" />
-          </span>
+        <div aria-hidden="true" className="mx-auto mt-4 h-1 w-8 shrink-0 rounded-full bg-on-surface-variant/40" />
+        <div className="flex shrink-0 items-center gap-3.5 px-5 pt-4 pb-3 pr-16">
+          <Shape shape="cookie9" className="size-12 text-primary-container">
+            <PauseGuardLogo className="size-7" />
+          </Shape>
           <div className="flex flex-col">
-            <DialogTitle>{t('customer.checkin.title')}</DialogTitle>
-            <DialogDescription>{t('customer.checkin.duration')}</DialogDescription>
+            <DialogTitle className="text-title-l font-normal">{t('customer.checkin.title')}</DialogTitle>
+            <DialogDescription className="flex items-center gap-1 text-body-m text-on-surface-variant">
+              <Icon name="timer" className="size-4" />
+              {t('customer.checkin.duration')}
+            </DialogDescription>
           </div>
         </div>
 
         {analysing ? (
-          <div className="flex flex-col gap-4 px-5 pt-2 pb-safe" data-testid="analysing">
-            <h3 ref={analysingTitle} tabIndex={-1} className="text-[19px] font-semibold outline-none">
-              {t('customer.analysing.title')}
-            </h3>
+          <div className="fade-in flex flex-col gap-5 px-5 pt-3 pb-safe" data-testid="analysing">
+            <div className="flex items-center gap-4">
+              <LoadingIndicator className="size-14" />
+              <h3 ref={analysingTitle} tabIndex={-1} className="text-headline-s outline-none">
+                {t('customer.analysing.title')}
+              </h3>
+            </div>
             <StepTicks progress={progress} />
-            <p className="flex items-center gap-2 rounded-xl bg-muted px-3.5 py-3 text-[15px] text-muted-foreground">
-              <Lock aria-hidden="true" className="size-4 shrink-0" />
+            <p className="flex items-center gap-3 rounded-xl bg-surface-container-highest/70 px-4 py-3 text-body-l text-on-surface">
+              <Icon name="lock" fill className="size-5 text-primary" />
               {t('customer.analysing.note')}
+            </p>
+            <p className="-mt-1 mb-1 flex items-center justify-center gap-1.5 text-body-s text-on-surface-variant">
+              <Sparkle className="size-4" />
+              {t('customer.analysing.poweredBy')}
             </p>
           </div>
         ) : (
           <>
             <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">
-              <p className="text-sm text-muted-foreground">{t('customer.checkin.why')}</p>
+              <p className="flex items-start gap-2 text-body-m text-on-surface-variant">
+                <Icon name="lock" className="mt-0.5 size-4" />
+                {t('customer.checkin.why')}
+              </p>
 
               <button
                 type="button"
                 onClick={() => void fillDemo()}
-                className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full border border-dashed border-primary/50 px-4 text-sm font-semibold text-primary outline-none hover:bg-primary-soft focus-visible:ring-3 focus-visible:ring-ring/50"
+                className={chip(false, 'mt-3 min-h-11 rounded-md border-0 bg-tertiary-container px-4 text-on-tertiary-container')}
                 aria-describedby={`${id}-demo-hint`}
               >
-                <Sparkles aria-hidden="true" className="size-4" />
+                <Icon name="wand_stars" />
                 {t('customer.checkin.demo')}
               </button>
               <span id={`${id}-demo-hint`} className="sr-only">
                 {t('customer.checkin.demoHint')}
               </span>
 
-              <fieldset className="mt-4 min-w-0">
-                <legend className="text-[18px] leading-snug font-semibold">{question.text}</legend>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {question.quick_replies.map((q) => (
-                    <label key={q} className={chip(reply === q)}>
-                      <input
-                        type="radio"
-                        name={`${id}-reply`}
-                        value={q}
-                        checked={reply === q}
-                        onChange={() => setReply(q)}
-                        className="sr-only"
-                      />
-                      {q}
-                    </label>
-                  ))}
+              <fieldset className="mt-5 min-w-0">
+                <legend className="text-headline-s text-on-surface">{question.text}</legend>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {question.quick_replies.map((q) => {
+                    const on = reply === q
+                    return (
+                      <label
+                        key={q}
+                        className={chip(
+                          on,
+                          'min-h-11 cursor-pointer has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--focus)] has-[:focus-visible]:outline-solid',
+                          // padding shrinks on the left to make room for the check (M3 filter chip)
+                        )}
+                        style={on ? { paddingLeft: 10 } : undefined}
+                      >
+                        <input
+                          type="radio"
+                          name={`${id}-reply`}
+                          value={q}
+                          checked={on}
+                          onChange={() => setReply(q)}
+                          className="sr-only"
+                        />
+                        {on && <Icon name="check" className="!size-[18px]" />}
+                        <span className="text-[15px]">{q}</span>
+                      </label>
+                    )
+                  })}
                 </div>
               </fieldset>
 
-              <label htmlFor={`${id}-text`} className="mt-5 mb-1.5 block text-[15px] font-medium">
-                {t('customer.checkin.textLabel')}
-              </label>
-              <textarea
-                id={`${id}-text`}
-                rows={2}
-                maxLength={4000}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder={t('customer.checkin.textPlaceholder')}
-                className="block w-full resize-none rounded-xl border border-input bg-card px-3.5 py-3 text-[16px] outline-none placeholder:text-muted-foreground/80 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
-              />
+              <Field htmlFor={`${id}-text`} label={t('customer.checkin.textLabel')} className="mt-6">
+                <textarea
+                  id={`${id}-text`}
+                  rows={2}
+                  maxLength={4000}
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder={t('customer.checkin.textPlaceholder')}
+                  className={textArea}
+                />
+              </Field>
 
               {items.length > 0 && (
-                <ul className="mt-4 flex flex-wrap gap-3" aria-label={t('customer.checkin.add')}>
+                <ul className="mt-5 flex flex-wrap gap-3" aria-label={t('customer.checkin.add')}>
                   {items.map((it, i) => (
-                    <li key={`${it.file.name}-${i}`} className="relative">
+                    <li key={`${it.file.name}-${i}`} className="pop-in relative">
                       {it.preview ? (
                         <img
                           src={it.preview}
                           alt={it.file.name}
-                          className="size-20 rounded-xl border border-border object-cover object-top"
+                          className="size-24 rounded-lg border border-outline-variant object-cover object-top"
                         />
                       ) : (
-                        <span className="flex size-20 flex-col items-center justify-center gap-1 rounded-xl border border-border bg-muted px-1.5 text-center">
-                          <FileText aria-hidden="true" className="size-6 text-muted-foreground" />
-                          <span className="line-clamp-2 text-[11px] leading-tight break-all">{it.file.name}</span>
+                        <span className="flex size-24 flex-col items-center justify-center gap-1.5 rounded-lg bg-surface-container-highest px-2 text-center">
+                          <Icon name="picture_as_pdf" className="size-7 text-error" />
+                          <span className="line-clamp-2 text-label-s break-all text-on-surface-variant">{it.file.name}</span>
                         </span>
                       )}
                       <button
                         type="button"
                         onClick={() => removeItem(i)}
                         aria-label={t('customer.checkin.remove', { name: it.file.name })}
-                        className="absolute -top-2 -right-2 inline-flex size-7 items-center justify-center rounded-full bg-foreground text-background shadow outline-none before:absolute before:-inset-2 before:content-[''] focus-visible:ring-3 focus-visible:ring-ring/50"
+                        className="absolute -top-2 -right-2 inline-flex size-7 items-center justify-center rounded-full bg-inverse-surface text-inverse-on-surface shadow-e1 before:absolute before:-inset-2 before:content-['']"
                       >
-                        <X aria-hidden="true" className="size-4" />
+                        <Icon name="close" className="size-4" />
                       </button>
                     </li>
                   ))}
@@ -338,41 +355,38 @@ export function CheckInSheet({
               )}
 
               {pasted !== null && (
-                <div className="mt-4">
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <label htmlFor={`${id}-paste`} className="text-[15px] font-medium">
-                      {t('customer.checkin.pasteLabel')}
-                    </label>
+                <div className="rise-in mt-6">
+                  <Field htmlFor={`${id}-paste`} label={t('customer.checkin.pasteLabel')}>
+                    <textarea
+                      id={`${id}-paste`}
+                      rows={4}
+                      maxLength={4000}
+                      value={pasted}
+                      onChange={(e) => setPasted(e.target.value)}
+                      placeholder={t('customer.checkin.pastePlaceholder')}
+                      className={cn(textArea, 'pr-12 text-body-m')}
+                    />
                     <button
                       type="button"
                       onClick={() => setPasted(null)}
                       aria-label={t('customer.checkin.remove', { name: t('customer.checkin.pastedItem') })}
-                      className="inline-flex size-11 items-center justify-center rounded-full text-muted-foreground outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+                      className={iconButton('standard', 'absolute top-1 right-1 size-11')}
                     >
-                      <X aria-hidden="true" className="size-5" />
+                      <Icon name="close" className="!size-5" />
                     </button>
-                  </div>
-                  <textarea
-                    id={`${id}-paste`}
-                    rows={4}
-                    maxLength={4000}
-                    value={pasted}
-                    onChange={(e) => setPasted(e.target.value)}
-                    placeholder={t('customer.checkin.pastePlaceholder')}
-                    className="block w-full rounded-xl border border-input bg-card px-3.5 py-3 text-[15px] outline-none placeholder:text-muted-foreground/80 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
-                  />
+                  </Field>
                 </div>
               )}
 
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-5 flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => fileInput.current?.click()}
                   disabled={full}
                   aria-describedby={`${id}-add-hint`}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-input bg-card px-3.5 text-[15px] font-medium outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+                  className={button('outlined', 'md', 'min-h-12 px-5')}
                 >
-                  <ImagePlus aria-hidden="true" className="size-5 text-primary" />
+                  <Icon name="add_photo_alternate" />
                   {t('customer.checkin.add')}
                 </button>
                 {pasted === null && (
@@ -380,14 +394,14 @@ export function CheckInSheet({
                     type="button"
                     onClick={() => setPasted('')}
                     disabled={full}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-input bg-card px-3.5 text-[15px] font-medium outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+                    className={button('outlined', 'md', 'min-h-12 px-5')}
                   >
-                    <ClipboardPaste aria-hidden="true" className="size-5 text-primary" />
+                    <Icon name="content_paste" />
                     {t('customer.checkin.paste')}
                   </button>
                 )}
               </div>
-              <p id={`${id}-add-hint`} className="mt-1.5 text-[13px] text-muted-foreground">
+              <p id={`${id}-add-hint`} className="mt-2 px-1 text-body-s text-on-surface-variant">
                 {t('customer.checkin.addHint')}
               </p>
               <input
@@ -404,18 +418,23 @@ export function CheckInSheet({
                 }}
               />
               {error && (
-                <p ref={errorLine} role="alert" className="mt-3 text-[15px] font-medium text-destructive">
+                <p
+                  ref={errorLine}
+                  role="alert"
+                  className="mt-4 flex items-start gap-2 rounded-lg bg-error-container px-4 py-3 text-body-m font-medium text-on-error-container"
+                >
+                  <Icon name="error" className="size-5" />
                   {error}
                 </p>
               )}
             </div>
-            <div className="shrink-0 border-t border-border px-5 pt-3 pb-safe">
+            <div className="shrink-0 border-t border-outline-variant/60 px-5 pt-3 pb-safe">
               <p
                 id={`${id}-consent`}
                 data-testid="checkin-consent"
-                className="mb-2.5 flex items-start gap-2 text-[13px] leading-snug text-muted-foreground"
+                className="mb-3 flex items-start gap-2 text-body-s text-on-surface-variant"
               >
-                <Lock aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+                <Icon name="encrypted" className="size-4" />
                 {t('customer.checkin.consent')}
               </p>
               <button
@@ -424,6 +443,7 @@ export function CheckInSheet({
                 aria-describedby={`${id}-consent`}
                 className={bigButton()}
               >
+                <Icon name="verified_user" />
                 {t('customer.checkin.submit')}
               </button>
             </div>
