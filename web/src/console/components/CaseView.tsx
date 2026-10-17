@@ -1,4 +1,3 @@
-import { FileSearch, Gauge, History, Radar, ScrollText } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -11,11 +10,16 @@ import { RiskTab } from '@/console/components/case/RiskTab'
 import { SummaryTab } from '@/console/components/case/SummaryTab'
 import { analystFlags } from '@/console/evidence'
 import { useCase } from '@/console/useCase'
+import { Icon } from '@/components/icons/Icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const Count = ({ n }: { n: number }) =>
-  n > 0 ? <span className="rounded-full bg-muted px-1.5 text-xs font-semibold tabular-nums text-foreground">{n}</span> : null
+  n > 0 ? (
+    <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-surface-container-highest px-1 text-label-s font-medium text-on-surface-variant tabular-nums">
+      {n}
+    </span>
+  ) : null
 
 // The case view (UI_SPEC Area 2, item 2): header, five tabs, and the sticky action bar.
 export function CaseView({ caseId }: { caseId: string }) {
@@ -34,12 +38,16 @@ export function CaseView({ caseId }: { caseId: string }) {
   }
   if (load.status === 'error') {
     return (
-      <div className="flex flex-col items-start gap-3 p-6">
-        <h2 className="text-lg font-semibold">{load.notFound ? 'Case not found' : 'This case couldn’t be loaded'}</h2>
-        <p className="text-sm text-muted-foreground">
+      <div className="flex flex-col items-start gap-3 p-8">
+        <span className="inline-flex size-12 items-center justify-center rounded-full bg-surface-container text-on-surface-variant">
+          <Icon name={load.notFound ? 'search' : 'cloud'} />
+        </span>
+        <h2 className="text-title-l">{load.notFound ? 'Case not found' : 'This case couldn’t be loaded'}</h2>
+        <p className="text-body-m text-on-surface-variant">
           {load.notFound ? 'It may have been cleared by a demo reset.' : 'Check your connection and try again.'}
         </p>
-        <Link to="/console" className="text-sm font-medium text-primary underline underline-offset-4">
+        <Link to="/console" className="ripple -ml-3 inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-label-l font-medium text-primary">
+          <Icon name="arrow_back" className="size-[18px]" />
           Back to the queue
         </Link>
       </div>
@@ -49,40 +57,40 @@ export function CaseView({ caseId }: { caseId: string }) {
   const { detail } = load
   const intelCount = (detail.intel?.watchlist_matches.length ?? 0) + (detail.intel?.web_findings.length ?? 0)
   return (
-    <div className="flex h-full min-h-0 flex-col" data-testid="case-view">
+    <div className="@container flex h-full min-h-0 flex-col" data-testid="case-view">
       <div className="min-h-0 flex-1 overflow-y-auto">
         <CaseHeader detail={detail} />
-        <Tabs value={tab} onValueChange={setTab} className="px-4 pt-2 pb-6 sm:px-6">
+        <Tabs value={tab} onValueChange={setTab} className="px-4 pb-8 sm:px-6">
           <TabsList aria-label="Case details">
             <TabsTrigger value="summary">
-              <ScrollText aria-hidden="true" /> Summary
+              Summary
             </TabsTrigger>
             <TabsTrigger value="evidence">
-              <FileSearch aria-hidden="true" /> Evidence <Count n={analystFlags(detail).length} />
+              Evidence <Count n={analystFlags(detail).length} />
             </TabsTrigger>
             <TabsTrigger value="risk">
-              <Gauge aria-hidden="true" /> Transaction risk
+              Transaction risk
             </TabsTrigger>
             <TabsTrigger value="intel">
-              <Radar aria-hidden="true" /> Intel <Count n={intelCount} />
+              Intel <Count n={intelCount} />
             </TabsTrigger>
             <TabsTrigger value="audit">
-              <History aria-hidden="true" /> Audit <Count n={detail.audit.length} />
+              Audit <Count n={detail.audit.length} />
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="summary" className="pt-4">
+          <TabsContent value="summary" className="fade-in pt-5">
             <SummaryTab detail={detail} />
           </TabsContent>
-          <TabsContent value="evidence" className="pt-4">
+          <TabsContent value="evidence" className="fade-in pt-5">
             <EvidenceTab detail={detail} />
           </TabsContent>
-          <TabsContent value="risk" className="pt-4">
+          <TabsContent value="risk" className="fade-in pt-5">
             <RiskTab detail={detail} />
           </TabsContent>
-          <TabsContent value="intel" className="pt-4">
+          <TabsContent value="intel" className="fade-in pt-5">
             <IntelTab detail={detail} />
           </TabsContent>
-          <TabsContent value="audit" className="pt-4">
+          <TabsContent value="audit" className="fade-in pt-5">
             <AuditTab detail={detail} />
           </TabsContent>
         </Tabs>

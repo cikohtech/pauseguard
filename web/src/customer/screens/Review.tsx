@@ -1,12 +1,12 @@
-import { CircleAlert, Info, LoaderCircle } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useNavigate } from 'react-router-dom'
 
+import { Icon } from '@/components/icons/Icon'
 import { CheckInSheet } from '@/customer/components/CheckInSheet'
 import { AppBar, Screen } from '@/customer/components/Screen'
 import type { DemoPersona } from '@/customer/demo'
-import { formatSgd } from '@/customer/format'
+import { formatSgd, initials } from '@/customer/format'
 import { useSession } from '@/customer/session'
 import { bigButton } from '@/customer/styles'
 import { errorKey } from '@/customer/errors'
@@ -68,9 +68,9 @@ export function Review() {
   }
 
   const row = (label: string, value: string, mono = false) => (
-    <div className="flex items-start justify-between gap-4 py-3">
-      <dt className="text-[15px] text-muted-foreground">{label}</dt>
-      <dd className={`text-right text-[15px] font-medium break-words ${mono ? 'tabular-nums' : ''}`}>{value}</dd>
+    <div className="flex min-h-14 items-center justify-between gap-4 rounded-xs bg-surface-container-lowest px-4 py-3 first:rounded-t-xl last:rounded-b-xl">
+      <dt className="text-body-l text-on-surface-variant">{label}</dt>
+      <dd className={`text-right text-body-l break-words ${mono ? 'tabular-nums' : ''}`}>{value}</dd>
     </div>
   )
 
@@ -80,29 +80,39 @@ export function Review() {
         header={<AppBar title={t('customer.review.title')} back="/app/transfer" />}
         footer={
           <button type="button" onClick={send} disabled={busy} className={bigButton()}>
-            {busy && <LoaderCircle aria-hidden="true" className="motion-safe:animate-spin" />}
+            {busy ? (
+              <Icon name="progress_activity" className="motion-safe:animate-spin" />
+            ) : (
+              <Icon name="send" />
+            )}
             {busy ? t('customer.review.sending') : t('customer.review.send', { amount })}
           </button>
         }
-        className="px-5"
+        className="px-4"
       >
-        <p className="pt-5 text-[15px] text-muted-foreground">{t('customer.review.subtitle')}</p>
-        <div className="mt-4 rounded-2xl bg-card p-5 text-center ring-1 ring-border">
-          <p className="text-sm text-muted-foreground">{t('customer.review.amount')}</p>
-          <p data-testid="review-amount" className="mt-1 text-[34px] leading-tight font-semibold tabular-nums">
+        <p className="px-1 pt-1 text-body-l text-on-surface-variant">{t('customer.review.subtitle')}</p>
+        <div className="mt-4 flex flex-col items-center rounded-2xl bg-surface-container-low px-5 pt-6 pb-5 text-center">
+          <span
+            aria-hidden="true"
+            className="inline-flex size-14 items-center justify-center rounded-full bg-primary-container text-title-m text-on-primary-container"
+          >
+            {initials(transfer.payee_name.replace(/[^A-Za-z ]/g, '')) || <Icon name="person" />}
+          </span>
+          <p className="sr-only">{t('customer.review.amount')}</p>
+          <p data-testid="review-amount" className="mt-3 text-display-s tracking-[-0.02em] tabular-nums">
             {amount}
           </p>
-          <p className="mt-1 text-[15px]">
-            {t('customer.review.to')} <span className="font-semibold">{transfer.payee_name}</span>
+          <p className="mt-1 text-body-l text-on-surface-variant">
+            {t('customer.review.to')} <span className="font-medium text-on-surface">{transfer.payee_name}</span>
           </p>
           {!known && (
-            <p className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-[13px] font-medium text-muted-foreground">
-              <Info aria-hidden="true" className="size-4" />
+            <p className="mt-3 inline-flex items-center gap-1.5 rounded-sm bg-tertiary-container px-3 py-1.5 text-label-l font-medium text-on-tertiary-container">
+              <Icon name="person_add" className="size-[18px]" />
               {t('customer.review.newPayee')}
             </p>
           )}
         </div>
-        <dl className="mt-4 divide-y divide-border rounded-2xl bg-card px-4 ring-1 ring-border">
+        <dl className="mt-3 flex flex-col gap-0.5">
           {row(t('customer.review.bank'), transfer.bank_name ?? '—')}
           {row(t('customer.review.account'), transfer.account_number, true)}
           {transfer.note && row(t('customer.review.note'), transfer.note)}
@@ -112,16 +122,17 @@ export function Review() {
           )}
           {row(t('customer.review.fee'), t('customer.review.free'))}
         </dl>
-        <button
-          type="button"
-          onClick={() => navigate('/app/transfer')}
-          className={`${bigButton('quiet')} mt-2`}
-        >
+        <button type="button" onClick={() => navigate('/app/transfer')} className={`${bigButton('quiet')} mt-2`}>
+          <Icon name="edit_note" />
           {t('customer.review.edit')}
         </button>
         {error && (
-          <p ref={errorLine} role="alert" className="mb-4 flex items-start gap-2 rounded-xl bg-verdict-red-soft p-3 text-[15px] text-verdict-red-ink">
-            <CircleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
+          <p
+            ref={errorLine}
+            role="alert"
+            className="mb-4 flex items-start gap-3 rounded-xl bg-error-container p-4 text-body-l text-on-error-container"
+          >
+            <Icon name="error" className="size-5" />
             {error}
           </p>
         )}

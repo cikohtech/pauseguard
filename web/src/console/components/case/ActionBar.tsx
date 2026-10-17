@@ -1,4 +1,3 @@
-import { CircleCheck, Flag, Hand, Loader2, ShieldX, TriangleAlert } from 'lucide-react'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -7,19 +6,17 @@ import { consoleApi, type AnalystAction, type CaseDetail } from '@/console/api'
 import { shortcutFor } from '@/console/shortcuts'
 import { Kbd } from '@/console/components/bits'
 import { ACTION_KEY, ACTION_LABEL, DECIDED_LABEL, STATUS_LABEL, money } from '@/console/format'
+import { Icon, Sparkle, type IconName } from '@/components/icons/Icon'
+import { button } from '@/components/m3/styles'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ApiError } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
-const ACTIONS: { action: AnalystAction; icon: typeof Hand; tone: string }[] = [
-  { action: 'RELEASE', icon: CircleCheck, tone: 'border-input bg-card hover:bg-muted' },
-  { action: 'HOLD', icon: Hand, tone: 'border-input bg-card hover:bg-muted' },
-  { action: 'ESCALATE', icon: Flag, tone: 'border-input bg-card hover:bg-muted' },
-  {
-    action: 'REPORT_SCAM',
-    icon: ShieldX,
-    tone: 'border-transparent bg-verdict-red-ink text-white hover:bg-[color-mix(in_oklch,var(--verdict-red-ink),black_12%)]',
-  },
+const ACTIONS: { action: AnalystAction; icon: IconName }[] = [
+  { action: 'RELEASE', icon: 'check_circle' },
+  { action: 'HOLD', icon: 'back_hand' },
+  { action: 'ESCALATE', icon: 'flag' },
+  { action: 'REPORT_SCAM', icon: 'report' },
 ]
 
 export function ActionBar({ detail, onDecided }: { detail: CaseDetail; onDecided: () => void }) {
@@ -80,55 +77,64 @@ export function ActionBar({ detail, onDecided }: { detail: CaseDetail; onDecided
   }, [decide, confirmRelease])
 
   return (
-    <div className="border-t border-border bg-card/95 px-3 py-2.5 shadow-[0_-4px_16px_rgba(15,27,36,0.06)] backdrop-blur sm:px-6">
-      <div className="flex flex-col gap-2 xl:flex-row xl:items-center">
+    <div className="border-t border-outline-variant/70 bg-surface-container-lowest px-3 py-3 sm:px-6">
+      <div className="flex flex-col gap-2 @4xl:flex-row @4xl:items-center">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <label htmlFor={`${id}-note`} className="sr-only">
             Note for the audit log (optional)
           </label>
-          <input
-            id={`${id}-note`}
-            value={note}
-            maxLength={1000}
-            onChange={(e) => setNote(e.target.value)}
-            onKeyDown={(e) => e.key === 'Escape' && (e.currentTarget as HTMLInputElement).blur()}
-            placeholder="Add a note for the audit log (optional)"
-            className="min-h-11 w-full min-w-0 rounded-lg border border-input bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          />
+          <div className="flex h-12 w-full min-w-0 items-center gap-2 rounded-full bg-surface-container-high px-4 transition-shadow focus-within:shadow-[inset_0_0_0_2px_var(--primary)]">
+            <Icon name="edit_note" className="size-5 text-on-surface-variant" />
+            <input
+              id={`${id}-note`}
+              value={note}
+              maxLength={1000}
+              onChange={(e) => setNote(e.target.value)}
+              onKeyDown={(e) => e.key === 'Escape' && (e.currentTarget as HTMLInputElement).blur()}
+              placeholder="Add a note for the audit log (optional)"
+              className="h-full w-full min-w-0 bg-transparent text-body-m text-on-surface placeholder:text-on-surface-variant focus-visible:outline-none"
+            />
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap" role="group" aria-label="Decide this case">
-          {ACTIONS.map(({ action, icon: Icon, tone }) => (
-            <button
-              key={action}
-              type="button"
-              onClick={() => void decide(action)}
-              disabled={pending !== null}
-              aria-keyshortcuts={ACTION_KEY[action].toUpperCase()}
-              className={cn(
-                'relative inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border px-3.5 text-sm font-semibold outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60',
-                tone,
-                recommended === action && action !== 'REPORT_SCAM' && 'border-primary ring-1 ring-primary',
-              )}
-            >
-              {pending === action ? (
-                <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-              ) : (
-                <Icon aria-hidden="true" className="size-4" />
-              )}
-              {ACTION_LABEL[action]}
-              <Kbd className="hidden sm:inline-flex">{ACTION_KEY[action]}</Kbd>
-              {recommended === action && <span className="sr-only"> (recommended)</span>}
-            </button>
-          ))}
+        <div className="grid grid-cols-2 gap-2 @xl:flex @xl:flex-wrap" role="group" aria-label="Decide this case">
+          {ACTIONS.map(({ action, icon }) => {
+            const isRecommended = recommended === action
+            return (
+              <button
+                key={action}
+                type="button"
+                onClick={() => void decide(action)}
+                disabled={pending !== null}
+                aria-keyshortcuts={ACTION_KEY[action].toUpperCase()}
+                className={cn(
+                  button(action === 'REPORT_SCAM' ? 'danger' : isRecommended ? 'tonal' : 'outlined', 'sm', 'min-h-12 gap-2 px-5'),
+                  action !== 'REPORT_SCAM' && !isRecommended && 'text-on-surface',
+                  isRecommended && action === 'REPORT_SCAM' && 'shadow-[0_0_0_2px_var(--surface-container-lowest),0_0_0_4px_var(--error)]',
+                )}
+              >
+                {pending === action ? (
+                  <Icon name="progress_activity" className="animate-spin" />
+                ) : isRecommended ? (
+                  <Sparkle className="!size-[18px]" />
+                ) : (
+                  <Icon name={icon} />
+                )}
+                {ACTION_LABEL[action]}
+                <Kbd className="hidden @xl:inline-flex">{ACTION_KEY[action]}</Kbd>
+                {isRecommended && <span className="sr-only"> (recommended)</span>}
+              </button>
+            )
+          })}
         </div>
       </div>
-      <p className="mt-1.5 hidden text-xs text-muted-foreground sm:block">
-        Status: <span className="font-medium text-foreground">{STATUS_LABEL[c.status]}</span>
+      <p className="mt-2 hidden items-center gap-1.5 text-body-s text-on-surface-variant @xl:flex">
+        <Icon name="keyboard" className="size-4" />
+        Status: <span className="font-medium text-on-surface">{STATUS_LABEL[c.status]}</span>
         {c.assigned_to && c.status !== 'OPEN' && ` by ${c.assigned_to}`}
         {recommended && (
           <>
             {' '}
-            · Recommended: <span className="font-medium text-foreground">{ACTION_LABEL[recommended]}</span>
+            · Recommended: <span className="font-medium text-on-surface">{ACTION_LABEL[recommended]}</span>
           </>
         )}
         <span> · Shortcuts work anywhere outside the note field.</span>
@@ -137,22 +143,15 @@ export function ActionBar({ detail, onDecided }: { detail: CaseDetail; onDecided
       <Dialog open={confirmRelease} onOpenChange={setConfirmRelease}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <TriangleAlert aria-hidden="true" className="size-5 text-verdict-red" />
-              Release this held payment?
-            </DialogTitle>
+            <Icon name="warning" className="size-6 text-error" />
+            <DialogTitle>Release this held payment?</DialogTitle>
             <DialogDescription>
               PauseGuard held {money(c.amount)} from {c.customer_name} as a likely scam. Releasing sends the money.
               Only release after you have spoken to the customer.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="sm:flex-row-reverse">
-            <button
-              type="button"
-              autoFocus
-              onClick={() => setConfirmRelease(false)}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground outline-none hover:bg-brand-deep focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
+          <DialogFooter className="mt-2 sm:flex-row-reverse sm:justify-start">
+            <button type="button" autoFocus onClick={() => setConfirmRelease(false)} className={button('filled', 'sm')}>
               Keep it held
             </button>
             <button
@@ -161,7 +160,7 @@ export function ActionBar({ detail, onDecided }: { detail: CaseDetail; onDecided
                 setConfirmRelease(false)
                 void decide('RELEASE', true)
               }}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg border border-input px-4 text-sm font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+              className={button('text', 'sm')}
             >
               Release payment
             </button>

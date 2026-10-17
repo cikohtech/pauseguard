@@ -5,6 +5,9 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import './i18n'
 import { AppRoutes } from './App'
+import { installRipple } from './lib/ripple'
+
+installRipple()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

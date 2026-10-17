@@ -55,7 +55,8 @@ test('the queue lists RED first, and a case that arrives later slides in as new'
   fakeApi({ 'GET /cases\\?status=OPEN&limit=100': () => queue })
   renderAt('/console')
 
-  const list = await screen.findByRole('list', { name: 'Open cases, RED first' })
+  // the console is a lazy chunk: its first import can take over a second when the suite runs in parallel
+  const list = await screen.findByRole('list', { name: 'Open cases, RED first' }, { timeout: 3000 })
   const rows = within(list).getAllByRole('link')
   expect(rows.map((r) => r.textContent)).toEqual([
     expect.stringMatching(/^RED.*Tan Mei Ling, 67S\$8,000.*Government impersonation/),

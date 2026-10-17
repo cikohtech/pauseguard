@@ -1,7 +1,7 @@
-import { ThumbsDown, ThumbsUp } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Icon } from '@/components/icons/Icon'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
@@ -19,15 +19,15 @@ export function FeedbackThumbs({ checkId }: { checkId: string }) {
 
   const thumb = (value: boolean) =>
     cn(
-      'inline-flex size-11 items-center justify-center rounded-full border outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50',
+      'ripple inline-flex size-12 items-center justify-center rounded-full transition-colors duration-200',
       helpful === value
-        ? 'border-primary bg-primary text-primary-foreground'
-        : 'border-input bg-card text-muted-foreground hover:bg-muted hover:text-foreground',
-      helpful !== null && helpful !== value && 'opacity-50',
+        ? 'bg-primary text-on-primary'
+        : 'border border-outline-variant text-on-surface-variant',
+      helpful !== null && helpful !== value && 'opacity-[0.38]',
     )
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-2 text-sm text-muted-foreground">
+    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-2 text-body-m text-on-surface-variant">
       <span id={`fb-${checkId}`}>{t('customer.feedback.question')}</span>
       <div role="group" aria-labelledby={`fb-${checkId}`} className="flex gap-2">
         <button
@@ -38,7 +38,7 @@ export function FeedbackThumbs({ checkId }: { checkId: string }) {
           disabled={helpful !== null && helpful !== true}
           onClick={() => send(true)}
         >
-          <ThumbsUp aria-hidden="true" className="size-5" />
+          <Icon name="thumb_up" fill={helpful === true} className="size-5" />
         </button>
         <button
           type="button"
@@ -48,7 +48,7 @@ export function FeedbackThumbs({ checkId }: { checkId: string }) {
           disabled={helpful !== null && helpful !== false}
           onClick={() => send(false)}
         >
-          <ThumbsDown aria-hidden="true" className="size-5" />
+          <Icon name="thumb_down" fill={helpful === false} className="size-5" />
         </button>
       </div>
       <span role="status" className={cn(helpful === null && 'sr-only')}>

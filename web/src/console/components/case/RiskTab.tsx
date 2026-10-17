@@ -31,7 +31,7 @@ export function RiskGauge({ score }: { score: number }) {
   return (
     <div className="flex flex-col items-center">
       <svg viewBox="0 0 180 104" className="w-full max-w-[220px]" role="img" aria-label={`Transaction risk score ${score} of 100, ${band.label.toLowerCase()}`}>
-        <path d="M 20 90 A 70 70 0 0 1 160 90" fill="none" stroke="var(--primary-soft)" strokeWidth="14" strokeLinecap="round" />
+        <path d="M 20 90 A 70 70 0 0 1 160 90" fill="none" stroke="var(--surface-container-high)" strokeWidth="14" strokeLinecap="round" />
         <path
           d="M 20 90 A 70 70 0 0 1 160 90"
           fill="none"
@@ -41,16 +41,19 @@ export function RiskGauge({ score }: { score: number }) {
           strokeDasharray={`${filled} ${len}`}
         />
         {[40, 70].map((v) => (
-          <line key={v} {...tick(v)} stroke="var(--card)" strokeWidth="2.5" />
+          <line key={v} {...tick(v)} stroke="var(--surface-container-lowest)" strokeWidth="3" />
         ))}
-        <text x="90" y="80" textAnchor="middle" className="fill-foreground text-[30px] font-semibold">
+        <text x="90" y="80" textAnchor="middle" className="fill-on-surface text-[34px]">
           {score}
         </text>
-        <text x="90" y="99" textAnchor="middle" className="fill-muted-foreground text-[11px]">
+        <text x="90" y="99" textAnchor="middle" className="fill-on-surface-variant text-[11px]">
           of 100
         </text>
       </svg>
-      <p className="mt-1 text-sm font-semibold">{band.label} transaction risk</p>
+      <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-surface-container px-3 py-1 text-label-l font-medium text-on-surface">
+        <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: band.color }} />
+        {band.label} transaction risk
+      </p>
     </div>
   )
 }
@@ -88,42 +91,51 @@ export function RiskTab({ detail }: { detail: CaseDetail }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <Section title="Transaction score">
-          {risk ? <RiskGauge score={risk.score} /> : <p className="text-sm text-muted-foreground">Not scored.</p>}
+      <div className="grid gap-4 @2xl:grid-cols-[260px_minmax(0,1fr)]">
+        <Section title="Transaction score" icon="speed">
+          {risk ? <RiskGauge score={risk.score} /> : <p className="text-body-m text-on-surface-variant">Not scored.</p>}
+          <p className="mt-3 text-center text-body-s text-on-surface-variant">BigQuery features · deterministic rules</p>
         </Section>
-        <Section title="What the score is made of">
+        <Section title="What the score is made of" icon="table">
           {f ? (
-            <table className="w-full text-sm">
-              <thead className="text-xs text-muted-foreground">
-                <tr>
-                  <th scope="col" className="py-1.5 text-left font-medium">Feature</th>
-                  <th scope="col" className="py-1.5 text-left font-medium">Value</th>
-                  <th scope="col" className="py-1.5 text-right font-medium">Points</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.feature} className="border-t border-border">
-                    <td className="py-1.5">{r.feature}</td>
-                    <td className={cn('py-1.5', r.points > 0 && 'font-medium')}>{r.value}</td>
-                    <td className={cn('py-1.5 text-right tabular-nums', r.points > 0 ? 'font-semibold' : 'text-muted-foreground')}>
-                      {r.points > 0 ? `+${r.points}` : '0'}
-                    </td>
+            <div className="-mx-5 -mb-5">
+              <table className="w-full text-body-m">
+                <thead className="border-y border-outline-variant/70 bg-surface-container-low text-label-l text-on-surface-variant">
+                  <tr>
+                    <th scope="col" className="h-10 px-5 text-left font-medium">Feature</th>
+                    <th scope="col" className="h-10 px-5 text-left font-medium">Value</th>
+                    <th scope="col" className="h-10 px-5 text-right font-medium">Points</th>
                   </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-border">
-                  <th scope="row" colSpan={2} className="py-1.5 text-left font-semibold">
-                    Score {sum > 100 && <span className="font-normal text-muted-foreground">(capped at 100)</span>}
-                  </th>
-                  <td className="py-1.5 text-right font-semibold tabular-nums">{risk?.score}</td>
-                </tr>
-              </tfoot>
-            </table>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.feature} className="border-b border-outline-variant/50 transition-colors hover:bg-surface-container-low">
+                      <td className="h-11 px-5">{r.feature}</td>
+                      <td className={cn('h-11 px-5', r.points > 0 && 'font-medium')}>{r.value}</td>
+                      <td className="h-11 px-5 text-right tabular-nums">
+                        {r.points > 0 ? (
+                          <span className="inline-flex h-6 min-w-9 items-center justify-center rounded-sm bg-primary-container px-1.5 text-label-l font-medium text-on-primary-container">
+                            +{r.points}
+                          </span>
+                        ) : (
+                          <span className="text-on-surface-variant">0</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th scope="row" colSpan={2} className="h-12 px-5 text-left text-title-s">
+                      Score {sum > 100 && <span className="font-normal text-on-surface-variant">(capped at 100)</span>}
+                    </th>
+                    <td className="h-12 px-5 text-right text-title-m tabular-nums">{risk?.score}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No features recorded.</p>
+            <p className="text-body-m text-on-surface-variant">No features recorded.</p>
           )}
         </Section>
       </div>
@@ -155,14 +167,14 @@ function HistoryChart({ caseId, verdict, ratio }: { caseId: string; verdict: Ver
 
   if (failed) {
     return (
-      <Section title="90-day outgoing payments">
-        <p className="text-sm text-muted-foreground">The payment history couldn’t be loaded.</p>
+      <Section title="90-day outgoing payments" icon="bar_chart">
+        <p className="text-body-m text-on-surface-variant">The payment history couldn’t be loaded.</p>
       </Section>
     )
   }
   if (!history) {
     return (
-      <Section title="90-day outgoing payments">
+      <Section title="90-day outgoing payments" icon="bar_chart">
         <Skeleton className="h-[220px]" />
       </Section>
     )
@@ -180,7 +192,7 @@ function HistoryChart({ caseId, verdict, ratio }: { caseId: string; verdict: Ver
             <XAxis dataKey="key" ticks={[...ticks, 'transfer']} tickFormatter={(k: string) => data.find((d) => d.key === k)?.label ?? ''} {...AXIS_PROPS} interval={0} />
             <YAxis tickFormatter={(v: number) => compactMoney(v)} width={64} {...AXIS_PROPS} axisLine={false} />
             <Tooltip
-              cursor={{ fill: 'var(--muted)' }}
+              cursor={{ fill: 'var(--surface-container)' }}
               content={({ active, payload }) => {
                 const p = active ? (payload?.[0]?.payload as HistoryPoint | undefined) : undefined
                 if (!p) return null
@@ -199,7 +211,7 @@ function HistoryChart({ caseId, verdict, ratio }: { caseId: string; verdict: Ver
               {data.map((d) => (
                 <Cell key={d.key} fill={d.isTransfer ? accent : CHART.context} />
               ))}
-              <LabelList dataKey="valueLabel" position="top" offset={6} className="fill-foreground text-[12px] font-semibold" />
+              <LabelList dataKey="valueLabel" position="top" offset={6} className="fill-on-surface text-[12px] font-medium" />
             </Bar>
           </BarChart>
         </ResponsiveContainer>

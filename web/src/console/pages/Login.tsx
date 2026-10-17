@@ -1,12 +1,14 @@
-import { ArrowRight, Info, LockKeyhole } from 'lucide-react'
 import { useId, useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 
 import { DEMO_ANALYST, SignInError, signInAnalyst, type AnalystState } from '@/console/auth'
 import { useConsoleTitle } from '@/console/title'
-import { ShieldMark } from '@/components/ShieldMark'
-import { Input } from '@/components/ui/input'
-import { BANK_NAME } from '@/lib/product'
+import { Icon, Sparkle } from '@/components/icons/Icon'
+import { Field } from '@/components/m3/Field'
+import { button, fieldBase } from '@/components/m3/styles'
+import { PauseGuardLogo } from '@/components/ShieldMark'
+import { cn } from '@/lib/utils'
+import { BANK_NAME, PRODUCT_NAME } from '@/lib/product'
 
 const ERRORS: Record<SignInError['reason'], string> = {
   credentials: 'That email and password don’t match. The demo login is filled in for you.',
@@ -44,89 +46,101 @@ export function Login({ analyst }: { analyst: AnalystState }) {
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-background">
-      <header className="flex items-center px-6 py-4">
-        <Link to="/" className="rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50" aria-label="PauseGuard home">
-          <ShieldMark />
-        </Link>
-      </header>
-      <main className="flex flex-1 items-start justify-center px-4 pt-[8vh] pb-10">
-        <div className="w-full max-w-sm">
-          <div className="mb-6 flex flex-col items-center text-center">
-            <span className="mb-3 inline-flex size-12 items-center justify-center rounded-2xl bg-primary-soft text-primary">
-              <LockKeyhole aria-hidden="true" className="size-6" />
-            </span>
-            <h1 className="text-2xl font-semibold tracking-tight">Analyst console</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{BANK_NAME} fraud operations</p>
+    <div className="flex min-h-svh flex-col items-center justify-center bg-surface-container px-4 py-8">
+      <main className="rise-in w-full max-w-[1040px] rounded-[28px] bg-surface-container-lowest p-6 sm:p-10">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-12">
+          <div className="flex flex-col">
+            <Link to="/" className="w-fit rounded-full" aria-label={`${PRODUCT_NAME} home`}>
+              <PauseGuardLogo className="size-12" />
+            </Link>
+            <h1 className="mt-6 text-headline-l text-on-surface sm:text-[44px] sm:leading-[52px]">Analyst console</h1>
+            <p className="mt-3 text-body-l text-on-surface-variant">
+              Sign in to {BANK_NAME} fraud operations. RED and AMBER checks from the customer app arrive here in real time.
+            </p>
+            <ul className="mt-6 hidden flex-col gap-3 text-body-m text-on-surface-variant md:flex">
+              <li className="flex items-center gap-3">
+                <Sparkle />
+                Case files and evidence boxes written by Gemini
+              </li>
+              <li className="flex items-center gap-3">
+                <Icon name="database" className="size-5 text-primary" />
+                A realtime queue on Firestore
+              </li>
+              <li className="flex items-center gap-3">
+                <Icon name="lock" className="size-5 text-primary" />
+                Firebase Authentication · all data synthetic
+              </li>
+            </ul>
           </div>
 
           {analyst.status === 'local' ? (
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-              <p className="text-sm text-muted-foreground">
-                Local development: Firebase sign-in is off and the API lets you in as a local
-                analyst.
+            <div className="flex flex-col justify-center gap-6">
+              <p className="flex gap-3 rounded-lg bg-surface-container px-4 py-3 text-body-m text-on-surface-variant">
+                <Icon name="info" className="size-5" />
+                Local development: Firebase sign-in is off and the API lets you in as a local analyst.
               </p>
-              <Link
-                to={from}
-                className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 font-semibold text-primary-foreground outline-none hover:bg-brand-deep focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
+              <Link to={from} className={button('filled', 'md', 'self-end')}>
                 Open the console
-                <ArrowRight aria-hidden="true" className="size-4" />
+                <Icon name="arrow_forward" />
               </Link>
             </div>
           ) : (
             <form
               onSubmit={(e) => void submit(e)}
-              className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
+              className="flex flex-col justify-center gap-6 [--field-bg:var(--surface-container-lowest)]"
               aria-describedby={error ? `${id}-error` : undefined}
             >
-              <p className="flex gap-2 rounded-lg bg-primary-soft px-3 py-2.5 text-sm text-secondary-foreground">
-                <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+              <p className="flex gap-3 rounded-lg bg-primary-container px-4 py-3 text-body-m text-on-primary-container">
+                <Icon name="info" className="size-5" />
                 <span>Demo login is filled in. All customers and cases are synthetic.</span>
               </p>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor={`${id}-email`} className="text-sm font-medium">
-                  Work email
-                </label>
-                <Input
+              <Field htmlFor={`${id}-email`} label="Work email">
+                <input
                   id={`${id}-email`}
                   type="email"
                   autoComplete="username"
                   required
+                  placeholder=" "
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className={cn(fieldBase, 'h-14')}
                 />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor={`${id}-password`} className="text-sm font-medium">
-                  Password
-                </label>
-                <Input
+              </Field>
+              <Field htmlFor={`${id}-password`} label="Password">
+                <input
                   id={`${id}-password`}
                   type="password"
                   autoComplete="current-password"
                   required
+                  placeholder=" "
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className={cn(fieldBase, 'h-14')}
                 />
-              </div>
+              </Field>
               {error && (
-                <p id={`${id}-error`} role="alert" className="text-sm font-medium text-verdict-red-ink">
+                <p id={`${id}-error`} role="alert" className="flex items-start gap-2 text-body-m font-medium text-error">
+                  <Icon name="error" className="size-5" />
                   {error}
                 </p>
               )}
-              <button
-                type="submit"
-                disabled={busy || analyst.status === 'loading'}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 font-semibold text-primary-foreground outline-none transition-colors hover:bg-brand-deep focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60"
-              >
-                {busy ? 'Signing in…' : 'Sign in'}
-                {!busy && <ArrowRight aria-hidden="true" className="size-4" />}
-              </button>
+              <div className="flex items-center justify-end gap-2">
+                <Link to="/" className={button('text', 'md')}>
+                  Back to {PRODUCT_NAME}
+                </Link>
+                <button type="submit" disabled={busy || analyst.status === 'loading'} className={button('filled', 'md')}>
+                  {busy ? 'Signing in…' : 'Sign in'}
+                  {busy ? <Icon name="progress_activity" className="animate-spin" /> : <Icon name="login" />}
+                </button>
+              </div>
             </form>
           )}
         </div>
       </main>
+      <p className="mt-4 flex w-full max-w-[1040px] flex-wrap justify-between gap-2 px-6 text-body-s text-on-surface-variant">
+        <span>{PRODUCT_NAME} · Google Cloud AI Builder Cup 2026 prototype</span>
+        <span>All people, banks and accounts are synthetic</span>
+      </p>
     </div>
   )
 }

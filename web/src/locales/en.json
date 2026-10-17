@@ -30,7 +30,9 @@
     "openConsole": "Open the analyst console",
     "openConsoleHint": "Demo login prefilled",
     "sideBySide": "Best demo: open both side by side, send Mrs Tan’s transfer, and watch the case arrive.",
-    "footer": "Prototype for the Google Cloud AI Builder Cup 2026 · Built on Gemini, ADK, Cloud Run, BigQuery, Firestore · All data synthetic"
+    "footer": "Prototype for the Google Cloud AI Builder Cup 2026 · Built on Gemini, ADK, Cloud Run, BigQuery, Firestore · All data synthetic",
+    "eyebrow": "Google Cloud AI Builder Cup 2026 · Banking and finance",
+    "builtOn": "Built on Google Cloud"
   },
   "app": {
     "title": "{{bank}} app with {{product}}"
@@ -50,7 +52,17 @@
         "ok": "Live API on Cloud Run",
         "down": "The API isn't answering yet. It may be waking up.",
         "okLocal": "Connected to the local API"
-      }
+      },
+      "playing": "Demo customer",
+      "tryTitle": "Try it in four taps",
+      "try": {
+        "pick": "Pick a customer: Mrs Tan, Raj or Aisyah.",
+        "transfer": "Tap Transfer, then Prefill demo scenario.",
+        "answer": "Send it, then tap Use the demo answer in the safety check.",
+        "console": "Open the analyst console beside it and watch the case arrive."
+      },
+      "consoleLink": "Open the analyst console",
+      "newTab": "(opens in a new tab)"
     },
     "personas": {
       "cust_001": {
@@ -87,7 +99,8 @@
         "en": "English",
         "zh": "Chinese"
       },
-      "choose": "Continue as {{name}}"
+      "choose": "Continue as {{name}}",
+      "badge": "{{product}} demo"
     },
     "bar": {
       "back": "Back",
@@ -208,7 +221,8 @@
         "waiting": "waiting",
         "active": "in progress",
         "done": "done"
-      }
+      },
+      "poweredBy": "Checked with Gemini on Google Cloud"
     },
     "verdict": {
       "word": {

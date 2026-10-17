@@ -1,5 +1,6 @@
 // Labels and formatting for the analyst console (English only: it is an internal bank tool).
 import type { AnalystAction, CaseStatus, WatchlistType } from '@/console/api'
+import type { IconName } from '@/components/icons/Icon'
 import type { RedFlagCode, Typology, Verdict } from '@/lib/api'
 
 export const TYPOLOGY_LABEL: Record<Typology, string> = {
@@ -14,6 +15,9 @@ export const TYPOLOGY_LABEL: Record<Typology, string> = {
   NONE: 'No scam pattern',
   UNKNOWN: 'Unknown',
 }
+
+/** Verdict icons (with the word and the colour, never alone). */
+export const VERDICT_ICON: Record<Verdict, IconName> = { RED: 'gpp_bad', AMBER: 'warning', GREEN: 'verified_user' }
 
 export const VERDICT_WORD: Record<Verdict, string> = {
   RED: 'Held',

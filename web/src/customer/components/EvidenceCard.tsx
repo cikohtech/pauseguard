@@ -1,7 +1,7 @@
-import { FileText } from 'lucide-react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Icon } from '@/components/icons/Icon'
 import {
   boxToPercent,
   explanationFor,
@@ -50,7 +50,7 @@ function Marker({ n, verdict, className }: { n: number; verdict: Verdict; classN
     <span
       aria-hidden="true"
       className={cn(
-        'inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[13px] font-bold text-white shadow-[0_0_0_2px_#fff]',
+        'inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-white tabular-nums shadow-[0_0_0_2px_#fff,0_1px_3px_rgb(0_0_0/0.3)]',
         INK[verdict],
         className,
       )}
@@ -94,11 +94,12 @@ export function EvidenceCard({
   const itemId = (n: number) => `${id}-flag-${n}`
 
   return (
-    <section aria-labelledby={`${id}-title`} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-      <h2 id={`${id}-title`} className="text-[17px] font-semibold">
+    <section aria-labelledby={`${id}-title`} className="rounded-xl bg-surface-container-low p-4">
+      <h2 id={`${id}-title`} className="flex items-center gap-2 text-title-m text-on-surface">
+        <Icon name="document_search" className="size-5 text-on-surface-variant" />
         {copy.title}
       </h2>
-      <p className="mt-0.5 text-sm text-muted-foreground">{copy.hint}</p>
+      <p className="mt-0.5 text-body-m text-on-surface-variant">{copy.hint}</p>
 
       {perSource.map(({ source, index, flags: here }) => {
         if (source.kind === 'image') {
@@ -106,12 +107,12 @@ export function EvidenceCard({
             .map((f) => ({ f, box: boxToPercent(f.flag.box_2d) }))
             .filter((b) => b.box !== null)
           return (
-            <div key={index} className="mt-4 flex justify-center">
+            <div key={index} className="mt-4 flex justify-center rounded-lg bg-surface-container-highest/60 p-3">
               <div className="relative inline-block max-w-full">
                 <img
                   src={source.url}
                   alt={copy.imageAlt(source.name, boxed.length)}
-                  className="block max-h-[460px] w-auto max-w-full rounded-lg border border-border"
+                  className="block max-h-[460px] w-auto max-w-full rounded-md shadow-e1"
                 />
                 {boxed.map(({ f, box }) => (
                   <button
@@ -129,9 +130,9 @@ export function EvidenceCard({
                       height: `${box!.height}%`,
                     }}
                     className={cn(
-                      'absolute rounded-md border-[2.5px] shadow-[0_0_0_1.5px_rgba(255,255,255,0.9)] outline-none transition-[background-color,box-shadow] focus-visible:ring-3 focus-visible:ring-ring',
+                      'absolute rounded-[6px] border-[2.5px] shadow-[0_0_0_1.5px_rgb(255_255_255/0.9)] transition-[background-color,box-shadow] duration-200 focus-visible:outline-offset-1',
                       BORDER[verdict],
-                      active === f.n ? 'bg-black/10 ring-3 ring-ring/40' : 'bg-transparent',
+                      active === f.n ? 'bg-black/10 shadow-[0_0_0_1.5px_rgb(255_255_255/0.9),0_0_0_6px_rgb(0_0_0/0.18)]' : 'bg-transparent hover:bg-black/5',
                     )}
                   >
                     <Marker n={f.n} verdict={verdict} className="absolute -top-3 -left-3" />
@@ -144,16 +145,17 @@ export function EvidenceCard({
         if (source.kind === 'text' && here.length > 0) {
           return (
             <figure key={index} className="mt-4">
-              <figcaption className="mb-1.5 text-sm font-medium text-muted-foreground">
+              <figcaption className="mb-1.5 flex items-center gap-1.5 text-label-l text-on-surface-variant">
+                <Icon name="sms" className="size-4" />
                 {copy.pasted}
               </figcaption>
-              <blockquote className="rounded-xl bg-muted px-3.5 py-3 text-[15px] leading-relaxed whitespace-pre-wrap">
+              <blockquote className="rounded-lg rounded-tl-xs bg-surface-container-lowest px-4 py-3 text-body-m leading-relaxed whitespace-pre-wrap shadow-e1">
                 {highlightQuotes(source.text, here).map((seg, i) =>
                   seg.n ? (
                     <mark
                       key={i}
                       className={cn(
-                        'rounded px-0.5 text-foreground ring-1 ring-current/20 [box-decoration-break:clone]',
+                        'rounded px-0.5 text-on-surface ring-1 ring-current/20 [box-decoration-break:clone]',
                         SOFT[verdict],
                         active === seg.n && 'ring-2 ring-ring',
                       )}
@@ -174,17 +176,17 @@ export function EvidenceCard({
         }
         if (source.kind === 'pdf') {
           return (
-            <p key={index} className="mt-4 flex items-center gap-2 rounded-xl bg-muted px-3 py-2.5 text-sm">
-              <FileText aria-hidden="true" className="size-5 text-muted-foreground" />
+            <p key={index} className="mt-4 flex min-h-14 items-center gap-3 rounded-lg bg-surface-container-lowest px-4 py-2.5 text-body-m">
+              <Icon name="picture_as_pdf" className="size-6 text-error" />
               <span className="truncate font-medium">{source.name}</span>
-              <span className="text-muted-foreground">· {copy.pdf}</span>
+              <span className="shrink-0 text-on-surface-variant">· {copy.pdf}</span>
             </p>
           )
         }
         return null
       })}
 
-      <ol className="mt-4 flex flex-col gap-2">
+      <ol className="mt-4 flex flex-col gap-0.5">
         {numbered.map((f, i) => {
           const text = explanationFor(message, f.flag, i)
           return (
@@ -195,23 +197,23 @@ export function EvidenceCard({
                 onClick={() => setActive(active === f.n ? null : f.n)}
                 aria-pressed={active === f.n}
                 className={cn(
-                  'flex w-full gap-3 rounded-xl p-3 text-left outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50',
-                  active === f.n ? SOFT[verdict] : 'hover:bg-muted',
+                  'ripple flex w-full gap-3.5 rounded-xs p-4 text-left text-on-surface transition-colors duration-200 [li:first-child>&]:rounded-t-lg [li:last-child>&]:rounded-b-lg',
+                  active === f.n ? SOFT[verdict] : 'bg-surface-container-lowest',
                 )}
               >
                 <Marker n={f.n} verdict={verdict} className="mt-0.5" />
-                <span className="flex min-w-0 flex-col gap-0.5">
-                  <span className="flex flex-wrap items-center gap-x-2 font-semibold">
+                <span className="flex min-w-0 flex-col gap-1">
+                  <span className="flex flex-wrap items-center gap-x-2 text-title-s">
                     {title(f)}
                     {showSeverity && (
-                      <span className="text-xs font-semibold tracking-wide text-muted-foreground">
+                      <span className="rounded-xs bg-surface-container-high px-1.5 py-px text-label-s font-medium tracking-wide text-on-surface-variant">
                         {f.flag.severity}
                       </span>
                     )}
                   </span>
-                  {text && <span className="text-[15px] leading-snug">{text}</span>}
+                  {text && <span className="text-body-l leading-snug">{text}</span>}
                   {f.flag.quote && (
-                    <span className="text-sm break-words text-muted-foreground italic">“{f.flag.quote}”</span>
+                    <span className="text-body-m break-words text-on-surface-variant italic">“{f.flag.quote}”</span>
                   )}
                 </span>
               </button>

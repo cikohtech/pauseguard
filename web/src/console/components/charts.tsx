@@ -1,6 +1,6 @@
-import { Table2 } from 'lucide-react'
 import { useId, useState, type ReactNode } from 'react'
 
+import { Icon } from '@/components/icons/Icon'
 import { cn } from '@/lib/utils'
 
 // Shared chart chrome for the console (Recharts). Colours are CSS tokens (index.css, "chart"):
@@ -29,22 +29,22 @@ export function ChartCard({
   const [asTable, setAsTable] = useState(false)
   const id = useId()
   return (
-    <section aria-labelledby={`${id}-t`} className={cn('flex flex-col rounded-xl border border-border bg-card p-4', className)}>
-      <div className="mb-3 flex items-start gap-3">
+    <section aria-labelledby={`${id}-t`} className={cn('flex flex-col rounded-xl border border-outline-variant/80 bg-surface-container-lowest p-5', className)}>
+      <div className="mb-4 flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <h3 id={`${id}-t`} className="text-sm font-semibold">
+          <h3 id={`${id}-t`} className="text-title-m text-on-surface">
             {title}
           </h3>
-          {subtitle && <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>}
+          {subtitle && <p className="mt-0.5 text-body-s text-on-surface-variant">{subtitle}</p>}
         </div>
         <button
           type="button"
           onClick={() => setAsTable(!asTable)}
           aria-pressed={asTable}
           aria-label={`Table view of ${title}`}
-          className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-xs font-medium text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:border-primary/40 aria-pressed:bg-primary-soft aria-pressed:text-primary"
+          className="ripple inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-sm border border-outline-variant px-3 text-label-l font-medium text-on-surface-variant aria-pressed:border-transparent aria-pressed:bg-secondary-container aria-pressed:text-on-secondary-container"
         >
-          <Table2 aria-hidden="true" className="size-3.5" />
+          <Icon name={asTable ? 'check' : 'table'} className="size-[18px]" />
           Table
         </button>
       </div>
@@ -70,10 +70,10 @@ export function ChartCard({
 /** Legend for two or more series: a swatch beside text in text colour, never coloured text. */
 export function Legend({ items }: { items: { label: string; color: string }[] }) {
   return (
-    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-body-s text-on-surface-variant">
       {items.map((i) => (
         <li key={i.label} className="inline-flex items-center gap-1.5">
-          <span aria-hidden="true" className="size-2.5 rounded-[3px]" style={{ background: i.color }} />
+          <span aria-hidden="true" className="size-3 rounded-full" style={{ background: i.color }} />
           {i.label}
         </li>
       ))}
@@ -84,13 +84,13 @@ export function Legend({ items }: { items: { label: string; color: string }[] })
 /** Recharts tooltip body: a small card in text colours with a swatch per series. */
 export function TooltipCard({ title, rows }: { title: string; rows: { label: string; value: string; color?: string }[] }) {
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 text-xs shadow-md">
-      <p className="mb-1 font-semibold text-foreground">{title}</p>
+    <div className="min-w-36 rounded-md bg-surface-container-lowest px-3 py-2.5 text-body-s shadow-e2">
+      <p className="mb-1 text-label-l font-medium text-on-surface">{title}</p>
       {rows.map((r) => (
-        <p key={r.label} className="flex items-center gap-1.5 text-muted-foreground">
-          {r.color && <span aria-hidden="true" className="size-2 rounded-[2px]" style={{ background: r.color }} />}
+        <p key={r.label} className="flex items-center gap-1.5 text-on-surface-variant">
+          {r.color && <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: r.color }} />}
           <span>{r.label}</span>
-          <span className="ml-auto pl-3 font-semibold text-foreground tabular-nums">{r.value}</span>
+          <span className="ml-auto pl-3 font-medium text-on-surface tabular-nums">{r.value}</span>
         </p>
       ))}
     </div>
@@ -99,11 +99,11 @@ export function TooltipCard({ title, rows }: { title: string; rows: { label: str
 
 export function DataTable({ head, rows }: { head: string[]; rows: ReactNode[][] }) {
   return (
-    <table className="w-full text-left text-sm">
-      <thead className="sticky top-0 bg-card text-xs text-muted-foreground">
+    <table className="w-full text-left text-body-m">
+      <thead className="sticky top-0 bg-surface-container-low text-label-l text-on-surface-variant">
         <tr>
           {head.map((h, i) => (
-            <th key={h} scope="col" className={cn('py-1.5 font-medium', i > 0 && 'text-right')}>
+            <th key={h} scope="col" className={cn('h-10 px-3 font-medium', i > 0 && 'text-right')}>
               {h}
             </th>
           ))}
@@ -111,9 +111,9 @@ export function DataTable({ head, rows }: { head: string[]; rows: ReactNode[][] 
       </thead>
       <tbody>
         {rows.map((r, i) => (
-          <tr key={i} className="border-t border-border">
+          <tr key={i} className="border-t border-outline-variant/60">
             {r.map((cell, j) => (
-              <td key={j} className={cn('py-1.5', j > 0 && 'text-right tabular-nums')}>
+              <td key={j} className={cn('h-10 px-3', j > 0 && 'text-right tabular-nums')}>
                 {cell}
               </td>
             ))}

@@ -4,20 +4,25 @@ One React app, two areas. **Best UI/UX is a $2,000 prize**, so polish matters. T
 
 ## Design system
 
+Redesigned on 17 Oct 2026 (DECISIONS): **Material 3** throughout, in two schemes that share one set of role tokens (`web/src/index.css`), so every component is written once.
+
 - **Tone:** reassuring, never alarming or blaming. Verdict colours are used sparingly; everything else is neutral.
-- **Palette** (Tailwind CSS variables, light and dark):
-  - Primary: deep harbour teal `#0F5E6E`; primary-foreground white
-  - Background `#F7F9FA`, surface `#FFFFFF`, text `#0F1B24`, muted `#5B6B77`
-  - GREEN `#1F8A5B`, AMBER `#B7791F`, RED `#C0392B`. Always pair colour with an icon and a word, never colour alone.
-- **Type:** Inter (Latin) + Noto Sans SC (Chinese). Base 16px; senior mode 20px.
-- **Components:** shadcn/ui (Button, Card, Dialog, Badge, Tabs, Table, Toast, Skeleton, Progress). Icons: lucide-react.
+- **Two schemes:**
+  - **Harbour Bank (customer app, inside the phone):** Material You, `SchemeTonalSpot` generated with `material-color-utilities` from the harbour-teal seed `#0F5E6E` (primary `#00687A`, surface `#F5FAFC`). Scoped to `[data-phone]`, so the check-in sheet and dialogs (which portal into the phone) inherit it.
+  - **Google (landing page, the demo stage, the analyst console):** Google's own Material 3 ("GM3": Gmail, Drive, the Cloud console): primary `#0B57D0`, surface `#F8FAFD`, the work on a white rounded panel, secondary-container `#C2E7FF` for selection.
+  - **Verdicts:** GREEN / AMBER / RED each have a solid, an ink (text, AA on white and on the soft tint) and a soft container. Bank: M3 custom colours from `#1F8A5B` / `#B7791F` plus the scheme's error role. Google: the Cloud console status colours (`#1E8E3E`, `#E37400`, `#D93025`; inks `#137333`, `#9A5500`, `#C5221F`). Always pair colour with an icon **and** a word, and in the customer app also a shape (below), never colour alone.
+- **Type:** Google Sans (variable, OFL) for Latin, Noto Sans SC for Chinese, Google Sans Code for IDs and account numbers. The M3 type scale is a set of Tailwind utilities (`text-display-l` … `text-label-s`). Base 16px in the app.
+- **Shape and motion:** M3 shape scale (4 → 48px; pills for buttons and chips, 28px sheets and dialogs). M3 Expressive shapes (cookie, sunny, burst; `components/m3/shapes.ts`) carry the verdict hero (GREEN sunny, AMBER 6-point cookie, RED 12-point cookie), the morphing loading indicator while the check runs, and a wavy progress bar for GREEN's 2-second auto-continue. Emphasized easing and a spring for the verdict; everything honours `prefers-reduced-motion`.
+- **Components:** M3 buttons (filled, tonal, outlined, text), icon buttons, filter and assist chips, outlined text fields with floating labels, connected list groups, navigation bar (app), navigation drawer + rail and top app bar with search (console), primary tabs, segmented buttons, bottom sheet, basic dialog, snackbar (sonner, styled). Every pressable surface has an M3 state layer and a ripple (`lib/ripple.ts`). shadcn/ui (radix) still provides Dialog and Tabs behaviour.
+- **Icons:** Material Symbols (Apache-2.0) as inline SVG, Rounded in the app and on the landing page, Outlined in the console; only the icons we use ship (`web/scripts/gen-icons.mjs`).
+- **AI labelling:** what Gemini wrote (case summary, recommended action) carries a gradient sparkle and a "Written by Gemini" label, the way Google products label AI output; the deterministic verdict reasons are labelled "Rules, not AI".
 - **Motion:** subtle. The analysis progress uses step ticks ("Reading the message ✓ · Checking the payee ✓ · Comparing with known scams …"), never a bare spinner.
-- **Accessibility:** WCAG 2.1 AA contrast, 44px tap targets, focus rings, `aria-live` for verdict announcements, full keyboard support in the console, alt text on evidence previews.
+- **Accessibility:** WCAG 2.1 AA contrast (every token pair checked), 44px+ tap targets, a 3px M3 focus ring on everything, `aria-live` for verdict announcements, full keyboard support in the console, alt text on evidence previews. `make a11y` runs axe on every screen, desktop and phone.
 - **i18n:** `react-i18next` with `en` and `zh` in the MVP (`ms` and `ta` stretch). All customer strings are in locale files, and the language switcher sits in the header.
 
 ## Area 1: `/app` customer banking mock (mobile frame)
 
-On desktop, render inside a 390×844 phone frame, centred, with a short caption beside it ("Demo: Harbour Bank app with PauseGuard"). On mobile, use the full screen.
+On desktop, render inside a 390×844 phone frame (an Android device in the Pixel style), centred, with a caption beside it: what the demo is, the persona you are playing, a four-step "try it" guide, a link to the console, and the live API status. On mobile, use the full screen.
 
 **Screens**
 1. **Persona picker** (demo only): three cards (Mrs Tan / Raj / Aisyah) with a one-line story. It sets `customer_id` and language.
