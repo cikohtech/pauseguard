@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 
 import { Icon, Sparkle, type IconName } from '@/components/icons/Icon'
 import { Shape, type ShapeName } from '@/components/m3/Expressive'
-import { LanguageToggle } from '@/components/LanguageToggle'
 import { ShieldMark } from '@/components/ShieldMark'
 import { warmUpApi } from '@/lib/api'
 import { PRODUCT_NAME } from '@/lib/product'
@@ -40,7 +39,6 @@ export function Landing() {
       <Backdrop />
       <header className="relative mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
         <ShieldMark />
-        <LanguageToggle />
       </header>
 
       <main className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col gap-16 px-5 pt-6 pb-12 sm:px-8 lg:pt-12">

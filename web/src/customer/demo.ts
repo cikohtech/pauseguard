@@ -4,7 +4,7 @@
 // so a saved payee really is a known payee to the risk engine. The recent transactions follow
 // each persona's seeded pattern; the home screen doesn't query BigQuery (DECISIONS, phase 06).
 // Everything here is synthetic.
-import type { DestType, Language, Transfer, UploadContentType } from '@/lib/api'
+import type { DestType, Transfer, UploadContentType } from '@/lib/api'
 
 export const BANKS = [
   'Harbour Bank',
@@ -40,8 +40,8 @@ export interface DemoEvidence {
 
 export interface DemoScenario {
   transfer: Transfer
-  quickReplyIndex: number // into the API's quick replies (same order in en and zh)
-  answer: Record<'en' | 'zh', string>
+  quickReplyIndex: number // into the API's quick replies
+  answer: string
   evidence?: DemoEvidence
   pastedFile?: string // a .txt under /demo/, pasted as the chat
 }
@@ -50,7 +50,6 @@ export interface DemoPersona {
   customer_id: string
   full_name: string
   age: number
-  language: Language
   balance: number
   accountSuffix: string
   trustedPhone: string
@@ -64,7 +63,6 @@ export const PERSONAS: DemoPersona[] = [
     customer_id: 'cust_001',
     full_name: 'Tan Mei Ling',
     age: 67,
-    language: 'zh',
     balance: 42180.55,
     accountSuffix: '4471',
     trustedPhone: '+65 8000 0300',
@@ -92,10 +90,7 @@ export const PERSONAS: DemoPersona[] = [
         note: 'case 2231',
       },
       quickReplyIndex: 0,
-      answer: {
-        zh: '他说他是金管局的官员，我的账户涉及洗钱，要我把钱转到安全账户。',
-        en: 'He says he is a MAS officer and my account is linked to money laundering, so I must move my money to a safe account.',
-      },
+      answer: 'He says he is a MAS officer and my account is linked to money laundering, so I must move my money to a safe account.',
       evidence: { file: 'tan_mas_chat.png', name: 'WhatsApp_2026-10-11.png', type: 'image/png' },
     },
   },
@@ -103,7 +98,6 @@ export const PERSONAS: DemoPersona[] = [
     customer_id: 'cust_002',
     full_name: 'Raj Kumar',
     age: 29,
-    language: 'en',
     balance: 2340.2,
     accountSuffix: '2093',
     trustedPhone: '+65 8000 0301',
@@ -131,10 +125,7 @@ export const PERSONAS: DemoPersona[] = [
         note: null,
       },
       quickReplyIndex: 1,
-      answer: {
-        en: 'The recruiter says I need to top up to unlock my commission. Here is the message.',
-        zh: '招聘人员说我要先充值才能解锁佣金。这是他发的信息。',
-      },
+      answer: 'The recruiter says I need to top up to unlock my commission. Here is the message.',
       pastedFile: 'raj_job_chat.txt',
     },
   },
@@ -142,7 +133,6 @@ export const PERSONAS: DemoPersona[] = [
     customer_id: 'cust_003',
     full_name: 'Nur Aisyah',
     age: 34,
-    language: 'en',
     balance: 18640.75,
     accountSuffix: '7385',
     trustedPhone: '+65 8000 0302',
@@ -170,10 +160,7 @@ export const PERSONAS: DemoPersona[] = [
         note: 'Bishan deposit',
       },
       quickReplyIndex: 5,
-      answer: {
-        en: "It's the deposit for the flat we're renting in Bishan. Tenancy agreement attached.",
-        zh: '这是我们在碧山租房的押金。附上租约。',
-      },
+      answer: "It's the deposit for the flat we're renting in Bishan. Tenancy agreement attached.",
       evidence: { file: 'aisyah_tenancy.pdf', name: 'Tenancy_Agreement_Bishan.pdf', type: 'application/pdf' },
     },
   },

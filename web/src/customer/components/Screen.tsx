@@ -45,7 +45,7 @@ export function Screen({
   )
 }
 
-/** M3 small top app bar: back, title, language switch. */
+/** M3 small top app bar: back and title. */
 export function AppBar({ title, back }: { title: string; back?: string | (() => void) }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -64,31 +64,9 @@ export function AppBar({ title, back }: { title: string; back?: string | (() => 
         ) : (
           <span className="w-3" />
         )}
-        <h1 className="flex-1 truncate px-1 text-title-l">{title}</h1>
-        <LangSwitch />
+        <h1 className="flex-1 truncate px-1 pr-4 text-title-l">{title}</h1>
       </div>
     </header>
-  )
-}
-
-/** The header language toggle (en ⇄ zh), a 48px target. */
-export function LangSwitch({ onDark = false }: { onDark?: boolean }) {
-  const { t, i18n } = useTranslation()
-  const next = i18n.language === 'zh' ? 'en' : 'zh'
-  return (
-    <button
-      type="button"
-      onClick={() => void i18n.changeLanguage(next)}
-      aria-label={`${t('customer.bar.language')}: ${t('customer.bar.switchTo')}`}
-      lang={next === 'zh' ? 'zh-Hans' : 'en'}
-      className={cn(
-        'ripple inline-flex h-12 min-w-12 items-center justify-center gap-1.5 rounded-full px-3 text-label-l font-medium',
-        onDark ? 'text-white' : 'text-on-surface-variant',
-      )}
-    >
-      <Icon name="translate" className="size-5" />
-      {t('customer.bar.switchTo')}
-    </button>
   )
 }
 

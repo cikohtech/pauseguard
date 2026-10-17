@@ -1,7 +1,6 @@
 // Deck and README screenshots from the LIVE stack (phase 11; `make screens`).
-// Real Gemini, real Firebase Auth and Firestore: nothing is mocked. It runs Raj (AMBER), Mrs Tan in
-// Chinese (RED) and Mrs Tan in English (RED, recorded for the README GIF) in the customer app on a
-// phone viewport, then signs in to the console as the demo analyst and captures the queue, Mrs Tan's
+// Real Gemini, real Firebase Auth and Firestore: nothing is mocked. It runs Raj (AMBER) and Mrs Tan
+// (RED, recorded for the README GIF) in the customer app on a phone viewport, then signs in to the console as the demo analyst and captures the queue, Mrs Tan's
 // case (summary, evidence, risk, intel) and the dashboard. Finally POST /admin/reset-demo clears the
 // personas' checks and cases (ADMIN_TOKEN, API_URL), as `make console-live` does.
 //
@@ -30,7 +29,7 @@ async function wakeApi() {
 }
 
 // One customer transfer, from the persona picker to the verdict. Returns the page on the verdict.
-async function transfer(browser, { persona, english, verdict, shots, record }) {
+async function transfer(browser, { persona, verdict, shots, record }) {
   const ctx = await browser.newContext({ ...phone, ...(record ? { recordVideo: { dir: VIDEO, size: { width: 390, height: 844 } } } : {}) })
   const page = await ctx.newPage()
   await page.goto(`${SITE}/app`)
@@ -38,25 +37,21 @@ async function transfer(browser, { persona, english, verdict, shots, record }) {
   await pause(page, 1200)
   if (shots.picker) await page.screenshot({ path: `${OUT}/${shots.picker}` })
   await page.getByRole('button', { name: persona }).click()
-  if (english) {
-    await page.getByRole('button', { name: /^(Language|语言): / }).click()
-    await page.getByRole('link', { name: /^Transfer/ }).first().waitFor()
-  }
   await pause(page)
-  await page.getByRole('link', { name: /^(Transfer|转账)/ }).first().click()
+  await page.getByRole('link', { name: /^Transfer/ }).first().click()
   await pause(page)
-  await page.getByRole('button', { name: /Prefill demo scenario|填入演示情景/ }).click()
+  await page.getByRole('button', { name: 'Prefill demo scenario' }).click()
   await pause(page)
-  await page.getByRole('button', { name: /Review transfer|核对转账/ }).click()
+  await page.getByRole('button', { name: 'Review transfer' }).click()
   await pause(page)
-  await page.getByRole('button', { name: /^(Send|发送)/ }).click()
-  const sheet = page.getByRole('dialog', { name: /Quick safety check|快速安全确认/ })
+  await page.getByRole('button', { name: /^Send/ }).click()
+  const sheet = page.getByRole('dialog', { name: 'Quick safety check' })
   await sheet.waitFor()
   await pause(page)
-  await sheet.getByRole('button', { name: /Use the demo answer|使用演示答案/ }).click()
+  await sheet.getByRole('button', { name: 'Use the demo answer' }).click()
   await pause(page, 1200)
   if (shots.checkin) await page.screenshot({ path: `${OUT}/${shots.checkin}` })
-  await sheet.getByRole('button', { name: /Check now|马上检查/ }).click()
+  await sheet.getByRole('button', { name: 'Check now' }).click()
   const t = Date.now()
   await page.getByTestId('analysing').waitFor()
   await pause(page, 2500)
@@ -90,22 +85,14 @@ try {
   await resetDemo()
   await wakeApi()
 
-  // Raj first, then Tan twice, so Mrs Tan's English case is the newest RED at the top of the queue.
+  // Raj first, then Tan, so Mrs Tan's case is the newest RED at the top of the queue.
   const raj = await transfer(browser, {
     persona: 'Continue as Raj Kumar',
-    english: false,
     verdict: 'AMBER',
     shots: { verdict: '03-amber.png', evidence: '03-amber-evidence.png' },
   })
-  const tanZh = await transfer(browser, {
-    persona: /陈美玲女士|Mrs Tan/,
-    english: false,
-    verdict: 'RED',
-    shots: { verdict: '04-red-zh.png', evidence: '04-red-zh-evidence.png' },
-  })
-  const tanEn = await transfer(browser, {
-    persona: /陈美玲女士|Mrs Tan/,
-    english: true,
+  const tan = await transfer(browser, {
+    persona: /Mrs Tan/,
     verdict: 'RED',
     record: Boolean(VIDEO),
     shots: {
@@ -116,7 +103,7 @@ try {
       evidence: '04-red-evidence.png',
     },
   })
-  ok = raj.verdict === 'AMBER' && tanZh.verdict === 'RED' && tanEn.verdict === 'RED' && tanEn.boxes > 0
+  ok = raj.verdict === 'AMBER' && tan.verdict === 'RED' && tan.boxes > 0
 
   // The analyst console on a desktop.
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 })

@@ -7,7 +7,7 @@ import { Shape, WavyProgress, type ShapeName } from '@/components/m3/Expressive'
 import { EvidenceCard } from '@/customer/components/EvidenceCard'
 import { FeedbackThumbs } from '@/customer/components/FeedbackThumbs'
 import { usePortalContainer } from '@/customer/portal'
-import { HarbourLogo, LangSwitch, Screen } from '@/customer/components/Screen'
+import { HarbourLogo, Screen } from '@/customer/components/Screen'
 import type { DemoPersona } from '@/customer/demo'
 import { formatSgd } from '@/customer/format'
 import { useSession } from '@/customer/session'
@@ -127,9 +127,8 @@ export function VerdictView({ result, verdict }: { result: CheckResult; verdict:
     <Screen
       header={
         <header className={cn('pt-sat shrink-0', look.soft)}>
-          <div className="flex h-16 items-center justify-between pr-1 pl-5">
+          <div className="flex h-16 items-center pl-5">
             <HarbourLogo />
-            <LangSwitch />
           </div>
         </header>
       }

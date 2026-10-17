@@ -4,7 +4,7 @@ import { Link, NavLink } from 'react-router-dom'
 import { Icon, type IconName } from '@/components/icons/Icon'
 import { PauseGuardLogo } from '@/components/ShieldMark'
 import { Avatar } from '@/customer/components/Avatar'
-import { HarbourLogo, LangSwitch, Screen } from '@/customer/components/Screen'
+import { HarbourLogo, Screen } from '@/customer/components/Screen'
 import type { DemoPersona, TxnKind } from '@/customer/demo'
 import { daysAgo, formatSgd, formatShortDate, sgHour } from '@/customer/format'
 import { useSession } from '@/customer/session'
@@ -28,7 +28,7 @@ function greetingKey(hour: number) {
 
 /** Screen 2: balance card, recent transactions and a big "Transfer" button. */
 export function Home() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { persona, sent } = useSession()
   const p = persona as DemoPersona
   const key = `customer.personas.${p.customer_id}`
@@ -45,7 +45,7 @@ export function Home() {
       title: r.name ?? t(`customer.home.txn.${r.labelKey}`),
       kind: r.kind,
       amount: r.amount,
-      when: formatShortDate(daysAgo(r.daysAgo), i18n.language),
+      when: formatShortDate(daysAgo(r.daysAgo)),
     })),
   ].slice(0, 6)
 
@@ -55,10 +55,7 @@ export function Home() {
         <header className="pt-sat shrink-0 bg-surface transition-colors duration-200 group-data-[scrolled=true]/screen:bg-surface-container">
           <div className="flex h-16 items-center justify-between gap-1 pr-2 pl-5">
             <HarbourLogo />
-            <span className="flex items-center gap-1">
-              <LangSwitch />
-              <Avatar id={p.customer_id} name={p.full_name} size="sm" className="ml-1 size-9 text-[14px]" />
-            </span>
+            <Avatar id={p.customer_id} name={p.full_name} size="sm" className="mr-1 size-9 text-[14px]" />
           </div>
         </header>
       }

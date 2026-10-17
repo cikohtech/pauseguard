@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { Icon, type IconName } from '@/components/icons/Icon'
 import { Avatar } from '@/customer/components/Avatar'
-import { HarbourLogo, LangSwitch, Screen } from '@/customer/components/Screen'
+import { HarbourLogo, Screen } from '@/customer/components/Screen'
 import { PERSONAS, type DemoPersona } from '@/customer/demo'
 import { useSession } from '@/customer/session'
 import { PRODUCT_NAME } from '@/lib/product'
@@ -16,15 +16,14 @@ const STORY: Record<string, { icon: IconName; scam: boolean }> = {
   cust_003: { icon: 'home_work', scam: false },
 }
 
-/** Screen 1 (demo only): pick Mrs Tan, Raj or Aisyah; sets customer_id and the language. */
+/** Screen 1 (demo only): pick Mrs Tan, Raj or Aisyah; sets customer_id. */
 export function PersonaPicker() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { choosePersona } = useSession()
   const navigate = useNavigate()
 
   const pick = (p: DemoPersona) => {
     choosePersona(p.customer_id)
-    void i18n.changeLanguage(p.language)
     navigate('/app/home')
   }
 
@@ -32,9 +31,8 @@ export function PersonaPicker() {
     <Screen
       header={
         <header className="pt-sat shrink-0 bg-surface transition-colors group-data-[scrolled=true]/screen:bg-surface-container">
-          <div className="flex h-16 items-center justify-between pr-1 pl-5">
+          <div className="flex h-16 items-center pl-5">
             <HarbourLogo />
-            <LangSwitch />
           </div>
         </header>
       }
@@ -66,10 +64,7 @@ export function PersonaPicker() {
                   <Avatar id={p.customer_id} name={p.full_name} size="lg" />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="text-title-m">{name}</span>
-                    <span className="text-body-m text-on-surface-variant">
-                      {t('customer.picker.age', { age: p.age })} ·{' '}
-                      {t('customer.picker.language', { language: t(`customer.picker.languages.${p.language}`) })}
-                    </span>
+                    <span className="text-body-m text-on-surface-variant">{t('customer.picker.age', { age: p.age })}</span>
                   </span>
                   <span className="inline-flex size-10 items-center justify-center rounded-full bg-surface-container-highest text-on-surface-variant">
                     <Icon name="arrow_forward" className="size-5" />

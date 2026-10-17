@@ -1,8 +1,4 @@
 {
-  "common": {
-    "language": "Language",
-    "switchTo": "中文"
-  },
   "landing": {
     "tagline": "Pause before you pay.",
     "pitch": "Fraud models check the transaction. {{product}} checks the conversation that caused it.",
@@ -94,18 +90,11 @@
       "title": "Choose a demo customer",
       "subtitle": "Each one makes a different transfer. See what {{product}} does.",
       "age": "Age {{age}}",
-      "language": "Speaks {{language}}",
-      "languages": {
-        "en": "English",
-        "zh": "Chinese"
-      },
       "choose": "Continue as {{name}}",
       "badge": "{{product}} demo"
     },
     "bar": {
-      "back": "Back",
-      "language": "Language",
-      "switchTo": "中文"
+      "back": "Back"
     },
     "home": {
       "greeting": {

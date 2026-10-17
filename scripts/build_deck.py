@@ -394,7 +394,7 @@ def fill_wireframes(slide, sec: Section) -> None:
         "02-checkin.png",
         "03-amber.png",
         "04-red.png",
-        "04-red-zh.png",
+        "04-red-evidence.png",
     ]
     captions = [t for _, t in sec.items]
     n = len(shots)

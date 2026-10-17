@@ -10,11 +10,11 @@ import { formatSgd, initials } from '@/customer/format'
 import { useSession } from '@/customer/session'
 import { bigButton } from '@/customer/styles'
 import { errorKey } from '@/customer/errors'
-import { api, type Language } from '@/lib/api'
+import { api } from '@/lib/api'
 
 /** Screen 4: the standard confirm screen. "Send" starts the check (POST /checks). */
 export function Review() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { persona, transfer, check, setCheck, setOutcome, recordSent } = useSession()
   const [busy, setBusy] = useState(false)
@@ -41,8 +41,7 @@ export function Review() {
     }
     setBusy(true)
     try {
-      const lang: Language = i18n.language === 'zh' ? 'zh' : 'en'
-      const res = await api.createCheck(p.customer_id, transfer, lang)
+      const res = await api.createCheck(p.customer_id, transfer, 'en')
       if (res.status === 'DONE' && res.verdict === 'GREEN') {
         // Low risk: no check-in, the payment goes straight through.
         setCheck({ id: res.check_id, question: null, fastVerdict: 'GREEN', result: null, evidence: [] })

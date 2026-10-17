@@ -3,9 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 
 import { AppRoutes } from '@/App'
-import i18n from '@/i18n'
-import en from '@/locales/en.json'
-import zh from '@/locales/zh.json'
+import '@/i18n'
 
 function renderAt(path: string) {
   return render(
@@ -42,9 +40,8 @@ beforeEach(() => {
   }
 })
 
-afterEach(async () => {
+afterEach(() => {
   vi.unstubAllGlobals()
-  await i18n.changeLanguage('en')
 })
 
 test('landing page shows the tagline and both entry points', () => {
@@ -61,7 +58,7 @@ test('landing page wakes the API while the judge reads it', () => {
   expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/health$/))
 })
 
-test('landing page cites the 81.8% statistic and switches to Chinese', async () => {
+test('landing page cites the 81.8% statistic, in English only', () => {
   fakeApi({})
   renderAt('/')
   expect(screen.getByText('81.8%')).toBeInTheDocument()
@@ -71,8 +68,7 @@ test('landing page cites the 81.8% statistic and switches to Chinese', async () 
   )
   const how = screen.getByRole('heading', { name: 'How it works' }).closest('section')!
   expect(within(how).getAllByRole('listitem')).toHaveLength(3) // Check, Explain, Protect
-  await userEvent.click(screen.getByRole('button', { name: 'Language' }))
-  expect(await screen.findByRole('heading', { name: '付款之前，先停一停。' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Language/ })).toBeNull()
 })
 
 test('an unknown route says so', () => {
@@ -87,38 +83,14 @@ test('a customer screen without a persona goes to the persona picker', () => {
   expect(screen.getAllByRole('button', { name: /^Continue as/ })).toHaveLength(3)
 })
 
-test('picking Mrs Tan switches the app to Chinese; the header toggle switches it back', async () => {
+test('picking Mrs Tan opens her home screen in English, with no language switch', async () => {
   fakeApi({ 'GET /personas': () => [] })
   renderAt('/app')
   await userEvent.click(screen.getByRole('button', { name: 'Continue as Mrs Tan Mei Ling' }))
-  expect(await screen.findByRole('heading', { name: /陈女士，(早上|下午|晚上)好/ })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: /Good (morning|afternoon|evening), Mei Ling/ })).toBeInTheDocument()
   expect(screen.getByTestId('balance')).toHaveTextContent('S$42,180.55')
-
-  await userEvent.click(screen.getByRole('button', { name: '语言: English' }))
-  expect(await screen.findByRole('heading', { name: /Good (morning|afternoon|evening), Mei Ling/ })).toBeInTheDocument()
-})
-
-test('a remembered persona does not force its language: the landing page opens the app in English', async () => {
-  fakeApi({ 'GET /personas': () => [] })
-  sessionStorage.setItem('pauseguard.persona', 'cust_001') // Mrs Tan, picked earlier in this tab
-  renderAt('/')
-  await userEvent.click(screen.getByRole('link', { name: /Try the customer app/ }))
-  expect(await screen.findByRole('button', { name: 'Continue as Mrs Tan Mei Ling' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Language/ })).toBeNull()
   expect(document.documentElement.lang).toBe('en')
-})
-
-test('after a reload as Mrs Tan (Chinese), the English button sticks', async () => {
-  fakeApi({ 'GET /personas': () => [] })
-  sessionStorage.setItem('pauseguard.persona', 'cust_001')
-  await i18n.changeLanguage('zh') // the language she was in before the reload
-  renderAt('/app/home')
-  expect(await screen.findByRole('heading', { name: /陈女士，(早上|下午|晚上)好/ })).toBeInTheDocument()
-
-  await userEvent.click(screen.getByRole('button', { name: '语言: English' }))
-  expect(await screen.findByRole('heading', { name: /Good (morning|afternoon|evening), Mei Ling/ })).toBeInTheDocument()
-  await new Promise((r) => setTimeout(r, 50)) // nothing switches it back
-  expect(screen.getByRole('heading', { name: /Good (morning|afternoon|evening), Mei Ling/ })).toBeInTheDocument()
-  expect(i18n.language).toBe('en')
 })
 
 test('Raj: transfer → check-in → analysis → AMBER, with the right API calls', async () => {
@@ -241,12 +213,4 @@ test('the transfer form validates before review', async () => {
   expect(screen.getByLabelText('Payee name')).toHaveAccessibleDescription("Enter the payee's name.")
   expect(screen.getByLabelText('Payee name')).toHaveFocus()
   expect(screen.getByLabelText('Amount')).toHaveAccessibleDescription("That's more than your available balance.")
-})
-
-test('en and zh locale files have the same keys', () => {
-  const keys = (o: object, p = ''): string[] =>
-    Object.entries(o).flatMap(([k, v]) =>
-      typeof v === 'object' ? keys(v, `${p}${k}.`) : [`${p}${k}`],
-    )
-  expect(keys(zh).sort()).toEqual(keys(en).sort())
 })

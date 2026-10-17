@@ -2,7 +2,7 @@
 
 **Fraud models check the transaction. PauseGuard checks the conversation.**
 
-PauseGuard is an AI copilot that stops authorised-push-payment scams at the moment a bank customer is about to send money. When a transfer looks risky, the bank app asks one quick question, *"Who asked you to make this payment?"*, and lets the customer share the WhatsApp chat, SMS or screenshot behind it. Gemini agents built with Google's Agent Development Kit read that evidence, check it against a shared scam watchlist, and a plain, auditable rule set decides whether to let the payment go (GREEN), pause it and explain the red flags (AMBER), or hold it for a bank analyst (RED). The customer sees exactly why, with numbered boxes drawn on their own screenshot, in their own language, and the analyst gets a ready-made case file in real time.
+PauseGuard is an AI copilot that stops authorised-push-payment scams at the moment a bank customer is about to send money. When a transfer looks risky, the bank app asks one quick question, *"Who asked you to make this payment?"*, and lets the customer share the WhatsApp chat, SMS or screenshot behind it. Gemini agents built with Google's Agent Development Kit read that evidence, check it against a shared scam watchlist, and a plain, auditable rule set decides whether to let the payment go (GREEN), pause it and explain the red flags (AMBER), or hold it for a bank analyst (RED). The customer sees exactly why, with numbered boxes drawn on their own screenshot, in plain English, and the analyst gets a ready-made case file in real time.
 
 Built for the **Google Cloud AI Builder Cup 2026** (BFSI theme) by team **Cikoh**. Everything runs on Google Cloud: Firebase, Firestore, Cloud Run, Gemini on Vertex AI, BigQuery and more.
 
@@ -25,7 +25,7 @@ Built for the **Google Cloud AI Builder Cup 2026** (BFSI theme) by team **Cikoh*
 
 | Persona | Scenario | Expected result |
 |---|---|---|
-| **Mrs Tan**, 67, reads Chinese | S$8,000 to a new payee; a fake "MAS officer" on WhatsApp told her to move her savings to a "safe account" | **RED**: payment held, red flags boxed on her screenshot, explanation in Chinese, "call my son" and the 1799 anti-scam helpline |
+| **Mrs Tan**, 67 | S$8,000 to a new payee; a fake "MAS officer" on WhatsApp told her to move her savings to a "safe account" | **RED**: payment held, red flags boxed on her Chinese WhatsApp screenshot, explained in plain English, "call my son" and the 1799 anti-scam helpline |
 | **Raj**, 29 | S$450 "top-up" to unlock a job commission (Telegram chat) | **AMBER**: "paying to earn is a known job scam"; pause 24 h or continue after confirming |
 | **Aisyah**, 34 | S$3,200 deposit to her new landlord, tenancy agreement PDF attached | **GREEN**: goes through in one step |
 
@@ -43,21 +43,21 @@ Singapore lost **S$913.1 million to scams in 2025** across 41,974 cases, and in 
 2. **Check-in:** one templated question with quick-reply chips, plus an optional screenshot, PDF or pasted chat (signed-URL upload to Cloud Storage).
 3. **Analysis, in parallel:** the Evidence agent (Gemini, multimodal) extracts scam typology, red flags with **bounding boxes** and entities (phones, accounts, links), while the payee and those entities are looked up in the Firestore watchlist.
 4. **Fusion policy** (plain Python, 100% branch-tested) decides GREEN / AMBER / RED. The LLM never decides.
-5. **Explainer agent** writes the customer message in English or Chinese, from the structured flags only (it never sees the raw, possibly hostile, evidence).
+5. **Explainer agent** writes the customer message in plain English, from the structured flags only (it never sees the raw, possibly hostile, evidence).
 6. **For AMBER/RED**, a case appears in the analyst console through a Firestore realtime listener; then the Case-File agent and the Scam-Intel agent (Google Search grounding) enrich it in the background. An analyst can release, hold, escalate or **report the scam**, which adds the scammer's number, account and link to the watchlist for every customer.
 
 If a model call fails or runs past the 12 s budget, the answer is **AMBER + human review, never GREEN**.
 
-| Check-in | AMBER: Raj | RED: Mrs Tan (Chinese) | Analyst console |
+| Check-in | AMBER: Raj | RED: Mrs Tan | Analyst console |
 |---|---|---|---|
-| ![Check-in](docs/img/screens/02-checkin.png) | ![AMBER](docs/img/screens/03-amber.png) | ![RED](docs/img/screens/04-red-zh.png) | ![Console](docs/img/screens/05-console-evidence.png) |
+| ![Check-in](docs/img/screens/02-checkin.png) | ![AMBER](docs/img/screens/03-amber.png) | ![RED](docs/img/screens/04-red.png) | ![Console](docs/img/screens/05-console-evidence.png) |
 
 ## Design
 
 Everything is built on **Material 3**, in two colour schemes that share one set of tokens, so each component is written once ([`docs/UI_SPEC.md`](docs/UI_SPEC.md)):
 - **Customer app (Harbour Bank):** a Material You scheme generated from the bank's harbour-teal colour, in a Pixel-style phone frame, with a bottom sheet for the check-in. Each verdict has its own icon, word **and shape** (M3 Expressive shapes), so it never relies on colour alone. A morphing loading indicator runs during the check.
 - **Analyst console and landing page:** Google's own Material 3 look, as in the Cloud console and Workspace: navigation drawer, a search bar that looks up phones, links and accounts in the watchlist, KPI scorecards and data tables. Text written by Gemini (the case summary and recommended action) is labelled **"Written by Gemini"**; the verdict's reasons are labelled **"Rules, not AI"**.
-- Google Sans and Noto Sans SC, Material Symbols icons, WCAG 2.1 AA contrast, keyboard shortcuts in the console, and axe checks on every customer screen on desktop and phone (`make a11y`).
+- English only, in Google Sans (Noto Sans SC for Chinese text in the evidence), Material Symbols icons, WCAG 2.1 AA contrast, keyboard shortcuts in the console, and axe checks on every customer screen on desktop and phone (`make a11y`).
 
 ## Architecture
 
@@ -171,7 +171,7 @@ Firebase Authentication needs one console click first: Authentication → Get st
 - **Privacy:** consent line before sharing; evidence deleted after 30 days; phones, accounts, NRIC-like IDs, emails and tokens redacted from logs and tracebacks; Cloud Trace spans carry no message content; Firestore, BigQuery and Cloud Storage in Singapore (Gemini is called on Vertex AI's `global` endpoint).
 - **Least privilege:** a dedicated runtime service account with dataset-, bucket- and secret-scoped roles; Firestore rules give analysts read access only and clients no writes.
 - **Fairness and transparency:** recall and false-positive rate are reported by language, age band and evidence type; customers see the reasons and quotes behind every verdict; analysts see sources.
-- **Tone:** no blame, no fear; plain language; WCAG 2.1 AA in both languages; a verdict is never shown by colour alone (icon, word and shape).
+- **Tone:** no blame, no fear; plain language; WCAG 2.1 AA; a verdict is never shown by colour alone (icon, word and shape).
 
 Details: [`docs/SECURITY_PRIVACY.md`](docs/SECURITY_PRIVACY.md).
 
@@ -181,12 +181,12 @@ Details: [`docs/SECURITY_PRIVACY.md`](docs/SECURITY_PRIVACY.md).
 - **Small benchmark** (50 + 50 cases), with a 50/50 mix that is far from a real base rate; the false-positive rate is the number to watch.
 - **Latency** misses the 5 s p50 target (7.6 s on Cloud Run); Gemini tail latency on the `global` endpoint occasionally pushes a check to the 12 s budget, which then becomes AMBER + review.
 - **Demo-grade customer auth:** anonymous Firebase users plus a persona picker; a real deployment binds checks to the bank's authenticated session.
-- Images and PDFs only (voice notes and calls are future work); English and Chinese only.
+- Images and PDFs only (voice notes and calls are future work). The app is in English only; the agents also read and explain Chinese through the API, and the benchmark includes Chinese cases.
 - The explanation-clarity rating by human raters (incl. 60+) is designed (`eval/human_rating_form.md`) but not collected yet.
 
 ## Future development
 
-A bank pilot with consented data; telco scam-call signals and national anti-scam feeds into the watchlist; voice check-ins and more languages (Malay, Tamil, Bahasa Indonesia, Thai, Vietnamese); a trusted-contact co-approval flow for seniors; Vertex AI Agent Engine with session memory; cheaper web intel (caching, skip on watchlist hits); alignment with Singapore's Shared Responsibility Framework.
+A bank pilot with consented data; telco scam-call signals and national anti-scam feeds into the watchlist; voice check-ins and the app in more languages (Chinese, which the agents already handle, then Malay, Tamil, Bahasa Indonesia, Thai, Vietnamese); a trusted-contact co-approval flow for seniors; Vertex AI Agent Engine with session memory; cheaper web intel (caching, skip on watchlist hits); alignment with Singapore's Shared Responsibility Framework.
 
 ## Repository map
 

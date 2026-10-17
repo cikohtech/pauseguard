@@ -9,16 +9,16 @@ export function formatSgd(amount: number, { signed = false } = {}): string {
   return `${amount < 0 ? '−' : '+'}${text}`
 }
 
-export function formatShortDate(date: Date, language: string): string {
-  return new Intl.DateTimeFormat(language === 'zh' ? 'zh-CN' : 'en-SG', {
+export function formatShortDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-SG', {
     day: 'numeric',
     month: 'short',
     timeZone: 'Asia/Singapore',
   }).format(date)
 }
 
-export function formatDateTime(date: Date, language: string): string {
-  return new Intl.DateTimeFormat(language === 'zh' ? 'zh-CN' : 'en-SG', {
+export function formatDateTime(date: Date): string {
+  return new Intl.DateTimeFormat('en-SG', {
     day: 'numeric',
     month: 'short',
     hour: 'numeric',

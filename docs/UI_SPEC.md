@@ -18,14 +18,14 @@ Redesigned on 17 Oct 2026 (DECISIONS): **Material 3** throughout, in two schemes
 - **AI labelling:** what Gemini wrote (case summary, recommended action) carries a gradient sparkle and a "Written by Gemini" label, the way Google products label AI output; the deterministic verdict reasons are labelled "Rules, not AI".
 - **Motion:** subtle. The analysis progress uses step ticks ("Reading the message ✓ · Checking the payee ✓ · Comparing with known scams …"), never a bare spinner.
 - **Accessibility:** WCAG 2.1 AA contrast (every token pair checked), 44px+ tap targets, a 3px M3 focus ring on everything, `aria-live` for verdict announcements, full keyboard support in the console, alt text on evidence previews. `make a11y` runs axe on every screen, desktop and phone.
-- **i18n:** `react-i18next` with `en` and `zh` in the MVP (`ms` and `ta` stretch). All customer strings are in locale files, and the language switcher sits in the header.
+- **i18n:** English only since 17 Oct 2026 (DECISIONS): no language switcher. All customer strings stay in `web/src/locales/en.json` through `react-i18next`, so another language can be added in one place. The API and agents still support `zh` (the benchmark includes Chinese cases), and Chinese text inside the evidence renders in Noto Sans SC.
 
 ## Area 1: `/app` customer banking mock (mobile frame)
 
 On desktop, render inside a 390×844 phone frame (an Android device in the Pixel style), centred, with a caption beside it: what the demo is, the persona you are playing, a four-step "try it" guide, a link to the console, and the live API status. On mobile, use the full screen.
 
 **Screens**
-1. **Persona picker** (demo only): three cards (Mrs Tan / Raj / Aisyah) with a one-line story. It sets `customer_id` and language.
+1. **Persona picker** (demo only): three cards (Mrs Tan / Raj / Aisyah) with a one-line story. It sets `customer_id`.
 2. **Home:** balance card, recent transactions, a big "Transfer" button. Fictional "Harbour Bank" logo (simple wordmark).
 3. **Transfer form:** payee (pick saved or "New payee": name, bank, account), amount, note. "Prefill demo scenario" link for the video.
 4. **Review & confirm:** standard bank confirm screen → tap "Send".

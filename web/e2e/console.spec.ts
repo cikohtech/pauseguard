@@ -53,16 +53,14 @@ async function consoleApi(page: Page): Promise<ConsoleApi> {
   return state
 }
 
-test('landing page: the pitch, the source, both entry points, in English and Chinese', async ({ page }) => {
+test('landing page: the pitch, the source, both entry points, in English only', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Pause before you pay.' })).toBeVisible()
   await expect(page.getByText('81.8%')).toBeVisible()
   await expect(page.getByRole('link', { name: /Try the customer app/ })).toBeVisible()
   await expect(page.getByRole('link', { name: /Open the analyst console/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Language/ })).toHaveCount(0)
   await scan(page, 'landing')
-  await page.getByRole('button', { name: 'Language' }).click()
-  await expect(page.getByRole('heading', { name: '付款之前，先停一停。' })).toBeVisible()
-  await scan(page, 'landing-zh')
 })
 
 test('console login (local dev: sign-in off)', async ({ page }) => {

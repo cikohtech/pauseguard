@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import { Icon } from '@/components/icons/Icon'
 import { Shape } from '@/components/m3/Expressive'
 import { button } from '@/components/m3/styles'
-import { LanguageToggle } from '@/components/LanguageToggle'
 import { ShieldMark } from '@/components/ShieldMark'
 
 // Unknown routes.
@@ -16,7 +15,6 @@ export function Placeholder({ area }: { area: 'notFound' }) {
         <Link to="/" className="rounded-full">
           <ShieldMark />
         </Link>
-        <LanguageToggle />
       </header>
       <main className="mx-auto flex max-w-xl flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <Shape shape="cookie9" spin className="size-24 text-primary-container">

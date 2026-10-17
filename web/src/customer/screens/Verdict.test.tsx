@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
-import i18n from '@/i18n'
+import '@/i18n'
 import { SessionProvider } from '@/customer/SessionProvider'
 import { Verdict } from '@/customer/screens/Verdict'
 import type { CheckState } from '@/customer/session'
@@ -72,8 +72,7 @@ const choiceCalls = () =>
     .filter(([url]) => String(url).endsWith('/choice'))
     .map(([, init]) => JSON.parse((init as RequestInit).body as string))
 
-beforeEach(async () => {
-  await i18n.changeLanguage('en')
+beforeEach(() => {
   fetchMock.mockReset()
   fetchMock.mockResolvedValue(new Response(JSON.stringify({ check_id: 'chk_TEST0001', customer_choice: 'X' })))
   vi.stubGlobal('fetch', fetchMock)
@@ -145,14 +144,6 @@ test('GREEN: "Looks good", then continues by itself after 2 seconds', async () =
   await act(() => vi.advanceTimersByTimeAsync(300))
   expect(await screen.findByText('outcome screen')).toBeInTheDocument()
   expect(choiceCalls()).toEqual([{ choice: 'PROCEEDED', confirmed: false }])
-})
-
-test('the verdict screen follows the language (zh)', async () => {
-  await i18n.changeLanguage('zh')
-  renderVerdict(result('RED'))
-  expect(screen.getByText('已暂停')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: '拨打 1799 反诈骗热线' })).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: '打电话给儿子俊豪' })).toBeInTheDocument()
 })
 
 test('without a result the route goes back home', () => {

@@ -11,33 +11,33 @@ async function startTransfer(page: Page, persona: RegExp, slug: string) {
   await scan(page, 'picker')
   await page.getByRole('button', { name: persona }).click()
   await scan(page, `home-${slug}`)
-  await page.getByRole('link', { name: /^(Transfer|转账)/ }).first().click()
-  await page.getByRole('button', { name: /Prefill demo scenario|填入演示情景/ }).click()
+  await page.getByRole('link', { name: /^Transfer/ }).first().click()
+  await page.getByRole('button', { name: 'Prefill demo scenario' }).click()
   await scan(page, `transfer-${slug}`)
-  await page.getByRole('button', { name: /Review transfer|核对转账/ }).click()
+  await page.getByRole('button', { name: 'Review transfer' }).click()
   await scan(page, `review-${slug}`)
-  await page.getByRole('button', { name: /^(Send|发送)/ }).click()
-  return page.getByRole('dialog', { name: /Quick safety check|快速安全确认/ })
+  await page.getByRole('button', { name: /^Send/ }).click()
+  return page.getByRole('dialog', { name: 'Quick safety check' })
 }
 
-test('Mrs Tan (Chinese): screenshot evidence → RED with numbered boxes on her screenshot', async ({ page }) => {
+test('Mrs Tan: her Chinese WhatsApp screenshot → RED with numbered boxes on it, explained in English', async ({ page }) => {
   const api = await fakeApi(page, { holdAnalysis: true })
-  const sheet = await startTransfer(page, /陈美玲女士|Mrs Tan/, 'tan')
+  const sheet = await startTransfer(page, /Mrs Tan/, 'tan')
   await scan(page, 'checkin-tan')
-  await sheet.getByRole('button', { name: '使用演示答案' }).click()
+  await sheet.getByRole('button', { name: 'Use the demo answer' }).click()
   await expect(sheet.getByRole('img', { name: 'WhatsApp_2026-10-11.png' })).toBeVisible()
-  await expect(sheet.getByRole('radio', { name: '政府官员' })).toBeChecked()
+  await expect(sheet.getByRole('radio', { name: 'A government officer' })).toBeChecked()
   await scan(page, 'checkin-tan-filled')
 
-  await sheet.getByRole('button', { name: '马上检查' }).click()
+  await sheet.getByRole('button', { name: 'Check now' }).click()
   await expect(page.getByTestId('analysing')).toBeVisible()
   await scan(page, 'analysing-tan')
   api.release()
 
   await expect(page.getByTestId('verdict-RED')).toBeVisible()
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('为您暂停转账，保障资金安全')
-  await expect(page.getByRole('link', { name: '拨打 1799 反诈骗热线' })).toHaveAttribute('href', 'tel:1799')
-  await expect(page.getByRole('button', { name: /继续付款/ })).toHaveCount(0)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('We have paused this payment to protect you')
+  await expect(page.getByRole('link', { name: 'Call 1799 anti-scam helpline' })).toHaveAttribute('href', 'tel:1799')
+  await expect(page.getByRole('button', { name: 'I understand the risk, continue' })).toHaveCount(0)
 
   // The boxes are drawn inside the screenshot, at the box_2d positions.
   const img = page.getByRole('img', { name: /WhatsApp_2026-10-11\.png/ })
@@ -56,8 +56,8 @@ test('Mrs Tan (Chinese): screenshot evidence → RED with numbered boxes on her 
   await scan(page, 'verdict-red-tan')
 
   const sent = api.requests.find((r) => r.path.endsWith('/messages'))!
-  expect(sent.body).toMatchObject({ quick_reply: '政府官员', evidence_uris: [expect.stringMatching(/^gs:\/\//)] })
-  expect(api.requests.find((r) => r.path === '/checks')!.body).toMatchObject({ customer_id: 'cust_001', language: 'zh' })
+  expect(sent.body).toMatchObject({ quick_reply: 'A government officer', evidence_uris: [expect.stringMatching(/^gs:\/\//)] })
+  expect(api.requests.find((r) => r.path === '/checks')!.body).toMatchObject({ customer_id: 'cust_001', language: 'en' })
 })
 
 test('Raj: pasted chat → AMBER, the confirm dialog, then a 24-hour pause', async ({ page }) => {

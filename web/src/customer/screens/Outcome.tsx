@@ -6,7 +6,7 @@ import { Icon, type IconName } from '@/components/icons/Icon'
 import { Shape, type ShapeName } from '@/components/m3/Expressive'
 import { PauseGuardLogo } from '@/components/ShieldMark'
 import { FeedbackThumbs } from '@/customer/components/FeedbackThumbs'
-import { HarbourLogo, LangSwitch, Screen } from '@/customer/components/Screen'
+import { HarbourLogo, Screen } from '@/customer/components/Screen'
 import { formatDateTime, formatSgd, transferRef } from '@/customer/format'
 import { useSession } from '@/customer/session'
 import { bigButton } from '@/customer/styles'
@@ -22,7 +22,7 @@ const LOOK: Record<'sent' | 'paused' | 'cancelled', { icon: IconName; shape: Sha
 
 /** After the verdict: transfer sent, paused for 24 hours, or cancelled. */
 export function Outcome() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { transfer, check, outcome, setOutcome, resetFlow } = useSession()
   const heading = useRef<HTMLHeadingElement>(null)
@@ -60,9 +60,8 @@ export function Outcome() {
     <Screen
       header={
         <header className="pt-sat shrink-0">
-          <div className="flex h-16 items-center justify-between pr-1 pl-5">
+          <div className="flex h-16 items-center pl-5">
             <HarbourLogo />
-            <LangSwitch />
           </div>
         </header>
       }
@@ -91,7 +90,7 @@ export function Outcome() {
           {outcome === 'sent' && t('customer.outcome.sent.body', { amount, payee: transfer.payee_name })}
           {outcome === 'paused' &&
             t('customer.outcome.paused.body', {
-              when: formatDateTime(new Date(at.getTime() + 86_400_000), i18n.language),
+              when: formatDateTime(new Date(at.getTime() + 86_400_000)),
             })}
           {outcome === 'cancelled' && t('customer.outcome.cancelled.body')}
         </p>
@@ -102,7 +101,7 @@ export function Outcome() {
           {row(t('customer.review.amount'), amount, true)}
           {row(t('customer.review.to'), transfer.payee_name)}
           {check && row(t('customer.outcome.sent.ref'), transferRef(check.id) ?? '—', true)}
-          {row(t('customer.outcome.sent.when'), formatDateTime(at, i18n.language))}
+          {row(t('customer.outcome.sent.when'), formatDateTime(at))}
         </dl>
       )}
       {outcome === 'sent' && checked && (

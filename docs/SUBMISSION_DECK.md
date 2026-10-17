@@ -14,7 +14,7 @@
 - When a transfer looks risky, the app asks one question, "Who asked you to make this payment?", and the customer can share the chat, screenshot or PDF behind it.
 - **Gemini agents built with ADK** read the evidence (multimodal), find red flags and the scammer's number, account and links, and check them against a shared watchlist and the live web.
 - **A transparent rule policy, not the LLM, decides:** GREEN (send), AMBER (pause and explain, the customer decides) or RED (hold for a bank analyst).
-- The customer sees exactly why: numbered boxes on their own screenshot, in English or Chinese. The analyst gets a live case file and can block the scammer for every customer in one click.
+- The customer sees exactly why: numbered boxes on their own screenshot, in plain English. The analyst gets a live case file and can block the scammer for every customer in one click.
 
 ## 4. Opportunities
 - How different is it from any of the other existing ideas?
@@ -30,7 +30,7 @@
   - One-question check-in: quick replies, free text, screenshot or PDF upload, pasted chat
   - Live progress ticks while the agents work (server-sent events)
   - Red flags boxed on the customer's own screenshot and marked in pasted text
-  - Explanations in English or Chinese; no blame, plain language
+  - Plain-English explanations; no blame
   - AMBER: pause 24 h, call a trusted contact, or continue after confirming; RED: payment held, 1799 anti-scam helpline
   - WCAG 2.1 AA, keyboard and screen-reader tested, on phone and desktop
 - **For the bank (analyst console)**
@@ -50,7 +50,7 @@
 - One-question check-in, evidence attached
 - AMBER: the job-scam pattern explained
 - RED: payment held, red flags boxed
-- The same RED for Mrs Tan, in Chinese
+- The red flags, numbered on her own screenshot
 
 ## 8. Architecture diagram of the proposed solution
 > Image: `docs/img/architecture.png` (from `docs/diagrams/architecture.mmd`), plus four captions.

@@ -7,21 +7,15 @@ export const API = 'http://api.test/api/v1'
 type Verdict = 'GREEN' | 'AMBER' | 'RED'
 
 const QUESTION = {
-  en: {
-    text: 'Who asked you to make this payment? Did someone contact you first?',
-    quick_replies: [
-      'A government officer',
-      'A job recruiter',
-      'An investment group',
-      'A friend or family member',
-      'A seller',
-      "No one, it's my own payment",
-    ],
-  },
-  zh: {
-    text: '这笔转账是谁让您付的？有人先联系您吗？',
-    quick_replies: ['政府官员', '工作招聘人员', '投资群组', '朋友或家人', '卖家', '没有人，是我自己要付的'],
-  },
+  text: 'Who asked you to make this payment? Did someone contact you first?',
+  quick_replies: [
+    'A government officer',
+    'A job recruiter',
+    'An investment group',
+    'A friend or family member',
+    'A seller',
+    "No one, it's my own payment",
+  ],
 }
 
 const RESULTS: Record<string, Record<string, unknown>> = {
@@ -37,14 +31,14 @@ const RESULTS: Record<string, Record<string, unknown>> = {
       { code: 'URGENCY', severity: 'MEDIUM', quote: '今天下午5点前一定要完成', evidence_index: 0, box_2d: [785, 50, 830, 760] },
     ],
     customer_message: {
-      language: 'zh',
-      headline: '为您暂停转账，保障资金安全',
-      body: '这不是您的错，骗子手段高明。真正的政府官员绝不会要求您把钱转入“安全账户”。该收款账户已被多人举报。',
+      language: 'en',
+      headline: 'We have paused this payment to protect you',
+      body: 'This is not your fault. Scammers are very convincing. A real government officer will never ask you to move money to a "safe account". This payee has been reported by other customers.',
       flag_explanations: [
-        { code: 'AUTHORITY_CLAIM', text: '对方自称官员。真正的官员绝不会要求您转账。' },
-        { code: 'SAFE_ACCOUNT', text: '根本没有“安全账户”。官员绝不会要求您转移存款。' },
-        { code: 'SUSPICIOUS_URL', text: '这个链接不是官方网站。不要点开，也不要输入资料。' },
-        { code: 'URGENCY', text: '对方催您快点付款。骗子制造压力，让您来不及核实。' },
+        { code: 'AUTHORITY_CLAIM', text: 'They say they are an official. Real officials never ask you to transfer money.' },
+        { code: 'SAFE_ACCOUNT', text: 'There is no such thing as a "safe account". Officials never ask you to move your savings.' },
+        { code: 'SUSPICIOUS_URL', text: 'This link is not an official website. Do not open it or enter your details.' },
+        { code: 'URGENCY', text: "They rush you. Scammers create pressure so you don't stop to check." },
       ],
       next_steps: [],
     },
@@ -116,7 +110,7 @@ export async function fakeApi(page: Page, { holdAnalysis = false } = {}): Promis
   let release = () => {}
   const gate = holdAnalysis ? new Promise<void>((r) => (release = r)) : Promise.resolve()
   const requests: FakeApi['requests'] = []
-  const checks = new Map<string, { customer: string; language: 'en' | 'zh' }>()
+  const checks = new Map<string, { customer: string }>()
   let n = 0
 
   await page.route('http://api.test/**', async (route) => {
@@ -140,13 +134,12 @@ export async function fakeApi(page: Page, { holdAnalysis = false } = {}): Promis
     if (method === 'GET' && path === '/personas') return json(route, [])
     if (method === 'POST' && path === '/checks') {
       const id = `chk_E2E${String(++n).padStart(5, '0')}`
-      const language = body.language === 'zh' ? 'zh' : 'en'
-      checks.set(id, { customer: body.customer_id, language })
+      checks.set(id, { customer: body.customer_id })
       return json(route, {
         check_id: id,
         status: 'CHECKIN',
         txn_risk: { score: 60, reasons: [] },
-        question: QUESTION[language],
+        question: QUESTION,
         verdict: null,
         customer_message: null,
       }, 201)

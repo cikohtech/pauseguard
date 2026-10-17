@@ -52,7 +52,7 @@ export function CheckInSheet({
   onOpenChange: (open: boolean) => void
   onError: (key: string) => void
 }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const id = useId()
   const navigate = useNavigate()
   const container = usePortalContainer()
@@ -118,7 +118,7 @@ export function CheckInSheet({
     const sc = p.scenario
     setError(null)
     setReply(question.quick_replies[sc.quickReplyIndex] ?? null)
-    setText(sc.answer[i18n.language === 'zh' ? 'zh' : 'en'])
+    setText(sc.answer)
     try {
       if (sc.evidence && !items.some((it) => it.file.name === sc.evidence!.name)) {
         addFiles([await loadDemoFile(sc.evidence)])
