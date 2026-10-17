@@ -1,20 +1,20 @@
 # Brief Description (paste into the submission form)
 
-The rules require us to explain how we use **Firebase, Firestore, Cloud Run and Gemini**. Update the numbers in [brackets] after the benchmark, and keep the description under the form's character limit, if it has one. A ~250-word version and a ~100-word version follow.
+The rules require us to explain how we use **Firebase, Firestore, Cloud Run and Gemini**. The numbers come from the deployed benchmark (`eval/reports/benchmark.md`, run `20261016T1447Z_api_test`) and the SPF's 2025 figures. The standard version is also saved as plain text in `submission/brief_description.txt` (paste that; it has no Markdown). Use the short version if the form has a tight character limit.
 
 ## Standard version (~250 words)
 
-**PauseGuard** stops scams at the moment a bank customer is about to send money. In Singapore, 82% of scam cases are victims transferring money themselves (S$913M lost in 2025). The payment looks normal to the bank because the evidence of the scam sits in the WhatsApp chat or phone call that persuaded them. When a transfer looks risky, PauseGuard asks one quick question and lets the customer share that chat or screenshot. AI agents then explain the red flags on the customer's own screenshot, in their language, and either let the payment go, pause it, or hold it for a bank analyst.
+**PauseGuard** stops scams at the moment a bank customer is about to send money. In Singapore, 81.8% of scam cases in 2025 were victims transferring money themselves (S$913.1M lost). The payment looks normal to the bank because the evidence of the scam sits in the WhatsApp chat or call that persuaded them. When a transfer looks risky, PauseGuard asks one quick question and lets the customer share that chat or screenshot. AI agents explain the red flags on the customer's own screenshot, in English or Chinese, and a transparent rule policy lets the payment go, pauses it, or holds it for a bank analyst.
 
 **How we use Google Cloud:**
-- **Gemini** (Flash, on Vertex AI) powers five agents built with the Agent Development Kit. It reads screenshots and PDFs multimodally, marks red flags with bounding boxes, checks unknown websites with Google Search grounding, and writes bilingual (English/Chinese) customer explanations and analyst case files as structured JSON.
-- **Cloud Run** hosts the FastAPI + ADK agent backend in Singapore (asia-southeast1). It runs the agents in parallel and returns a verdict in about [N] seconds.
-- **Firestore** stores checks, cases, the scam watchlist and the audit log. Its realtime listeners make held payments appear instantly in the analyst console.
-- **Firebase** Hosting serves the customer banking app and the analyst console. Firebase Auth handles customer and analyst sign-in.
-- **BigQuery** computes transaction-risk features and dashboard analytics.
+- **Gemini** (3.8 Flash on Vertex AI) powers five agents built with the Agent Development Kit. It reads screenshots and PDFs, marks red flags with bounding boxes, checks unknown websites with Google Search grounding, and writes bilingual customer explanations and analyst case files as validated structured JSON.
+- **Cloud Run** hosts the FastAPI + ADK backend in Singapore. It runs the analysis in parallel under a 12-second budget (a failure becomes "pause and review", never "safe") and answers in 7.6 s median.
+- **Firestore** stores checks, cases, the scam watchlist and the audit log. Its realtime listener puts a held payment in the analyst console in under a second; reporting a scam blocks the scammer's details for every customer.
+- **Firebase** Hosting serves the customer banking app and the analyst console; Firebase Auth signs in customers and analysts.
+- **BigQuery** computes transaction-risk features.
 
-On our [100]-case test set, rules alone stopped [X]% of scams; PauseGuard stopped [Y]% with a [Z]% false-positive rate, at about $[C] per check.
+On 100 held-out test cases, rules alone stopped 78% of scams; PauseGuard stopped 100% with a 4% false-positive rate, at US$0.007 per check.
 
 ## Short version (~100 words)
 
-PauseGuard stops authorised-push-payment scams at the moment of transfer by analysing the conversation that persuaded the customer, not just the transaction. **Gemini** (via ADK multi-agent, multimodal) reads the customer's chat screenshot, flags scam tactics on the image and explains them in their language. **Cloud Run** serves the agent backend. **Firestore** stores cases and the watchlist and powers the realtime analyst console. **Firebase** hosts the customer app and console and handles auth. BigQuery scores transaction risk. On our test set, it stopped [Y]% of scams vs. [X]% for rules alone.
+PauseGuard stops authorised-push-payment scams at the moment of transfer by analysing the conversation that persuaded the customer, not just the transaction. **Gemini** on Vertex AI (five ADK agents, multimodal) reads the customer's chat screenshot, boxes the scam tactics on the image and explains them in their language. **Cloud Run** serves the agent backend in Singapore. **Firestore** stores cases and the scam watchlist and powers the realtime analyst console. **Firebase** hosts the customer app and console and handles sign-in. BigQuery scores transaction risk. On our 100-case test set it stopped 100% of scams (rules alone: 78%) with 4% false positives.

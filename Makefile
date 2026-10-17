@@ -24,7 +24,7 @@ export PATH := $(if $(wildcard $(BREW_JDK)),$(BREW_JDK):)$(PATH)
 .PHONY: help setup dev dev-api dev-web emulators test test-rules lint format seed-local seed-cloud history \
         a11y playwright eval-drafts eval-render eval-dataset eval-verify demo-evidence \
         evidence-dev agent-evals scenario demo-curl api-live drills eval eval-report infra analyst deploy-api deploy-web smoke \
-        console-live uptime
+        console-live uptime diagrams screens deck captions
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
@@ -72,8 +72,8 @@ a11y: ## Customer app in Chromium: 3 scenarios + axe (WCAG 2.1 AA) + keyboard, A
 	cd $(WEB) && npx playwright install --only-shell chromium && npm run test:e2e
 
 lint: ## ruff + mypy (backend), oxlint + tsc (web)
-	$(UV) run ruff check . ../eval
-	$(UV) run ruff format --check . ../eval
+	$(UV) run ruff check . ../eval ../scripts
+	$(UV) run ruff format --check . ../eval ../scripts
 	$(UV) run mypy app
 	cd $(WEB) && npm run lint && npm run typecheck
 
@@ -173,3 +173,27 @@ console-live: ## The live demo's two windows: Tan's transfer -> case in the cons
 	ADMIN_TOKEN="$$(gcloud secrets versions access latest --secret admin-reset-token --project $(PROJECT))"; \
 	cd $(WEB) && npx playwright install --only-shell chromium >/dev/null && \
 	API_URL="$$API_URL" ADMIN_TOKEN="$$ADMIN_TOKEN" node e2e-live/console-live.mjs $(or $(SITE),https://$(PROJECT).web.app)
+
+diagrams: ## Render docs/diagrams/*.mmd -> docs/img/*.png (mermaid-cli via npx, on Playwright's headless Chromium)
+	@CHROME="$$(ls -d $$HOME/Library/Caches/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-*/chrome-headless-shell $$HOME/.cache/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-*/chrome-headless-shell 2>/dev/null | tail -1)"; \
+	test -n "$$CHROME" || { cd $(WEB) && npx playwright install --only-shell chromium; }; \
+	CHROME="$$(ls -d $$HOME/Library/Caches/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-*/chrome-headless-shell $$HOME/.cache/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-*/chrome-headless-shell 2>/dev/null | tail -1)"; \
+	CFG="$$(mktemp)"; printf '{"executablePath":"%s","headless":"shell","args":["--no-sandbox"]}' "$$CHROME" > "$$CFG"; \
+	for d in architecture process-flow; do \
+	  PUPPETEER_SKIP_DOWNLOAD=1 npx -y @mermaid-js/mermaid-cli@12.0.0 -p "$$CFG" -c docs/diagrams/mermaid-config.json \
+	    -i docs/diagrams/$$d.mmd -o docs/img/$$d.png -b white -s 3 || exit 1; \
+	done; rm -f "$$CFG"
+
+screens: ## Deck/README screenshots from the LIVE app (real Gemini) -> docs/img/screens/ + docs/img/demo.gif, then reset-demo
+	@API_URL="$$(gcloud run services describe $(SERVICE) --project $(PROJECT) --region $(REGION) --format='value(status.url)')"; \
+	ADMIN_TOKEN="$$(gcloud secrets versions access latest --secret admin-reset-token --project $(PROJECT))"; \
+	VIDEO="$$(mktemp -d)"; mkdir -p docs/img/screens; \
+	(cd $(WEB) && npx playwright install --only-shell chromium >/dev/null && \
+	 API_URL="$$API_URL" ADMIN_TOKEN="$$ADMIN_TOKEN" node e2e-live/screens.mjs $(or $(SITE),https://$(PROJECT).web.app) ../docs/img/screens "$$VIDEO") || exit 1; \
+	scripts/make_gif.sh "$$(ls "$$VIDEO"/*.webm | head -1)" docs/img/demo.gif
+
+deck: ## Official template + docs/SUBMISSION_DECK.md -> submission/PauseGuard_Submission.pptx; VIDEO_URL=https://youtu.be/... STRICT=1
+	uv --directory $(BACKEND) run --group deck python ../scripts/build_deck.py $(if $(VIDEO_URL),--video-url $(VIDEO_URL)) $(if $(STRICT),--strict)
+
+captions: ## Demo video captions from docs/DEMO_SCRIPT.md -> submission/captions.srt + submission/voiceover.txt
+	uv --directory $(BACKEND) run python ../scripts/make_captions.py

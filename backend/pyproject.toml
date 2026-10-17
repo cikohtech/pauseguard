@@ -59,6 +59,9 @@ agent-evals = [
 datagen = [
     "playwright>=1.63.0",
 ]
+deck = [
+    "python-pptx>=1.0.2",
+]
 dev = [
     "httpx>=0.28.1",
     "mypy>=2.4.0",

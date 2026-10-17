@@ -1,0 +1,42 @@
+%% PauseGuard system architecture (ARCHITECTURE.md §1). Rendered to docs/img/architecture.png by `make diagrams`.
+flowchart LR
+  subgraph FB["Firebase Hosting + Firebase Auth"]
+    APP["Customer app /app<br/>Harbour Bank mock<br/>anonymous sign-in"]
+    CON["Analyst console /console<br/>email/password<br/>role=analyst"]
+  end
+
+  subgraph CR["Cloud Run · asia-southeast1 · FastAPI + Agent Development Kit"]
+    API["REST API + SSE<br/>Orchestrator"]
+    TR["Transaction Risk tool<br/>SQL features · no LLM"]
+    EV["Evidence agent<br/>multimodal · bounding boxes"]
+    FUS{{"Fusion policy<br/>deterministic rules"}}
+    EX["Explainer agent<br/>English / 中文"]
+    CF["Case-File agent<br/>after the verdict"]
+    SI["Scam-Intel agent<br/>+ Search agent with<br/>Google Search grounding"]
+  end
+
+  VX(["Gemini 3.8 Flash<br/>on Vertex AI"])
+  BQ[("BigQuery<br/>transactions · features")]
+  FS[("Firestore<br/>checks · cases<br/>watchlist · audit")]
+  GCS[("Cloud Storage<br/>evidence · 30-day delete")]
+  OPS["Secret Manager · Logging · Trace<br/>Scheduler · Monitoring"]
+
+  APP -->|"transfer + answer"| API
+  APP -->|"signed-URL upload"| GCS
+  API --> TR & EV
+  TR --> BQ
+  EV -.->|"reads evidence"| GCS
+  TR & EV --> FUS
+  FUS --> EX & CF & SI
+  EV & EX & CF & SI --> VX
+  API -->|"watchlist · checks · cases"| FS
+  FS -->|"realtime listener"| CON
+  CON -->|"release · hold · report"| API
+  CR --- OPS
+
+  classDef gcp fill:#E8F0FE,stroke:#1A73E8,color:#202124
+  classDef ai fill:#FEF7E0,stroke:#E37400,color:#202124
+  classDef rule fill:#E6F4EA,stroke:#188038,color:#202124
+  class BQ,FS,GCS,OPS gcp
+  class VX,EV,EX,CF,SI ai
+  class FUS,TR rule

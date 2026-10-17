@@ -1,0 +1,28 @@
+%% PauseGuard process flow (SUBMISSION_DECK §5). Rendered to docs/img/process-flow.png by `make diagrams`.
+flowchart TB
+  subgraph CUST["At the moment of payment: the customer, in the bank app"]
+    direction LR
+    A["Customer starts<br/>a transfer"] --> B{{"Transaction risk<br/>BigQuery · no LLM"}}
+    B -->|"known payee<br/>low score"| G["GREEN<br/>payment goes through"]
+    B -->|"new payee or<br/>elevated risk"| C["One-question check-in<br/>'Who asked you to pay?'<br/>+ screenshot · PDF · chat"]
+    C --> D["Evidence agent<br/>Gemini, multimodal<br/>+ watchlist lookups"]
+    D --> E{{"Fusion policy<br/>deterministic rules"}}
+    E -->|"GREEN"| G
+    E -->|"AMBER"| F["Red flags drawn on the screenshot<br/>pause 24 h · call a trusted contact<br/>· or continue"]
+    E -->|"RED"| H["Payment held<br/>the customer sees why,<br/>in their own language"]
+    E -.->|"timeout · model error"| R["AMBER + human review<br/>never GREEN"]
+  end
+  subgraph BANK["At the bank: the fraud analyst, in real time"]
+    direction LR
+    Q["Case in the analyst console<br/>Firestore realtime listener<br/>case file + web intel"] --> I{{"Analyst decides"}}
+    I -->|"release · hold<br/>escalate"| L["Audit log"]
+    I -->|"report scam"| J["Scammer's number, account<br/>and link blocked for<br/>every customer"]
+  end
+  CUST ==>|"AMBER · RED · needs review"| BANK
+
+  classDef green fill:#E6F4EA,stroke:#188038,color:#202124
+  classDef amber fill:#FEF7E0,stroke:#B06000,color:#202124
+  classDef red fill:#FCE8E6,stroke:#C5221F,color:#202124
+  class G green
+  class F,R amber
+  class H red

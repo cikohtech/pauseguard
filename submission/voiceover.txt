@@ -1,0 +1,19 @@
+Last year, scammers took 913 million dollars from people in Singapore. In four out of five cases, the victim pressed send themselves.
+
+To the bank, those payments look normal: the right phone, the right password, the right one-time code. The evidence is in the conversation that persuaded them, and banks never see it.
+
+PauseGuard checks the conversation, not just the transaction. This is the live prototype, running on Google Cloud.
+
+Mrs Tan is 67. A man claiming to be from MAS tells her to move her savings to a safe account. When she sends eight thousand dollars to a new account, PauseGuard asks her one simple question, in Chinese: who asked you to make this payment? She shares the chat. Gemini agents read her screenshot, while the payee and the scammer's number are checked against the bank's watchlist. In about ten seconds, the payment is held. She sees exactly why, on her own screenshot, in her own language, with a button to call her son and the anti-scam helpline.
+
+At the bank, the case reached the analyst console before Mrs Tan's screen even changed, through Firestore's realtime listener. Gemini has written the case file: the evidence with the red flags boxed, her 90-day history with this transfer standing out, and web intel grounded in Google Search. One key reports the scam, and the scammer's number, account and link are blocked for every customer.
+
+Not every case needs a hard stop. Raj is told to top up four hundred and fifty dollars to unlock his commission. PauseGuard explains the pay-to-earn job scam and suggests a 24-hour pause. Raj stays in control.
+
+And it stays out of the way. Aisyah is paying a deposit to her new landlord and attaches the tenancy agreement. Gemini reads the PDF, finds nothing suspicious, and the payment goes through.
+
+Under the hood: the app is on Firebase Hosting with Firebase Auth. Five ADK agents run on Cloud Run, with Gemini on Vertex AI. Firestore stores the cases and powers the live console, and BigQuery scores transaction risk. The verdict itself comes from plain, tested rules, so it's auditable.
+
+On a hundred held-out test cases, rules alone stopped 78 percent of scams. PauseGuard stopped all of them, with a 4 percent false-positive rate, for under a cent per check.
+
+Fraud models check the transaction. PauseGuard checks the conversation. Try it live at pauseguard-sg dot web dot app.

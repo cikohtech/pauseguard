@@ -4,47 +4,55 @@
 
 ```mermaid
 flowchart LR
-  subgraph Client["Firebase Hosting (React)"]
-    APP["/app: customer banking mock"]
-    CON["/console: analyst console"]
+  subgraph FB["Firebase Hosting + Firebase Auth"]
+    APP["Customer app /app<br/>Harbour Bank mock · anonymous auth"]
+    CON["Analyst console /console<br/>email/password · role=analyst"]
   end
 
-  subgraph Run["Cloud Run: pauseguard-api (FastAPI + ADK)"]
-    API["REST API /api/v1"]
-    ORCH["Orchestrator (ADK)"]
-    TR["Transaction Risk agent"]
-    EV["Evidence agent (Gemini multimodal)"]
-    SI["Scam-Intel agent"]
-    GS["Search agent (google_search grounding)"]
-    FUS["Fusion policy (deterministic)"]
-    EX["Customer Explainer agent"]
+  subgraph CR["Cloud Run · asia-southeast1 · FastAPI + Agent Development Kit"]
+    API["REST API /api/v1<br/>+ SSE progress"]
+    ORCH["Orchestrator"]
+    TR["Transaction Risk tool<br/>SQL features · no LLM"]
+    EV["Evidence agent<br/>multimodal · bounding boxes"]
+    FUS{{"Fusion policy<br/>deterministic rules"}}
+    EX["Explainer agent<br/>English / 中文"]
     CF["Case-File agent"]
+    SI["Scam-Intel agent"]
+    GS["Search agent<br/>Google Search grounding"]
   end
 
-  VX["Vertex AI: Gemini Flash"]
-  BQ[("BigQuery: transactions, features, analytics")]
-  FS[("Firestore: checks, cases, watchlist, audit")]
-  GCS[("Cloud Storage: evidence (30-day TTL)")]
-  SM["Secret Manager"]
-  LOG["Cloud Logging / Trace"]
+  VX(["Gemini 3.8 Flash<br/>on Vertex AI"])
+  BQ[("BigQuery<br/>transactions · features · analytics")]
+  FS[("Firestore<br/>checks · cases · watchlist · audit")]
+  GCS[("Cloud Storage<br/>evidence<br/>30-day delete")]
+  OPS["Secret Manager · Cloud Logging<br/>Cloud Trace · Cloud Scheduler<br/>Cloud Monitoring"]
 
-  APP -->|"POST /checks"| API
-  APP -->|"signed URL upload"| GCS
+  APP -->|"transfer + answer"| API
+  APP -->|"signed-URL upload"| GCS
   API --> ORCH
   ORCH --> TR --> BQ
-  ORCH --> EV --> GCS
-  ORCH --> SI --> FS
+  ORCH --> EV
+  EV -.->|"reads gs:// evidence"| GCS
+  ORCH -->|"watchlist lookups"| FS
+  TR & EV --> FUS
+  FUS --> EX
+  FUS -->|"after the verdict"| CF & SI
   SI --> GS
-  TR & EV & SI --> FUS --> EX
-  FUS --> CF --> FS
-  EV & EX & CF & GS --> VX
+  EV & EX & CF & SI & GS --> VX
+  ORCH -->|"checks + cases"| FS
   FS -->|"realtime listener"| CON
-  CON -->|"POST /cases/:id/decision"| API
-  API --> LOG
-  Run --> SM
+  CON -->|"release · hold · report"| API
+  CR --- OPS
+
+  classDef gcp fill:#E8F0FE,stroke:#1A73E8,color:#202124
+  classDef ai fill:#FEF7E0,stroke:#E37400,color:#202124
+  classDef rule fill:#E6F4EA,stroke:#188038,color:#202124
+  class BQ,FS,GCS,OPS gcp
+  class VX,EV,EX,CF,SI,GS ai
+  class FUS,TR rule
 ```
 
-Keep a rendered PNG of this at `docs/img/architecture.png` for the deck (phase 11).
+Source: `docs/diagrams/architecture.mmd`; `make diagrams` renders it to `docs/img/architecture.png` (the deck and README use the PNG). The Transaction Risk step is a SQL tool, not an LLM agent; the five ADK agents are Evidence, Explainer, Case-File, Scam-Intel and Search.
 
 ## 2. Request flow (happy path)
 

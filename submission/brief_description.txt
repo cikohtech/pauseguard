@@ -1,0 +1,10 @@
+PauseGuard stops scams at the moment a bank customer is about to send money. In Singapore, 81.8% of scam cases in 2025 were victims transferring money themselves (S$913.1M lost). The payment looks normal to the bank because the evidence of the scam sits in the WhatsApp chat or call that persuaded them. When a transfer looks risky, PauseGuard asks one quick question and lets the customer share that chat or screenshot. AI agents explain the red flags on the customer's own screenshot, in English or Chinese, and a transparent rule policy lets the payment go, pauses it, or holds it for a bank analyst.
+
+How we use Google Cloud:
+- Gemini (3.8 Flash on Vertex AI) powers five agents built with the Agent Development Kit. It reads screenshots and PDFs, marks red flags with bounding boxes, checks unknown websites with Google Search grounding, and writes bilingual customer explanations and analyst case files as validated structured JSON.
+- Cloud Run hosts the FastAPI + ADK backend in Singapore. It runs the analysis in parallel under a 12-second budget (a failure becomes "pause and review", never "safe") and answers in 7.6 s median.
+- Firestore stores checks, cases, the scam watchlist and the audit log. Its realtime listener puts a held payment in the analyst console in under a second; reporting a scam blocks the scammer's details for every customer.
+- Firebase Hosting serves the customer banking app and the analyst console; Firebase Auth signs in customers and analysts.
+- BigQuery computes transaction-risk features.
+
+On 100 held-out test cases, rules alone stopped 78% of scams; PauseGuard stopped 100% with a 4% false-positive rate, at US$0.007 per check.

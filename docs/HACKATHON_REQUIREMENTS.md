@@ -28,46 +28,46 @@ All submission links must work and be publicly accessible.
 
 | # | Template slide / item | Where it comes from in this repo | Done |
 |---|---|---|---|
-| 1 | Team details: team name, team leader name, **problem statement** | `docs/SUBMISSION_DECK.md` §1 | ☐ |
-| 2 | Brief about the idea | `SUBMISSION_DECK.md` §2 | ☐ |
-| 3 | Opportunities: how it's different, how it solves the problem, USP | `SUBMISSION_DECK.md` §3 | ☐ |
-| 4 | List of features | `SUBMISSION_DECK.md` §4 (must match what's actually built) | ☐ |
-| 5 | Process flow / use-case diagram | `docs/img/process-flow.png` (generated from Mermaid in phase 11) | ☐ |
-| 6 | Wireframes / mock diagrams (optional, but do it for the UI/UX prize) | `docs/img/screens/*.png` | ☐ |
-| 7 | Architecture diagram | `docs/img/architecture.png` | ☐ |
-| 8 | Technologies used | `SUBMISSION_DECK.md` §8 | ☐ |
-| 9 | Estimated implementation cost (optional, but do it) | `SUBMISSION_DECK.md` §9 + `docs/COSTS.md` | ☐ |
-| 10 | Snapshots of the prototype | `docs/img/screens/*.png` (real app, deployed) | ☐ |
-| 11 | **Prototype performance report / benchmarking** | `eval/reports/benchmark.md` + charts | ☐ |
-| 12 | Additional details / future development | `SUBMISSION_DECK.md` §12 | ☐ |
-| 13 | **Public GitHub repository** link | repo is public, README complete, no secrets | ☐ |
-| 14 | **Demo video, 3–4 minutes (target 3:30)**, showing the live product working | `docs/DEMO_SCRIPT.md` → upload to YouTube (Public or Unlisted, never Private) | ☐ |
-| 15 | **Final product link** (live), working throughout evaluation | Firebase Hosting URL, with demo logins working; see `DEPLOYMENT.md` §7 (uptime) | ☐ |
-| 16 | **Brief description** naming how we use **Firebase, Firestore, Cloud Run and Gemini** | `docs/BRIEF_DESCRIPTION.md` | ☐ |
+| 1 | Team details: team name, team leader name, **problem statement** | `docs/SUBMISSION_DECK.md` §1 | ☑ |
+| 2 | Brief about the idea | `SUBMISSION_DECK.md` §3 | ☑ |
+| 3 | Opportunities: how it's different, how it solves the problem, USP | `SUBMISSION_DECK.md` §4 | ☑ |
+| 4 | List of features | `SUBMISSION_DECK.md` §5 (must match what's actually built) | ☑ |
+| 5 | Process flow / use-case diagram | `docs/img/process-flow.png` (generated from Mermaid in phase 11) | ☑ |
+| 6 | Wireframes / mock diagrams (optional, but do it for the UI/UX prize) | `docs/img/screens/*.png` | ☑ |
+| 7 | Architecture diagram | `docs/img/architecture.png` | ☑ |
+| 8 | Technologies used | `SUBMISSION_DECK.md` §9 | ☑ |
+| 9 | Estimated implementation cost (optional, but do it) | `SUBMISSION_DECK.md` §10 + `docs/COSTS.md` | ☑ |
+| 10 | Snapshots of the prototype | `docs/img/screens/*.png` (real app, deployed) | ☑ |
+| 11 | **Prototype performance report / benchmarking** | `eval/reports/benchmark.md` + charts | ☑ |
+| 12 | Additional details / future development | `SUBMISSION_DECK.md` §13 | ☑ |
+| 13 | **Public GitHub repository** link | repo is public, README complete, no secrets | ☑ |
+| 14 | **Demo video, 3–4 minutes (target 3:30)**, showing the live product working | `docs/DEMO_SCRIPT.md` → upload to YouTube (Public or Unlisted, never Private) | ☐ (human: record + upload) |
+| 15 | **Final product link** (live), working throughout evaluation | Firebase Hosting URL, with demo logins working; see `DEPLOYMENT.md` §7 (uptime) | ☑ |
+| 16 | **Brief description** naming how we use **Firebase, Firestore, Cloud Run and Gemini** | `docs/BRIEF_DESCRIPTION.md` | ☑ |
 
 The template says to download it (File › Download › .pptx), edit the copy and submit the final version. Don't request edit access. A copy is in `reference/Submission_Template_AI_Builder_Cup.pptx`.
 
 ## 2. Technical requirements
 
 **Mandatory (named in the official submission rules; the brief description must explain each):**
-- ☐ **Firebase**: Hosting for the web app + Firebase Auth (anonymous auth for customers, email/password for analysts)
-- ☐ **Firestore**: checks, cases, watchlist, audit log; realtime listeners drive the live analyst console
-- ☐ **Cloud Run**: the FastAPI + ADK agent backend
-- ☐ **Gemini**: every LLM call (evidence analysis, intel, explanations, case files)
+- ☑ **Firebase**: Hosting for the web app + Firebase Auth (anonymous auth for customers, email/password for analysts)
+- ☑ **Firestore**: checks, cases, watchlist, audit log; realtime listeners drive the live analyst console
+- ☑ **Cloud Run**: the FastAPI + ADK agent backend
+- ☑ **Gemini**: every LLM call (evidence analysis, intel, explanations, case files)
 
 **Our own bar for "Best Use of Google Cloud AI":**
 
-- ☐ Gemini on **Vertex AI** (not just an AI Studio key) for all LLM calls
-- ☐ **ADK** multi-agent design with at least 4 distinct agents and tools, visible in the code and the architecture diagram
-- ☐ **Multimodal**: images and PDFs in the MVP; audio as stretch
-- ☐ **Google Search grounding** used for the intel checks
-- ☐ **Structured output** with Pydantic schemas, plus **bounding boxes** from Gemini vision
-- ☐ **Cloud Run** serving the API and agents; **Firebase Hosting** for the web app
-- ☐ **BigQuery** for transaction features and the analytics dashboard
-- ☐ **Firestore** realtime for the analyst console
-- ☐ **Cloud Storage** with a lifecycle policy; **Secret Manager**; **Cloud Logging / Trace**
-- ☐ SQLite local-dev path working (`DATA_BACKEND=sqlite`), as the organisers suggested
-- ☐ The README has a "Google Cloud services used, and why" table
+- ☑ Gemini on **Vertex AI** (not just an AI Studio key) for all LLM calls
+- ☑ **ADK** multi-agent design with at least 4 distinct agents and tools, visible in the code and the architecture diagram
+- ☑ **Multimodal**: images and PDFs in the MVP; audio as stretch
+- ☑ **Google Search grounding** used for the intel checks
+- ☑ **Structured output** with Pydantic schemas, plus **bounding boxes** from Gemini vision
+- ☑ **Cloud Run** serving the API and agents; **Firebase Hosting** for the web app
+- ☑ **BigQuery** for transaction features and the analytics dashboard
+- ☑ **Firestore** realtime for the analyst console
+- ☑ **Cloud Storage** with a lifecycle policy; **Secret Manager**; **Cloud Logging / Trace**
+- ☑ SQLite local-dev path working (`DATA_BACKEND=sqlite`), as the organisers suggested
+- ☑ The README has a "Google Cloud services used, and why" table
 
 ## 3. What each prize needs from us
 
@@ -111,17 +111,19 @@ Judging criteria and their weights weren't included. If they appear on the dashb
 
 ## 5. Final pre-submission audit (phase 11)
 
-- ☐ Live URL opens in an incognito window on mobile and desktop; the persona picker works; the analyst demo login works
-- ☐ All 3 demo scenarios work end to end on the deployed stack, 3 times in a row
-- ☐ `/admin/reset-demo` works
-- ☐ The repo is public, the licence is set (MIT or Apache-2.0), README complete, `.env.example` present, **no secrets in git history** (run `gitleaks` or `trufflehog`)
-- ☐ The benchmark report contains real numbers from the deployed model, with the date and model ID
-- ☐ The video is **between 3:00 and 4:00** (target 3:30), has captions, shows the **live deployed URL** in the browser bar, and shows every core flow actually working (no mockups, no slides-only sections longer than 30 s)
-- ☐ The video names Firebase, Firestore, Cloud Run and Gemini on screen
-- ☐ YouTube visibility is Public or Unlisted, and the link opens in an incognito window
-- ☐ The brief description (`docs/BRIEF_DESCRIPTION.md`) explains Firebase, Firestore, Cloud Run and Gemini usage
-- ☐ The uptime safeguards in `DEPLOYMENT.md` §7 are all in place (min-instances 1, uptime check + alert, daily demo reset, no billing cap, frozen release)
-- ☐ The GitHub repo is public and opens in an incognito window
-- ☐ The deck is filled in on the official template, every slide is answered, and the links work
-- ☐ GCP budget alert set; min-instances=1 only on demo/judging days
-- ☐ Every number in the deck matches the benchmark report
+Audited 17 Oct 2026 (phase 11). ☑ = verified, with the evidence; ☐ = still open, with who does it.
+
+- ☑ Live URL opens in a fresh browser context on mobile (iPhone 13) and desktop; the persona picker works; the analyst demo login works (`make screens`, 17 Oct 08:43 SGT; unauthenticated `curl`: `/`, `/app`, `/console` 200)
+- ☐ All 3 demo scenarios work end to end on the deployed stack, 3 times in a row. 17 Oct: Raj AMBER ×3, Mrs Tan RED ×3 (4 boxes each), all as expected; Aisyah last ran 16 Oct, where 2 of 3 `make smoke` runs hit the 12 s budget (AMBER + review, Gemini tail latency). **You:** run `make smoke` before recording; the timeout decision is in PROGRESS Known issues
+- ☑ `/admin/reset-demo` works (200 four times on 17 Oct, at the start and end of each `make screens` run; the 6-hourly Scheduler job runs it too)
+- ☑ The repo is public (GitHub API: `private: false`), the licence is MIT, README complete, `.env.example` present, **no secrets in git history** (`gitleaks git --log-opts=--all`, gitleaks 8.30.1: 20 commits, no leaks; the 3 working-tree hits are git-ignored files: a test JWT in the pytest cache and the public Firebase web key in `web/.env.production.local` and the built bundle). **You:** push `main` so GitHub shows the new README
+- ☑ The benchmark report contains real numbers from the deployed model, with the date and model ID (`eval/reports/benchmark.md`, run `20261016T1447Z_api_test`, `gemini-3.8-flash`, 16 Oct 2026)
+- ☐ The video is **between 3:00 and 4:00** (target 3:30), has captions, shows the **live deployed URL** in the browser bar, and shows every core flow actually working. **You:** record it with `docs/DEMO_SCRIPT.md` (timed to 3:30, recording checklist included); captions are ready in `submission/captions.srt`
+- ☐ The video names Firebase, Firestore, Cloud Run and Gemini on screen (scene 8 of the script). **You**
+- ☐ YouTube visibility is Public or Unlisted, and the link opens in an incognito window. **You**
+- ☑ The brief description (`docs/BRIEF_DESCRIPTION.md`, `submission/brief_description.txt`) explains Firebase, Firestore, Cloud Run and Gemini usage
+- ☑ The uptime safeguards in `DEPLOYMENT.md` §7 are in place, with one deliberate change: **min-instances 0** (the team's cost decision, DECISIONS 2026-10-16; the landing page wakes the API), web uptime check + email alerts, 6-hourly demo reset + daily self-test, budget alert only (no cap), release tagged `v1.0-submission`
+- ☑ The GitHub repo is public and opens without signing in (unauthenticated `curl` 200)
+- ☑ The deck is filled in on the official template (`submission/PauseGuard_Submission.pptx`, all 16 template slides in order, reviewed in Google Slides and Keynote), every slide is answered, the GitHub and live links work. ☐ **You:** add the video link with `make deck VIDEO_URL=…`
+- ☑ GCP budget alert set (RM 200/month, alert only); min-instances 1 only on demo/judging days (`make deploy-api MIN_INSTANCES=1`)
+- ☑ Every number in the deck matches the benchmark report (slide 12 table = the report's "For the deck" table; costs = `docs/COSTS.md`)
